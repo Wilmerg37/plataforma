@@ -17,6 +17,8 @@ $(document).ready(function () {
 
     // TIENDAS
 
+    //prueba git
+
  
     $('#8-71 a').on('click',function(){
       $('section.content').load('filtro_t.php');
