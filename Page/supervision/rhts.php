@@ -197,11 +197,7 @@ if (!isset($horas_extras_acumuladas[$unique_key])) {
       $metas_por_fecha[$fecha] = $meta;
     }
 
-    usort($fechas_unicas, function($a, $b) {
-      $dateA = DateTime::createFromFormat('d/m/Y', $a);
-      $dateB = DateTime::createFromFormat('d/m/Y', $b);
-      return $dateA <=> $dateB;
-  });
+    sort($fechas_unicas);
 
     // Días en español
     $dias = [
@@ -320,7 +316,7 @@ if (!isset($horas_extras_acumuladas[$unique_key])) {
                 <!-- Fila 2: Fechas -->
                 <tr>
                     <?php foreach ($fechas_unicas as $fecha): ?>
-                    <th class="celda-fecha"><?php echo DateTime::createFromFormat('d/m/Y', $fecha)->format('d/m/Y'); ?></th>
+                    <th class="celda-fecha"><?php echo DateTime::createFromFormat('d/m/Y', $fecha)->format('d/m'); ?></th>
                     <?php endforeach; ?>
                 </tr>
 

@@ -1,0 +1,191 @@
+<?php
+// ===== PHP CON MANEJO MEJORADO DE ERRORES =====
+
+// Al inicio del archivo, después de la conexión
+ini_set('upload_max_filesize', '50M');
+ini_set('post_max_size', '50M');
+ini_set('max_execution_time', 300);
+ini_set('memory_limit', '256M');
+
+// Función para detectar tipo de error
+function detectarErrorArchivo($error_code, $file_size = 0) {
+    switch ($error_code) {
+        case UPLOAD_ERR_OK:
+            return null;
+        case UPLOAD_ERR_INI_SIZE:
+            return "Archivo muy grande (excede upload_max_filesize del servidor)";
+        case UPLOAD_ERR_FORM_SIZE:
+            return "Archivo muy grande (excede el límite del formulario)";
+        case UPLOAD_ERR_PARTIAL:
+            return "El archivo se subió parcialmente (conexión interrumpida)";
+        case UPLOAD_ERR_NO_FILE:
+            return "No se seleccionó ningún archivo";
+        case UPLOAD_ERR_NO_TMP_DIR:
+            return "Error del servidor: falta directorio temporal";
+        case UPLOAD_ERR_CANT_WRITE:
+            return "Error del servidor: no se puede escribir el archivo";
+        case UPLOAD_ERR_EXTENSION:
+            return "Extensión de archivo bloqueada por el servidor";
+        default:
+            return "Error desconocido en la subida ($error_code)";
+    }
+}
+
+// En el case 'toggle_solicitud_status':
+case 'toggle_solicitud_status':
+    error_log("=== PROCESANDO CAMBIO DE ESTADO ===");
+    
+    // Validación mejorada con mensajes específicos
+    if (empty($_POST['id_solicitud'])) {
+        $response = [
+            'success' => false, 
+            'error' => 'Archivo demasiado pesado o datos corruptos. Intenta con un archivo más pequeño (máximo 20MB para PDFs escaneados).'
+        ];
+        echo json_encode($response);
+        oci_close($conn);
+        break;
+    }
+    
+    if (empty($_POST['nuevo_estado'])) {
+        $response = [
+            'success' => false, 
+            'error' => 'No se recibió el estado. Posible problema con archivo muy pesado.'
+        ];
+        echo json_encode($response);
+        oci_close($conn);
+        break;
+    }
+    
+    if (empty($_POST['razon'])) {
+        $response = [
+            'success' => false, 
+            'error' => 'No se recibió la razón. El archivo puede ser demasiado pesado.'
+        ];
+        echo json_encode($response);
+        oci_close($conn);
+        break;
+    }
+
+    $id = $_POST['id_solicitud'];
+    $nuevo_estado = $_POST['nuevo_estado'];
+    $razon_nueva = $_POST['razon'];
+
+    // [Tu código existente para actualizar la base de datos...]
+
+    // Manejo mejorado de archivos
+    $archivosSubidos = [];
+    $erroresArchivos = [];
+    
+    if (isset($_FILES['archivos'])) {
+        $archivos_field = $_FILES['archivos'];
+        
+        if (isset($archivos_field['name'])) {
+            $rutaBase = '../../archivos_aprobados/';
+            if (!is_dir($rutaBase)) {
+                mkdir($rutaBase, 0777, true);
+            }
+
+            $nombres = is_array($archivos_field['name']) ? $archivos_field['name'] : [$archivos_field['name']];
+            $tmp_names = is_array($archivos_field['tmp_name']) ? $archivos_field['tmp_name'] : [$archivos_field['tmp_name']];
+            $errors = is_array($archivos_field['error']) ? $archivos_field['error'] : [$archivos_field['error']];
+            $sizes = is_array($archivos_field['size']) ? $archivos_field['size'] : [$archivos_field['size']];
+
+            for ($i = 0; $i < count($nombres); $i++) {
+                if (!empty($nombres[$i])) {
+                    // Verificar errores de upload
+                    $errorMsg = detectarErrorArchivo($errors[$i], $sizes[$i]);
+                    if ($errorMsg) {
+                        $erroresArchivos[] = "📁 {$nombres[$i]}: $errorMsg";
+                        error_log("❌ Error en archivo {$nombres[$i]}: $errorMsg");
+                        continue;
+                    }
+
+                    $nombreOriginal = basename($nombres[$i]);
+                    $tmp = $tmp_names[$i];
+                    $fileSize = $sizes[$i];
+                    
+                    // Validaciones adicionales
+                    $extension = strtolower(pathinfo($nombreOriginal, PATHINFO_EXTENSION));
+                    $tiposPermitidos = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
+                    
+                    if (!in_array($extension, $tiposPermitidos)) {
+                        $erroresArchivos[] = "📁 $nombreOriginal: Tipo de archivo no permitido ($extension)";
+                        continue;
+                    }
+
+                    // Verificar tamaño (50MB límite)
+                    if ($fileSize > 50 * 1024 * 1024) {
+                        $sizeMB = round($fileSize / 1024 / 1024, 1);
+                        $erroresArchivos[] = "📁 $nombreOriginal: Muy grande ({$sizeMB}MB). Máximo 50MB";
+                        continue;
+                    }
+
+                    // Advertencia para archivos grandes (probablemente escaneados)
+                    if ($fileSize > 20 * 1024 * 1024) {
+                        $sizeMB = round($fileSize / 1024 / 1024, 1);
+                        error_log("⚠️ Archivo grande detectado: $nombreOriginal ({$sizeMB}MB) - Posible PDF escaneado");
+                    }
+
+                    // Verificar que el archivo temporal existe y es válido
+                    if (!file_exists($tmp) || !is_uploaded_file($tmp)) {
+                        $erroresArchivos[] = "📁 $nombreOriginal: Archivo temporal no válido";
+                        continue;
+                    }
+
+                    // Intentar mover el archivo
+                    $nombreFinal = 'solicitud_' . $id . '_' . date('YmdHis') . '_' . uniqid() . '.' . $extension;
+                    $rutaFinal = $rutaBase . $nombreFinal;
+                    $rutaRelativa = 'archivos_aprobados/' . $nombreFinal;
+
+                    if (move_uploaded_file($tmp, $rutaFinal)) {
+                        // Verificar que se movió correctamente
+                        if (file_exists($rutaFinal) && filesize($rutaFinal) > 0) {
+                            // Guardar en BD
+                            $stmtArchivo = oci_parse($conn, "INSERT INTO ROY_ARCHIVOS_SOLICITUD (
+                                ID_SOLICITUD, NOMBRE_ARCHIVO, FECHA_SUBIDA
+                            ) VALUES (:id_solicitud, :nombre_archivo, SYSDATE)");
+                            
+                            oci_bind_by_name($stmtArchivo, ':id_solicitud', $id);
+                            oci_bind_by_name($stmtArchivo, ':nombre_archivo', $rutaRelativa);
+                            
+                            if (oci_execute($stmtArchivo)) {
+                                $archivosSubidos[] = $nombreOriginal;
+                                $sizeMB = round($fileSize / 1024 / 1024, 1);
+                                error_log("✅ Archivo guardado: $nombreOriginal ({$sizeMB}MB)");
+                            } else {
+                                $e = oci_error($stmtArchivo);
+                                $erroresArchivos[] = "📁 $nombreOriginal: Error en base de datos";
+                                error_log("❌ Error BD para $nombreOriginal: " . $e['message']);
+                            }
+                            oci_free_statement($stmtArchivo);
+                        } else {
+                            $erroresArchivos[] = "📁 $nombreOriginal: Archivo corrupto después de mover";
+                        }
+                    } else {
+                        $erroresArchivos[] = "📁 $nombreOriginal: No se pudo guardar en el servidor";
+                        error_log("❌ Error moviendo archivo: $nombreOriginal - " . error_get_last()['message']);
+                    }
+                }
+            }
+        }
+    }
+
+    // Preparar respuesta final
+    $response = ['success' => true];
+    
+    if (!empty($archivosSubidos)) {
+        $response['archivos_subidos'] = $archivosSubidos;
+        $response['mensaje'] = 'Estado actualizado. ' . count($archivosSubidos) . ' archivo(s) subido(s) correctamente.';
+    } else {
+        $response['mensaje'] = 'Estado actualizado correctamente.';
+    }
+    
+    if (!empty($erroresArchivos)) {
+        $response['advertencias'] = $erroresArchivos;
+        $response['mensaje'] .= ' Algunos archivos tuvieron problemas.';
+    }
+    
+    echo json_encode($response);
+    oci_close($conn);
+    break;
+?>
