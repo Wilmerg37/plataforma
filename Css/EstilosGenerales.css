@@ -1,0 +1,18 @@
+.fondoLogin{
+    background-image: url('../Image/fondo.jpeg');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+}
+
+.bchatroy{
+  bottom:8%;
+  right:1%;
+}
+
+
+
+.chatroy{
+  bottom:11%;
+  right:1%;
+}
