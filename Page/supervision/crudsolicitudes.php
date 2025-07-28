@@ -47,115 +47,156 @@ if (isset($_GET['action'])) {
 
         // MEJORADO: GET SOLICITUDES PARA SUPERVISORES
 case 'get_solicitudes':
-    $query = " SELECT * FROM(         SELECT
-                s.ID_SOLICITUD,
-                s.NUM_TIENDA,
-                s.PUESTO_SOLICITADO,
-                s.ESTADO_SOLICITUD,
-                TO_CHAR(s.FECHA_SOLICITUD, 'DD-MM-YYYY') AS FECHA_SOLICITUD,
-                CASE 
-                    WHEN s.FECHA_MODIFICACION != s.FECHA_SOLICITUD 
-                    THEN TO_CHAR(s.FECHA_MODIFICACION, 'DD-MM-YYYY HH24:MI:SS')
-                    ELSE NULL
-                END AS FECHA_MODIFICACION,
-                s.SOLICITADO_POR,
-                s.RAZON,
-                s.DIRIGIDO_A,
-                CASE
-                WHEN EXISTS (
-                    SELECT 1 
-                    
-                    FROM ROY_ARCHIVOS_SOLICITUD a
-                    JOIN ROY_HISTORICO_SOLICITUD h ON a.ID_HISTORICO = h.ID_HISTORICO
-                    WHERE a.ID_SOLICITUD = s.ID_SOLICITUD
-                    AND LOWER(h.ESTADO_NUEVO) LIKE '%cvs%'
-                    AND h.ID_HISTORICO = (
-                        SELECT MAX(ID_HISTORICO)
-                        FROM ROY_HISTORICO_SOLICITUD
-                        WHERE ID_SOLICITUD = s.ID_SOLICITUD
-                        AND LOWER(ESTADO_NUEVO) LIKE '%cvs%'
-                    )
-                ) THEN 1 ELSE 0
-                END AS TIENE_ARCHIVOS,
-                CASE 
-                    WHEN s.ESTADO_SOLICITUD = 'Con CVs Disponibles' THEN 1
-                    ELSE 0
-                END AS CVS_DISPONIBLES,
-                -- NUEVO: TIENE_SELECCION solo si hay selección activa para el último Cvs Enviados
-                (
-                SELECT CASE
-                    WHEN COUNT(*) > 0 THEN 1 ELSE 0
-                END
-                FROM ROY_SELECCION_CVS sc
-                JOIN (
-                    SELECT MAX(ID_HISTORICO) AS ID_HISTORICO
-                    FROM ROY_HISTORICO_SOLICITUD
-                    WHERE ID_SOLICITUD = s.ID_SOLICITUD
-                    AND LOWER(ESTADO_NUEVO) LIKE '%cvs%'
-                ) h_cvs ON sc.ID_HISTORICO_CV_ENVIO = h_cvs.ID_HISTORICO
-                WHERE sc.ID_SOLICITUD = s.ID_SOLICITUD
-                    AND sc.ES_ACTIVA = 'Y'
-                ) AS TIENE_SELECCION,
-                h.ID_HISTORICO,
-                h.COMENTARIO_NUEVO,
-                h.COMENTARIO_ANTERIOR,
-                (SELECT COUNT(*) FROM ROY_CHAT_HISTORICO ch WHERE ch.ID_HISTORICO = h.ID_HISTORICO) AS TOTAL_MENSAJES,
-                (
-                    SELECT COUNT(*)
-                    FROM ROY_CHAT_HISTORICO ch
-                    WHERE ch.ID_HISTORICO = h.ID_HISTORICO
-                    AND UPPER(ch.ES_LEIDO) = 'N'
-                    AND UPPER(ch.ROL) = 'RRHH'
-                ) AS NO_LEIDOS
-            FROM ROY_SOLICITUD_PERSONAL s
-            LEFT JOIN (
-                SELECT ID_HISTORICO, ID_SOLICITUD, COMENTARIO_NUEVO, COMENTARIO_ANTERIOR
-                FROM (
-                    SELECT h.*, ROW_NUMBER() OVER (PARTITION BY ID_SOLICITUD ORDER BY FECHA_CAMBIO DESC) AS rn
-                    FROM ROY_HISTORICO_SOLICITUD h
-                )
-                WHERE rn = 1
-            ) h ON s.ID_SOLICITUD = h.ID_SOLICITUD
-               
+        try {
+            if (ob_get_level()) {
+                ob_clean();
+            }
             
-            ORDER BY s.FECHA_SOLICITUD DESC )A
+            // ← DEBUG TEMPORAL - VER QUÉ HAY EN LA SESIÓN
+            /*$debug = [
+                'session_id' => session_id(),
+                'session_status' => session_status(),
+                'session_exists' => isset($_SESSION),
+                'session_data' => $_SESSION ?? 'NO SESSION',
+                'user_exists' => isset($_SESSION['user']),
+                'user_data' => $_SESSION['user'] ?? 'NO USER',
+                'user_6_exists' => isset($_SESSION['user'][6]),
+                'user_6_value' => $_SESSION['user'][6] ?? 'NO USER[6]'
+            ];
             
-            inner join  (
-            SELECT store_no, udf1_string, udf2_string FROM RPS.STORE where sbs_sid = '680861302000159257' )sp
-            
-        on a.solicitado_por = sp.udf2_string and  A.NUM_TIENDA = sp.store_no
+            header('Content-Type: application/json');
+            echo json_encode(['debug' => $debug]);
+            exit;*/ // ← QUITAR DESPUÉS DE VER EL DEBUG
+            // ← CAMBIAR DE [6] A [12]
+        $usuario_logueado = $_SESSION['user'][12] ?? null;
         
-        where sp.udf1_string = 5226";
+        if (!$usuario_logueado) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'error' => 'Usuario no encontrado en sesión']);
+            exit;
+        }
 
-    $stmt = oci_parse($conn, $query);
-    oci_execute($stmt);
+        $query = "SELECT * FROM(         
+                        SELECT
+                            s.ID_SOLICITUD,
+                            s.NUM_TIENDA,
+                            s.PUESTO_SOLICITADO,
+                            s.ESTADO_SOLICITUD,
+                            TO_CHAR(s.FECHA_SOLICITUD, 'DD-MM-YYYY') AS FECHA_SOLICITUD,
+                            CASE 
+                                WHEN s.FECHA_MODIFICACION != s.FECHA_SOLICITUD 
+                                THEN TO_CHAR(s.FECHA_MODIFICACION, 'DD-MM-YYYY HH24:MI:SS')
+                                ELSE NULL
+                            END AS FECHA_MODIFICACION,
+                            s.SOLICITADO_POR,
+                            s.RAZON,
+                            s.DIRIGIDO_A,
+                            CASE
+                            WHEN EXISTS (
+                                SELECT 1 
+                                FROM ROY_ARCHIVOS_SOLICITUD a
+                                JOIN ROY_HISTORICO_SOLICITUD h ON a.ID_HISTORICO = h.ID_HISTORICO
+                                WHERE a.ID_SOLICITUD = s.ID_SOLICITUD
+                                AND LOWER(h.ESTADO_NUEVO) LIKE '%cvs%'
+                                AND h.ID_HISTORICO = (
+                                    SELECT MAX(ID_HISTORICO)
+                                    FROM ROY_HISTORICO_SOLICITUD
+                                    WHERE ID_SOLICITUD = s.ID_SOLICITUD
+                                    AND LOWER(ESTADO_NUEVO) LIKE '%cvs%'
+                                )
+                            ) THEN 1 ELSE 0
+                            END AS TIENE_ARCHIVOS,
+                            CASE 
+                                WHEN s.ESTADO_SOLICITUD = 'Con CVs Disponibles' THEN 1
+                                ELSE 0
+                            END AS CVS_DISPONIBLES,
+                            (
+                            SELECT CASE
+                                WHEN COUNT(*) > 0 THEN 1 ELSE 0
+                            END
+                            FROM ROY_SELECCION_CVS sc
+                            JOIN (
+                                SELECT MAX(ID_HISTORICO) AS ID_HISTORICO
+                                FROM ROY_HISTORICO_SOLICITUD
+                                WHERE ID_SOLICITUD = s.ID_SOLICITUD
+                                AND LOWER(ESTADO_NUEVO) LIKE '%cvs%'
+                            ) h_cvs ON sc.ID_HISTORICO_CV_ENVIO = h_cvs.ID_HISTORICO
+                            WHERE sc.ID_SOLICITUD = s.ID_SOLICITUD
+                                AND sc.ES_ACTIVA = 'Y'
+                            ) AS TIENE_SELECCION,
+                            h.ID_HISTORICO,
+                            h.COMENTARIO_NUEVO,
+                            h.COMENTARIO_ANTERIOR,
+                            (SELECT COUNT(*) FROM ROY_CHAT_HISTORICO ch WHERE ch.ID_HISTORICO = h.ID_HISTORICO) AS TOTAL_MENSAJES,
+                            (
+                                SELECT COUNT(*)
+                                FROM ROY_CHAT_HISTORICO ch
+                                WHERE ch.ID_HISTORICO = h.ID_HISTORICO
+                                AND UPPER(ch.ES_LEIDO) = 'N'
+                                AND UPPER(ch.ROL) = 'RRHH'
+                            ) AS NO_LEIDOS
+                        FROM ROY_SOLICITUD_PERSONAL s
+                        LEFT JOIN (
+                            SELECT ID_HISTORICO, ID_SOLICITUD, COMENTARIO_NUEVO, COMENTARIO_ANTERIOR
+                            FROM (
+                                SELECT h.*, ROW_NUMBER() OVER (PARTITION BY ID_SOLICITUD ORDER BY FECHA_CAMBIO DESC) AS rn
+                                FROM ROY_HISTORICO_SOLICITUD h
+                            )
+                            WHERE rn = 1
+                        ) h ON s.ID_SOLICITUD = h.ID_SOLICITUD
+                        ORDER BY s.FECHA_SOLICITUD DESC 
+                    ) A
+                    INNER JOIN (
+                        SELECT store_no, udf1_string, udf2_string 
+                        FROM RPS.STORE 
+                        WHERE sbs_sid = '680861302000159257' 
+                    ) sp ON a.solicitado_por = sp.udf2_string 
+                        AND A.NUM_TIENDA = sp.store_no
+                    WHERE sp.udf1_string = :usuario_logueado";
 
-    $solicitudes = [];
-    while ($row = oci_fetch_assoc($stmt)) {
-        $solicitudes[] = [
-            'ID_SOLICITUD' => $row['ID_SOLICITUD'],
-            'NUM_TIENDA' => $row['NUM_TIENDA'],
-            'PUESTO_SOLICITADO' => $row['PUESTO_SOLICITADO'],
-            'ESTADO_SOLICITUD' => $row['ESTADO_SOLICITUD'],
-            'FECHA_SOLICITUD' => $row['FECHA_SOLICITUD'],
-            'FECHA_MODIFICACION' => $row['FECHA_MODIFICACION'],
-            'SOLICITADO_POR' => $row['SOLICITADO_POR'],
-            'RAZON' => $row['RAZON'],
-            'DIRIGIDO_A' => $row['DIRIGIDO_A'],
-            'TIENE_ARCHIVOS' => $row['TIENE_ARCHIVOS'],
-            'CVS_DISPONIBLES' => $row['CVS_DISPONIBLES'],
-            'ID_HISTORICO' => $row['ID_HISTORICO'],
-            'COMENTARIO_NUEVO' => $row['COMENTARIO_NUEVO'],
-            'TIENE_SELECCION' => $row['TIENE_SELECCION'],
-            'NO_LEIDOS' => $row['NO_LEIDOS']  // ← AGREGAR ESTA LÍNEA
-        ];
-    }
+          $stmt = oci_parse($conn, $query);
+            oci_bind_by_name($stmt, ':usuario_logueado', $usuario_logueado);
+            
+            if (!oci_execute($stmt)) {
+                $error = oci_error($stmt);
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'error' => $error['message']]);
+                exit;
+            }
 
-    oci_free_statement($stmt);
-    oci_close($conn);
+            $solicitudes = [];
+            while ($row = oci_fetch_assoc($stmt)) {
+                $solicitudes[] = [
+                    'ID_SOLICITUD' => $row['ID_SOLICITUD'],
+                    'NUM_TIENDA' => $row['NUM_TIENDA'],
+                    'PUESTO_SOLICITADO' => $row['PUESTO_SOLICITADO'],
+                    'ESTADO_SOLICITUD' => $row['ESTADO_SOLICITUD'],
+                    'FECHA_SOLICITUD' => $row['FECHA_SOLICITUD'],
+                    'FECHA_MODIFICACION' => $row['FECHA_MODIFICACION'],
+                    'SOLICITADO_POR' => $row['SOLICITADO_POR'],
+                    'RAZON' => $row['RAZON'],
+                    'DIRIGIDO_A' => $row['DIRIGIDO_A'],
+                    'TIENE_ARCHIVOS' => $row['TIENE_ARCHIVOS'],
+                    'CVS_DISPONIBLES' => $row['CVS_DISPONIBLES'],
+                    'ID_HISTORICO' => $row['ID_HISTORICO'],
+                    'COMENTARIO_NUEVO' => $row['COMENTARIO_NUEVO'],
+                    'TIENE_SELECCION' => $row['TIENE_SELECCION'],
+                    'NO_LEIDOS' => $row['NO_LEIDOS']
+                ];
+            }
 
-    echo json_encode($solicitudes);
-    break;
+            oci_free_statement($stmt);
+            oci_close($conn);
+
+            header('Content-Type: application/json');
+            echo json_encode($solicitudes);
+            
+        } catch (Exception $e) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+        break;
+
 
 
         // BUSCAR EMPLEADO POR CÓDIGO CON VALIDACIÓN DE SUPERVISOR

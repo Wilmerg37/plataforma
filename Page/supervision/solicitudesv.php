@@ -350,7 +350,7 @@
 /* Amarillo para Pendiente */
 .status-badge.estado-pendiente {
   background: linear-gradient(to right, #FFB300, #FFD54F);
-  color: #1c1c1c; /* Texto oscuro para mejor contraste */
+  color: #fcf9f9ff; /* Texto oscuro para mejor contraste */
 }
 
 /* Azul para Activa */
@@ -672,41 +672,65 @@
       }));
 
       // FUNCIÓN PARA CARGAR SOLICITUDES
-      function cargarSolicitudes() {
-        $('#loading-indicator').show();
-        $('#tblSolicitudes').hide();
-        $('#empty-state').hide();
+function cargarSolicitudes() {
+  $('#loading-indicator').show();
+  $('#tblSolicitudes').hide();
+  $('#empty-state').hide();
 
-        $.ajax({
-          url: './supervision/crudsolicitudes.php?action=get_solicitudes',
-          type: 'GET',
-          dataType: 'json',
-          success: function (data) {
-            solicitudes = data.success ? data.data : data;
-            if (data.length === 0) {
-              $('#loading-indicator').hide();
-              $('#empty-state').show();
-            } else {
-              renderTable(solicitudes);
-              setupPagination(solicitudes);
-              $('#loading-indicator').hide();
-              $('#tblSolicitudes').show();
-            }
-          },
-          error: function (xhr, status, error) {
-            console.error('Error cargando solicitudes:', error);
-            $('#loading-indicator').hide();
-            Swal.fire({
-              icon: 'error',
-              title: 'Error de Conexión',
-              text: 'No se pudieron cargar las solicitudes. Verifica tu conexión.',
-              confirmButtonText: 'Reintentar'
-            }).then(() => {
-              cargarSolicitudes();
-            });
-          }
-        });
+  $.ajax({
+    url: './supervision/crudsolicitudes.php?action=get_solicitudes', // ← CAMBIAR ESTA URL
+    type: 'GET',
+    dataType: 'json',
+    success: function (data) {
+      console.log("🔍 Respuesta del servidor:", data); // ← AGREGAR DEBUG
+      
+      // ← MANEJAR ERRORES
+      if (data.success === false) {
+        console.error('❌ Error:', data.error);
+        Swal.fire('Error', data.error, 'error');
+        return;
       }
+      
+      // ← MANEJAR DEBUG
+      if (data.debug) {
+        console.log('🐛 Debug info:', data.debug);
+        return;
+      }
+      
+      // ← VALIDAR QUE SEA ARRAY
+      if (!Array.isArray(data)) {
+        console.error('❌ Datos no son array:', data);
+        Swal.fire('Error', 'Formato de datos incorrecto', 'error');
+        return;
+      }
+      
+      solicitudes = data.success ? data.data : data;
+      
+      if (data.length === 0) {
+        $('#loading-indicator').hide();
+        $('#empty-state').show();
+      } else {
+        renderTable(solicitudes);
+        setupPagination(solicitudes);
+        $('#loading-indicator').hide();
+        $('#tblSolicitudes').show();
+      }
+    },
+    error: function (xhr, status, error) {
+      console.error('Error cargando solicitudes:', error);
+      console.error('Respuesta del servidor:', xhr.responseText); // ← AGREGAR DEBUG
+      $('#loading-indicator').hide();
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de Conexión',
+        text: 'No se pudieron cargar las solicitudes. Verifica tu conexión.',
+        confirmButtonText: 'Reintentar'
+      }).then(() => {
+        cargarSolicitudes();
+      });
+    }
+  });
+}
 //RENDERIZAR TABLA
 function renderTable(data) {
   const tbody = $('#tblSolicitudes tbody');
