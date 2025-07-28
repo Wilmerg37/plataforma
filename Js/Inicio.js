@@ -195,6 +195,13 @@ $(document).ready(function () {
         pagina = 'crudhts';
       });
 
+
+ //CRUD DE RECLUTAMIENTO USUARIOS Y VENDEDORES
+    $('#9-185 a').on('click',function(){
+      $('section.content').load('supervision/solicitudesv.php');
+      $('#titulo').text('Reclutamiento de Personal Tiendas');
+  });
+
   
   /************************************************************ */
   //GERENTE VENTAS Y OPERACIONES g Y c ****************************
@@ -220,7 +227,7 @@ $(document).ready(function () {
 
   //CRUD DE USUARIOS Y VENDEDORES
     $('#11-102 a').on('click',function(){
-      $('section.content').load('gestionhumana/solicitudesv.php');
+      $('section.content').load('gestionhumana/solicitudesvrh.php');
       $('#titulo').text('Reclutamiento de Personal Tiendas');
   });
 
