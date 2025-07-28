@@ -529,7 +529,7 @@ $(document).ready(function () {
     }
 
     var etiquetas = {
-     "GTO PRESENCIAL": 1,
+      "GTO PRESENCIAL": 1,
       "GTO VIRTUAL": 2,
       "TV PRESENCIAL": 3,
       "TV VIRTUAL": 4,

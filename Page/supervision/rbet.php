@@ -106,11 +106,11 @@ if (isset($_POST['download_excel'])) {
                 ROUND(NVL(sum(CASE 
                                 WHEN t1.receipt_type = 0 THEN ((t2.price - (t2.price * NVL(t1.disc_perc, 0) / 100)) * (t2.qty)) / 1.12
                                 WHEN t1.receipt_type = 1 THEN ((t2.price - (t2.price * NVL(t1.disc_perc, 0) / 100)) * (t2.qty)) / 1.12 * -1 
-                              END), 0), 2)- SUM(NVL( t2.lty_piece_of_tbr_disc_amt,0))- SUM(NVL( t2.lty_piece_of_tbr_disc_amt,0))/1.12  VENTA,
+                              END), 0), 2)- SUM(NVL( t2.lty_piece_of_tbr_disc_amt,0)) VENTA,
                 ROUND(NVL(sum(CASE 
                                 WHEN t1.receipt_type = 0 THEN ((t2.price - (t2.price * NVL(t1.disc_perc, 0) / 100)) * (t2.qty)) / 1.12
                                 WHEN t1.receipt_type = 1 THEN ((t2.price - (t2.price * NVL(t1.disc_perc, 0) / 100)) * (t2.qty)) / 1.12 * -1 
-                              END)- SUM(NVL( t2.lty_piece_of_tbr_disc_amt,0)), 0) / A.META * 100, 2) PORCENTAJE
+                              END)- SUM(NVL( t2.lty_piece_of_tbr_disc_amt,0)), 0) / A.META * 100, 0) PORCENTAJE
           FROM rps.document t1
           INNER JOIN rps.document_item t2 ON (t1.sid = t2.doc_sid)
           INNER JOIN ROY_META_SEM_X_VENDEDOR A ON TO_CHAR(trunc(T1.CREATED_DATETIME, 'd'), 'IW') + 1 = A.SEMANA 
@@ -297,7 +297,7 @@ foreach ($semanas as $yw) {
                             ?>
                             <td>
                                 <span class="<?php echo status($prom); ?>" style="<?php echo color($prom); ?>"></span>
-                                <span style="font-weight: bold; color: black; font-size: 1.2em;"><?php echo number_format($prom, 2) . " %"; ?></span><br>
+                                <span style="font-weight: bold; color: black; font-size: 1.2em;"><?php echo number_format($prom, 0) . " %"; ?></span><br>
                             </td>
                             <?php endforeach; ?>
                             <td>Q<?php echo number_format($totalBonoTienda, 2); ?></td>

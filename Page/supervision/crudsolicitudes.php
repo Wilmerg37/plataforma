@@ -33,7 +33,11 @@ putenv('NLS_LANG=SPANISH_SPAIN.AL32UTF8');
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
+<<<<<<< HEAD
 require_once '../../Funsiones/global.php';
+=======
+
+>>>>>>> d9af5ce4776dce51bc650979e32745d17e3dc5eb
 include_once '../../Funsiones/conexion.php';
 $conn = Oracle();
 if (!$conn) {
@@ -47,7 +51,11 @@ if (isset($_GET['action'])) {
 
         // MEJORADO: GET SOLICITUDES PARA SUPERVISORES
 case 'get_solicitudes':
+<<<<<<< HEAD
     $query = "       SELECT * FROM(         SELECT
+=======
+    $query = "SELECT
+>>>>>>> d9af5ce4776dce51bc650979e32745d17e3dc5eb
                 s.ID_SOLICITUD,
                 s.NUM_TIENDA,
                 s.PUESTO_SOLICITADO,
@@ -64,7 +72,10 @@ case 'get_solicitudes':
                 CASE
                 WHEN EXISTS (
                     SELECT 1 
+<<<<<<< HEAD
                     
+=======
+>>>>>>> d9af5ce4776dce51bc650979e32745d17e3dc5eb
                     FROM ROY_ARCHIVOS_SOLICITUD a
                     JOIN ROY_HISTORICO_SOLICITUD h ON a.ID_HISTORICO = h.ID_HISTORICO
                     WHERE a.ID_SOLICITUD = s.ID_SOLICITUD
@@ -116,6 +127,7 @@ case 'get_solicitudes':
                 )
                 WHERE rn = 1
             ) h ON s.ID_SOLICITUD = h.ID_SOLICITUD
+<<<<<<< HEAD
                
             
             ORDER BY s.FECHA_SOLICITUD DESC )A
@@ -126,6 +138,9 @@ case 'get_solicitudes':
         on a.solicitado_por = sp.udf2_string and  A.NUM_TIENDA = sp.store_no
         
         where sp.udf1_string = 5226";
+=======
+            ORDER BY s.FECHA_SOLICITUD DESC";
+>>>>>>> d9af5ce4776dce51bc650979e32745d17e3dc5eb
 
     $stmt = oci_parse($conn, $query);
     oci_execute($stmt);
