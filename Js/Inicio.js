@@ -195,12 +195,13 @@ $(document).ready(function () {
         pagina = 'crudhts';
       });
 
-
- //CRUD DE RECLUTAMIENTO USUARIOS Y VENDEDORES
+     
+     //CRUD DE RECLUTAMIENTO USUARIOS Y VENDEDORES
     $('#9-185 a').on('click',function(){
       $('section.content').load('supervision/solicitudesv.php');
       $('#titulo').text('Reclutamiento de Personal Tiendas');
   });
+
 
   
   /************************************************************ */
@@ -214,7 +215,13 @@ $(document).ready(function () {
     pagina = 'rms';
   });
 
-  
+  //AUTORIZACION DE VACANTES
+    $('#10-92 a').on('click',function(){
+      $('section.content').load('GerenteTDS/solicitudesgerente.php');
+      $('#titulo').text('Autorizacion de Vacantes');
+  });
+
+
   //Gestion humana RRHH
 
    //Reporte de marcaje
@@ -357,10 +364,7 @@ $(document).ready(function () {
     });
   });
 
-  $('#18-173 a').on('click', function () {
-      $('section.content').load('digitacion/depositos.php');
-      $('#titulo').text('Ingreso de cortes');
-    });
+
 
 
     // OPERACIONES TIENDAS

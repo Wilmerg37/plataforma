@@ -490,7 +490,20 @@
   padding: 3px 8px;
 }
 
+.status-badge.estado-contratada {
+  background: linear-gradient(to right, #388E3C, #81C784);
+  color: white;
+}
 
+.status-badge.estado-prueba {
+  background: linear-gradient(to right, #E64A19, #FF8A65);
+  color: white;
+}
+
+.status-badge.estado-pendiente {
+  background: linear-gradient(to right, #FFB300, #FFD54F);
+  color: #1c1c1c;
+}
   </style>
 </head>
 
@@ -562,12 +575,13 @@
             <tr>
               <th width="40"><i class="fas fa-expand-alt"></i></th>
               <th width="50">Tienda</th>
-              <th width="140">Puesto</th>
-              <th width="150">Supervisor</th>
-              <th width="120">Dirigido a</th>
+              <th width="160">Puesto</th>
+              <th width="155">Supervisor</th>
+              <th width="140">Dirigido a</th>
               <th width="120">Fecha Solicitud</th>
               <th width="140">Modificación registrada</th>
               <th width="160">Estado</th>
+              <th width="130">Estado de Aprobacion</th>
               <th width="150">Razón</th>
               <th width="30">Comentario</th>
               <th width="350">Acciones</th>
@@ -768,6 +782,7 @@
 
 
   // FUNCIÓN PARA RENDERIZAR LA TABLA
+  // FUNCIÓN PARA RENDERIZAR LA TABLA
 function renderTable(data) {
   const tbody = $('#tblSolicitudes tbody');
   const thead = $('#tblSolicitudes thead');
@@ -778,6 +793,7 @@ function renderTable(data) {
   if (data.length > 0) {
     console.log("Primer item:", data[0]);
     console.log("Comentario del primer item:", data[0].COMENTARIO_SOLICITUD);
+    console.log("Estado Aprobación del primer item:", data[0].ESTADO_APROBACION); // ← NUEVO DEBUG
   }
   console.log("DEBUG FULL JSON", JSON.stringify(data, null, 2));
 
@@ -787,54 +803,62 @@ function renderTable(data) {
 
   pageData.forEach((item, index) => {
     const globalIndex = start + index;
-let statusClass = '';
-const estado = (item.ESTADO_SOLICITUD || '').toLowerCase();
+    
+    let statusClass = '';
+    const estado = (item.ESTADO_SOLICITUD || '').toLowerCase();
 
-if (estado.includes('pendiente')) {
-  statusClass = 'estado-pendiente';
-} else if (estado.includes('activa')) {
-  statusClass = 'estado-activa';
-} else if (estado.includes('cvs')) {
-  statusClass = 'estado-cvs';
-} else if (estado.includes('psico') || estado.includes('psicometrica')) {
-  statusClass = 'estado-psico';
-} else if (estado.includes('entrevista rh')) {
-  statusClass = 'estado-rh';
-} else if (estado.includes('expediente')) {
-  statusClass = 'estado-expediente';
-} else if (estado.includes('tecnica')) {
-  statusClass = 'estado-tecnica';
-} else if (estado.includes('prueba')) {
-  statusClass = 'estado-prueba';
-} else if (estado.includes('poligrafo')) {
-  statusClass = 'estado-poligrafo';
-} else if (estado.includes('confirmacion')) {
-  statusClass = 'estado-confirmacion';
-} else if (estado.includes('contratada')) {
-  statusClass = 'estado-contratada';
-} else {
-  statusClass = 'estado-pendiente'; // default
-}
+    if (estado.includes('pendiente')) {
+      statusClass = 'estado-pendiente';
+    } else if (estado.includes('activa')) {
+      statusClass = 'estado-activa';
+    } else if (estado.includes('cvs')) {
+      statusClass = 'estado-cvs';
+    } else if (estado.includes('psico') || estado.includes('psicometrica')) {
+      statusClass = 'estado-psico';
+    } else if (estado.includes('entrevista rh')) {
+      statusClass = 'estado-rh';
+    } else if (estado.includes('expediente')) {
+      statusClass = 'estado-expediente';
+    } else if (estado.includes('tecnica')) {
+      statusClass = 'estado-tecnica';
+    } else if (estado.includes('prueba')) {
+      statusClass = 'estado-prueba';
+    } else if (estado.includes('poligrafo')) {
+      statusClass = 'estado-poligrafo';
+    } else if (estado.includes('confirmacion')) {
+      statusClass = 'estado-confirmacion';
+    } else if (estado.includes('contratada')) {
+      statusClass = 'estado-contratada';
+    } else {
+      statusClass = 'estado-pendiente'; // default
+    }
 
+    // ← NUEVO: Estados del badge de aprobación
+    let aprobacionClass = '';
+    const aprobacion = (item.ESTADO_APROBACION || 'Por Aprobar').toLowerCase();
+    if (aprobacion.includes('por aprobar')) aprobacionClass = 'estado-pendiente';
+    else if (aprobacion === 'aprobado' || (aprobacion.includes('aprobado') && !aprobacion.includes('no'))) aprobacionClass = 'estado-contratada';
+    else if (aprobacion.includes('no aprobado')) aprobacionClass = 'estado-prueba';
+    else aprobacionClass = 'estado-contratada'; // Por defecto verde porque RRHH solo ve aprobadas
 
     const fechaModificacion = item.FECHA_MODIFICACION || '—';
     const comentario = item.COMENTARIO_SOLICITUD || '-';
     const idHistorico = item.ID_HISTORICO;
+    const estadoAprobacionMostrar = item.ESTADO_APROBACION || 'Aprobado'; // ← NUEVO
   
     // Formatea el comentario para mostrar
     const noLeidos = parseInt(item.NO_LEIDOS) || 0;
-    //const noLeidos = 5; // prueba directa
     console.log('ID:', idHistorico, 'Comentario:', comentario, 'NO_LEIDOS:', item.NO_LEIDOS);
     const comentarioMostrar = comentario !== '-' && idHistorico
-  ? `<div class="badge-container">
-        <button class="btn btn-sm btn-info btn-Ver-Comentario-Rh"
-                data-id="${idHistorico}"
-                title="Ver comentario">
-            <i class="fas fa-comment"></i> Ver
-        </button>
-        ${noLeidos > 0 ? `<span class="notification-badge ${noLeidos > 9 ? 'wide' : ''}">${noLeidos}</span>` : ''}
-    </div>`
-  : '<span class="text-muted">—</span>';
+      ? `<div class="badge-container">
+            <button class="btn btn-sm btn-info btn-Ver-Comentario-Rh"
+                    data-id="${idHistorico}"
+                    title="Ver comentario">
+                <i class="fas fa-comment"></i> Ver
+            </button>
+            ${noLeidos > 0 ? `<span class="notification-badge ${noLeidos > 9 ? 'wide' : ''}">${noLeidos}</span>` : ''}
+        </div>`
+      : '<span class="text-muted">—</span>';
 
     const row = `
       <tr data-id="${item.ID_SOLICITUD}">
@@ -850,56 +874,63 @@ if (estado.includes('pendiente')) {
         <td><small>${item.FECHA_SOLICITUD}</small></td>
         <td><small class="text-muted">${fechaModificacion}</small></td>
         <td><span class="status-badge ${statusClass}">${item.ESTADO_SOLICITUD}</span></td>
+        <td>
+          <!-- ← NUEVA COLUMNA DE APROBACIÓN -->
+          <span class="status-badge ${aprobacionClass}" title="Estado de Aprobación por Gerencia">
+            <i class="fas fa-check-circle"></i> ${estadoAprobacionMostrar}
+          </span>
+        </td>
         <td><small>${item.RAZON || '—'}</small></td>
         <td class="comentario-cell">${comentarioMostrar}</td>
         <td>
-  <div class="actions-container">
-    <button class="btn btn-action btn-edit btnCambiarEstado"
-      data-id="${item.ID_SOLICITUD}"
-      data-tienda="${item.NUM_TIENDA || ''}"
-      data-puesto="${item.PUESTO_SOLICITADO || ''}"
-      data-razon="${item.RAZON || ''}"
-      data-solicitado="${item.SOLICITADO_POR || ''}"
-      title="Cambiar Estado">
-      <i class="fas fa-exchange-alt"></i> Cambiar Estado
-    </button>
+          <div class="actions-container">
+            <button class="btn btn-action btn-edit btnCambiarEstado"
+              data-id="${item.ID_SOLICITUD}"
+              data-tienda="${item.NUM_TIENDA || ''}"
+              data-puesto="${item.PUESTO_SOLICITADO || ''}"
+              data-razon="${item.RAZON || ''}"
+              data-solicitado="${item.SOLICITADO_POR || ''}"
+              title="Cambiar Estado">
+              <i class="fas fa-exchange-alt"></i> Cambiar Estado
+            </button>
 
-${parseInt(item.TIENE_ARCHIVOS) === 1 && parseInt(item.TIENE_SELECCION) === 0 ? (() => {
-  const estado = (item.ESTADO_SOLICITUD || '').toLowerCase();
-  if (estado.includes('cvs')) {
-    return `
-      <button class="btn btn-sm btn-info btnVerArchivosRRHH" data-id="${item.ID_SOLICITUD}">
-        <i class="fas fa-folder-open"></i> Archivos
-      </button>
-    `;
-  } else if (estado.includes('psico')) {
-    return `
-      <button class="btn btn-sm btn-warning btnVerArchivosTipo" data-id="${item.ID_SOLICITUD}" data-tipo="PSICOMETRICA">
-        <i class="fas fa-brain"></i> Psicométricas
-      </button>
-    `;
-  } else if (estado.includes('poligrafo')) {
-    return `
-      <button class="btn btn-sm btn-secondary btnVerArchivosTipo" data-id="${item.ID_SOLICITUD}" data-tipo="POLIGRAFO">
-        <i class="fas fa-shield-alt"></i> Polígrafo
-      </button>
-    `;
-  } else {
-    return '';
-  }
-})() : ''}
+            ${parseInt(item.TIENE_ARCHIVOS) === 1 && parseInt(item.TIENE_SELECCION) === 0 ? (() => {
+              const estado = (item.ESTADO_SOLICITUD || '').toLowerCase();
+              if (estado.includes('cvs')) {
+                return `
+                  <button class="btn btn-sm btn-info btnVerArchivosRRHH" data-id="${item.ID_SOLICITUD}">
+                    <i class="fas fa-folder-open"></i> Archivos
+                  </button>
+                `;
+              } else if (estado.includes('psico')) {
+                return `
+                  <button class="btn btn-sm btn-warning btnVerArchivosTipo" data-id="${item.ID_SOLICITUD}" data-tipo="PSICOMETRICA">
+                    <i class="fas fa-brain"></i> Psicométricas
+                  </button>
+                `;
+              } else if (estado.includes('poligrafo')) {
+                return `
+                  <button class="btn btn-sm btn-secondary btnVerArchivosTipo" data-id="${item.ID_SOLICITUD}" data-tipo="POLIGRAFO">
+                    <i class="fas fa-shield-alt"></i> Polígrafo
+                  </button>
+                `;
+              } else {
+                return '';
+              }
+            })() : ''}
 
-${parseInt(item.TIENE_SELECCION) === 1 ? `
-  <button class="btn btn-sm btn-success btnVerResumen" data-id="${item.ID_SOLICITUD}">
-    <i class="fas fa-eye"></i> Ver Resumen
-  </button>
-` : ''}
-  </div>
-</td>
+            ${parseInt(item.TIENE_SELECCION) === 1 ? `
+              <button class="btn btn-sm btn-success btnVerResumen" data-id="${item.ID_SOLICITUD}">
+                <i class="fas fa-eye"></i> Ver Resumen
+              </button>
+            ` : ''}
+          </div>
+        </td>
       </tr>
     `;
     
     console.log("Comentario de solicitud:", item.ID_SOLICITUD, item.COMENTARIO_SOLICITUD);
+    console.log("Estado Aprobación:", item.ID_SOLICITUD, item.ESTADO_APROBACION); // ← NUEVO DEBUG
     tbody.append(row);
   });
 
@@ -1810,106 +1841,350 @@ $(document).off('click', '.btnVerArchivosTipo').on('click', '.btnVerArchivosTipo
 
 
 
-      // FUNCIÓN VER HISTORIAL GENERAL
-$(document).on('click', '.btnVerHistorial', function () {
+// FUNCIÓN MEJORADA PARA VER HISTORIAL GENERAL CON FILTROS DE FECHA
+$(document).off('click', '.btnVerHistorial').on('click', '.btnVerHistorial', function () {
+  // Modal para seleccionar rango de fechas
   Swal.fire({
-    title: '<i class="fas fa-spinner fa-spin"></i> Cargando historial...',
-    text: 'Obteniendo historial general de solicitudes',
-    allowOutsideClick: false,
-    showConfirmButton: false
-  });
-
-  $.ajax({
-    url: './gestionhumana/crudsolicitudesrh.php?action=get_historial',
-    type: 'GET',
-    dataType: 'json',
-    success: function (datos) {
-      if (!datos || datos.length === 0) {
-        Swal.fire({
-          icon: 'info',
-          title: 'Historial Vacío',
-          text: 'No hay cambios registrados en las solicitudes.',
-          confirmButtonText: 'Entendido'
-        });
-        return;
-      }
-
-      let tabla = `
-        <div style="max-height: 500px; overflow-y: auto;">
-          <table class="table table-bordered table-hover table-sm">
-            <thead class="thead-dark" style="position: sticky; top: 0; z-index: 10;">
-              <tr>
-                <th>#</th>
-                <th>Solicitud</th>
-                <th>Tienda</th>
-                <th>Estado Anterior</th>
-                <th>Estado Nuevo</th>
-                <th>Comentario Anterior</th>
-                <th>Comentario Nuevo</th>
-                <th>Fecha</th>
-                <th>Archivos</th>
-              </tr>
-            </thead>
-            <tbody>`;
-
-      datos.forEach((row, index) => {
-        let archivos = 'Sin archivos';
-        if (row.ARCHIVOS && Array.isArray(row.ARCHIVOS) && row.ARCHIVOS.length > 0) {
-          archivos = `<div class="btn-group" role="group">`;
-          row.ARCHIVOS.forEach(a => {
-            const nombre = a.NOMBRE_ARCHIVO.split('/').pop();
-            archivos += `
-              <a href="./${a.NOMBRE_ARCHIVO}" target="_blank" class="btn btn-sm btn-primary mb-1">
-                <i class="fas fa-eye"></i> Ver
-              </a>
-              <a href="./${a.NOMBRE_ARCHIVO}" download="${nombre}" class="btn btn-sm btn-success mb-1">
-                <i class="fas fa-download"></i> Descargar
-              </a>`;
-          });
-          archivos += `</div>`;
-        }
-
-        tabla += `<tr>
-                    <td>${index + 1}</td>
-                    <td><span class="badge badge-info">${row.ID_SOLICITUD || '—'}</span></td>
-                    <td><span class="badge badge-primary">${row.NUM_TIENDA || '—'}</span></td>
-                    <td>${row.ESTADO_ANTERIOR || '—'}</td>
-                    <td><strong>${row.ESTADO_NUEVO || '—'}</strong></td>
-                    <td><small>${row.COMENTARIO_ANTERIOR || '—'}</small></td>
-                    <td><small>${row.COMENTARIO_NUEVO || '—'}</small></td>
-                    <td><small>${row.FECHA_CAMBIO || '—'}</small></td>
-                    <td>${archivos}</td>
-                  </tr>`;
-      });
-
-      tabla += '</tbody></table></div>';
-
-      Swal.fire({
-        title: '<i class="fas fa-history"></i> Historial General de Solicitudes',
-        html: tabla,
-        width: '95%',
-        customClass: { popup: 'swal-wide' },
-        showCloseButton: true,
-        showConfirmButton: true,
-        confirmButtonText: '<i class="fas fa-check"></i> Cerrar',
-        footer: `
-          <a href="../Page/gestionhumana/reporte_historial_pdf.php" target="_blank" class="btn btn-danger">
-            <i class="fas fa-file-pdf"></i> Generar PDF
-          </a>
-        `
-      });
+    title: '<i class="fas fa-calendar-alt"></i> Generar Reporte de Historial',
+    html: `
+      <div style="text-align: left; margin-bottom: 20px;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+          <h5 style="margin: 0 0 10px 0; font-weight: 600;">
+            <i class="fas fa-chart-line"></i> Configuración del Reporte
+          </h5>
+          <p style="margin: 0; font-size: 14px; opacity: 0.9;">
+            Seleccione el rango de fechas para generar el historial de cambios en las solicitudes
+          </p>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <label style="font-weight: 600; margin-bottom: 8px; color: #333;">
+              <i class="fas fa-calendar-day"></i> Fecha Inicial:
+            </label>
+            <input type="date" id="fechaInicial" class="form-control" style="
+              padding: 12px;
+              border: 2px solid #ddd;
+              border-radius: 8px;
+              font-size: 14px;
+            ">
+          </div>
+          <div class="col-md-6">
+            <label style="font-weight: 600; margin-bottom: 8px; color: #333;">
+              <i class="fas fa-calendar-day"></i> Fecha Final:
+            </label>
+            <input type="date" id="fechaFinal" class="form-control" style="
+              padding: 12px;
+              border: 2px solid #ddd;
+              border-radius: 8px;
+              font-size: 14px;
+            ">
+          </div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+          <label style="font-weight: 600; margin-bottom: 10px; color: #333;">
+            <i class="fas fa-filter"></i> Filtros Rápidos:
+          </label>
+          <div class="btn-group d-flex" role="group" style="margin-bottom: 15px;">
+            <button type="button" class="btn btn-outline-primary btn-filtro-rapido" data-dias="7">
+              <i class="fas fa-calendar-week"></i> Últimos 7 días
+            </button>
+            <button type="button" class="btn btn-outline-primary btn-filtro-rapido" data-dias="30">
+              <i class="fas fa-calendar-alt"></i> Último mes
+            </button>
+            <button type="button" class="btn btn-outline-primary btn-filtro-rapido" data-dias="90">
+              <i class="fas fa-calendar"></i> Últimos 3 meses
+            </button>
+          </div>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="incluirAprobaciones" checked>
+            <label class="form-check-label" for="incluirAprobaciones" style="font-weight: 500;">
+              <i class="fas fa-user-check"></i> Incluir cambios de aprobación
+            </label>
+          </div>
+          <div class="form-check" style="margin-top: 8px;">
+            <input class="form-check-input" type="checkbox" id="incluirEstados" checked>
+            <label class="form-check-label" for="incluirEstados" style="font-weight: 500;">
+              <i class="fas fa-exchange-alt"></i> Incluir cambios de estado
+            </label>
+          </div>
+        </div>
+      </div>
+    `,
+    width: '700px',
+    showCancelButton: true,
+    confirmButtonText: '<i class="fas fa-search"></i> Generar Reporte',
+    cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+    confirmButtonColor: '#28a745',
+    cancelButtonColor: '#6c757d',
+    buttonsStyling: false,
+    customClass: {
+      popup: 'historial-modal-grande',
+      confirmButton: 'btn btn-success btn-lg px-4',
+      cancelButton: 'btn btn-secondary btn-lg px-4 mr-2'
     },
-    error: function () {
+    preConfirm: () => {
+      const fechaInicial = $('#fechaInicial').val();
+      const fechaFinal = $('#fechaFinal').val();
+      const incluirAprobaciones = $('#incluirAprobaciones').is(':checked');
+      const incluirEstados = $('#incluirEstados').is(':checked');
+      
+      if (!fechaInicial || !fechaFinal) {
+        Swal.showValidationMessage(`
+          <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
+            <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
+            <span style="font-weight: 600;">Debe seleccionar ambas fechas</span>
+          </div>
+        `);
+        return false;
+      }
+      
+      if (new Date(fechaInicial) > new Date(fechaFinal)) {
+        Swal.showValidationMessage(`
+          <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
+            <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
+            <span style="font-weight: 600;">La fecha inicial debe ser menor que la fecha final</span>
+          </div>
+        `);
+        return false;
+      }
+      
+      if (!incluirAprobaciones && !incluirEstados) {
+        Swal.showValidationMessage(`
+          <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
+            <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
+            <span style="font-weight: 600;">Debe incluir al menos un tipo de cambio</span>
+          </div>
+        `);
+        return false;
+      }
+      
+      return { fechaInicial, fechaFinal, incluirAprobaciones, incluirEstados };
+    },
+    didOpen: () => {
+      // Establecer fechas por defecto (último mes)
+      const hoy = new Date();
+      const hace30dias = new Date();
+      hace30dias.setDate(hoy.getDate() - 30);
+      
+      $('#fechaFinal').val(hoy.toISOString().split('T')[0]);
+      $('#fechaInicial').val(hace30dias.toISOString().split('T')[0]);
+      
+      // Event listeners para filtros rápidos
+      $('.btn-filtro-rapido').on('click', function() {
+        const dias = parseInt($(this).data('dias'));
+        const hoy = new Date();
+        const fechaInicio = new Date();
+        fechaInicio.setDate(hoy.getDate() - dias);
+        
+        $('#fechaFinal').val(hoy.toISOString().split('T')[0]);
+        $('#fechaInicial').val(fechaInicio.toISOString().split('T')[0]);
+        
+        // Resaltar botón seleccionado
+        $('.btn-filtro-rapido').removeClass('active');
+        $(this).addClass('active');
+      });
+      
+      // Estilos adicionales
+      if (!document.getElementById('historial-styles')) {
+        const styles = document.createElement('style');
+        styles.id = 'historial-styles';
+        styles.textContent = `
+          .historial-modal-grande {
+            border-radius: 16px !important;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2) !important;
+          }
+          .btn-filtro-rapido.active {
+            background-color: #007bff !important;
+            color: white !important;
+            border-color: #007bff !important;
+          }
+          .historial-modal-grande .form-control:focus {
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+          }
+        `;
+        document.head.appendChild(styles);
+      }
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Mostrar loading
       Swal.fire({
-        icon: 'error',
-        title: 'Error de Conexión',
-        text: 'No se pudo cargar el historial general.',
-        confirmButtonText: 'Reintentar'
+        title: '<i class="fas fa-spinner fa-spin"></i> Generando reporte...',
+        html: `
+          <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 16px; margin-bottom: 10px;">
+              Consultando historial del ${result.value.fechaInicial} al ${result.value.fechaFinal}
+            </div>
+            <div style="color: #666; font-size: 14px;">
+              Por favor espera un momento...
+            </div>
+          </div>
+        `,
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      // Llamada AJAX con parámetros de fecha
+      $.ajax({
+        url: './gestionhumana/crudsolicitudesrh.php?action=get_historial_filtrado',
+        type: 'GET',
+        dataType: 'json',
+        data: {
+          fecha_inicial: result.value.fechaInicial,
+          fecha_final: result.value.fechaFinal,
+          incluir_aprobaciones: result.value.incluirAprobaciones ? 1 : 0,
+          incluir_estados: result.value.incluirEstados ? 1 : 0
+        },
+        success: function (datos) {
+          if (!datos || datos.length === 0) {
+            Swal.fire({
+              icon: 'info',
+              title: '<i class="fas fa-info-circle"></i> Sin Resultados',
+              html: `
+                <div style="text-align: center; padding: 20px;">
+                  <p>No se encontraron cambios en el rango de fechas seleccionado.</p>
+                  <div style="background: #e9ecef; padding: 12px; border-radius: 8px; margin-top: 15px;">
+                    <small><strong>Período:</strong> ${result.value.fechaInicial} - ${result.value.fechaFinal}</small>
+                  </div>
+                </div>
+              `,
+              confirmButtonText: 'Entendido'
+            });
+            return;
+          }
+
+          mostrarHistorialFiltrado(datos, result.value);
+        },
+        error: function (xhr, status, error) {
+          console.error('❌ Error cargando historial filtrado:', {
+            status: xhr.status,
+            responseText: xhr.responseText,
+            error: error
+          });
+          Swal.fire({
+            icon: 'error',
+            title: '<i class="fas fa-exclamation-circle"></i> Error de Conexión',
+            text: 'No se pudo cargar el historial filtrado.',
+            confirmButtonText: 'Reintentar'
+          });
+        }
       });
     }
   });
 });
 
+// FUNCIÓN PARA MOSTRAR EL HISTORIAL FILTRADO
+function mostrarHistorialFiltrado(datos, filtros) {
+  let tabla = `
+    <div style="margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #28a745, #20c997); color: white; border-radius: 8px;">
+      <div class="row">
+        <div class="col-md-4">
+          <strong><i class="fas fa-calendar-check"></i> Período:</strong><br>
+          <span style="font-size: 14px;">${filtros.fechaInicial} - ${filtros.fechaFinal}</span>
+        </div>
+        <div class="col-md-4">
+          <strong><i class="fas fa-chart-bar"></i> Total Registros:</strong><br>
+          <span style="font-size: 18px; font-weight: bold;">${datos.length}</span>
+        </div>
+        <div class="col-md-4">
+          <strong><i class="fas fa-filter"></i> Filtros:</strong><br>
+          <span style="font-size: 12px;">
+            ${filtros.incluirAprobaciones ? '✓ Aprobaciones ' : ''}
+            ${filtros.incluirEstados ? '✓ Estados' : ''}
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <div style="max-height: 500px; overflow-y: auto;">
+      <table class="table table-bordered table-hover table-sm">
+        <thead class="thead-dark" style="position: sticky; top: 0; z-index: 10;">
+          <tr>
+            <th>#</th>
+            <th>Solicitud</th>
+            <th>Tienda</th>
+            <th>Estado Anterior</th>
+            <th>Estado Nuevo</th>
+            <th>Aprobación Anterior</th>
+            <th>Aprobación Nueva</th>
+            <th>Comentario</th>
+            <th>Fecha</th>
+            <th>Tipo</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+  datos.forEach((row, index) => {
+    // Determinar tipo de cambio
+    let tipoCambio = '';
+    let colorTipo = '';
+    if (row.APROBACION_ANTERIOR !== row.APROBACION_NUEVA && row.APROBACION_NUEVA) {
+      tipoCambio = 'Aprobación';
+      colorTipo = 'badge-success';
+    } else if (row.ESTADO_ANTERIOR !== row.ESTADO_NUEVO && row.ESTADO_NUEVO) {
+      tipoCambio = 'Estado';
+      colorTipo = 'badge-info';
+    } else {
+      tipoCambio = 'Mixto';
+      colorTipo = 'badge-warning';
+    }
+
+    tabla += `<tr>
+                <td>${index + 1}</td>
+                <td><span class="badge badge-primary">${row.ID_SOLICITUD || '—'}</span></td>
+                <td><span class="badge badge-secondary">${row.NUM_TIENDA || '—'}</span></td>
+                <td><small>${row.ESTADO_ANTERIOR || '—'}</small></td>
+                <td><strong style="color: #007bff;">${row.ESTADO_NUEVO || '—'}</strong></td>
+                <td><small>${row.APROBACION_ANTERIOR || '—'}</small></td>
+                <td><strong style="color: #28a745;">${row.APROBACION_NUEVA || '—'}</strong></td>
+                <td><small style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;" title="${row.COMENTARIO_NUEVO || '—'}">${(row.COMENTARIO_NUEVO || '—').substring(0, 50)}${(row.COMENTARIO_NUEVO || '').length > 50 ? '...' : ''}</small></td>
+                <td><small>${row.FECHA_CAMBIO || '—'}</small></td>
+                <td><span class="badge ${colorTipo}">${tipoCambio}</span></td>
+              </tr>`;
+  });
+
+  tabla += '</tbody></table></div>';
+
+  Swal.fire({
+    title: '<i class="fas fa-history"></i> Historial Filtrado de Solicitudes',
+    html: tabla,
+    width: '95%',
+    customClass: { popup: 'swal-wide' },
+    showCloseButton: true,
+    showConfirmButton: true,
+    confirmButtonText: '<i class="fas fa-check"></i> Cerrar',
+    footer: `
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <button id="btnExportarExcel" class="btn btn-success">
+          <i class="fas fa-file-excel"></i> Exportar Excel
+        </button>
+        <button id="btnGenerarPDF" class="btn btn-danger">
+          <i class="fas fa-file-pdf"></i> Generar PDF
+        </button>
+        <small class="text-muted">
+          <i class="fas fa-info-circle"></i>
+          Reporte generado el ${new Date().toLocaleDateString('es-ES')}
+        </small>
+      </div>
+    `,
+    didOpen: () => {
+      // Event listeners para exportar
+      $('#btnExportarExcel').on('click', function() {
+        window.open(`./gestionhumana/reporte_historial_pdf.php?formato=excel&fecha_inicial=${filtros.fechaInicial}&fecha_final=${filtros.fechaFinal}&incluir_aprobaciones=${filtros.incluirAprobaciones ? 1 : 0}&incluir_estados=${filtros.incluirEstados ? 1 : 0}`, '_blank');
+      });
+
+      $('#btnGenerarPDF').on('click', function() {
+        window.open(`./gestionhumana/reporte_historial_pdf.php?fecha_inicial=${filtros.fechaInicial}&fecha_final=${filtros.fechaFinal}&incluir_aprobaciones=${filtros.incluirAprobaciones ? 1 : 0}&incluir_estados=${filtros.incluirEstados ? 1 : 0}`, '_blank');  // ← SIN formato=pdf porque ya maneja ambos
+      });
+    }
+  });
+}
 
       // FUNCIÓN HISTORIAL INDIVIDUAL
 $(document).on('click', '.btn-ver-historial', function () {

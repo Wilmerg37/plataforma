@@ -82,6 +82,7 @@ case 'get_solicitudes':
                             s.NUM_TIENDA,
                             s.PUESTO_SOLICITADO,
                             s.ESTADO_SOLICITUD,
+                            s.ESTADO_APROBACION,  -- ← AGREGAR ESTA LÍNEA
                             TO_CHAR(s.FECHA_SOLICITUD, 'DD-MM-YYYY') AS FECHA_SOLICITUD,
                             CASE 
                                 WHEN s.FECHA_MODIFICACION != s.FECHA_SOLICITUD 
@@ -171,6 +172,7 @@ case 'get_solicitudes':
                     'NUM_TIENDA' => $row['NUM_TIENDA'],
                     'PUESTO_SOLICITADO' => $row['PUESTO_SOLICITADO'],
                     'ESTADO_SOLICITUD' => $row['ESTADO_SOLICITUD'],
+                    'ESTADO_APROBACION' => $row['ESTADO_APROBACION'] ?: 'Por Aprobar', // ← AGREGAR ESTA LÍNEA
                     'FECHA_SOLICITUD' => $row['FECHA_SOLICITUD'],
                     'FECHA_MODIFICACION' => $row['FECHA_MODIFICACION'],
                     'SOLICITADO_POR' => $row['SOLICITADO_POR'],

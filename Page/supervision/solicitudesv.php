@@ -483,9 +483,6 @@
   padding: 3px 8px;
 }
 
-
-
-
   </style>
 </head>
 
@@ -551,12 +548,13 @@
             <tr>
               <th width="30"><i class="fas fa-expand-alt"></i></th>
               <th width="50">Tienda</th>
-              <th width="140">Puesto</th>
-              <th width="150">Supervisor</th>
-              <th width="120">Dirigido a</th>
+              <th width="160">Puesto</th>
+              <th width="155">Supervisor</th>
+              <th width="140">Dirigido a</th>
               <th width="120">Fecha Solicitud</th>
               <th width="140">Última Edición</th>
               <th width="180">Estado</th>
+              <th width="130">Estado de Aprobacion</th>
               <th width="150">Razón</th>
               <th width="50">Comentario</th>
               <th width="300">Acciones</th>
@@ -759,58 +757,68 @@ function renderTable(data) {
     else if (estado.includes('contratada')) statusClass = 'estado-contratada';
     else statusClass = 'estado-pendiente'; // por defecto
 
+    // ← NUEVO: Estados del badge de aprobación
+    let aprobacionClass = '';
+    const aprobacion = (item.ESTADO_APROBACION || 'Por Aprobar').toLowerCase();
+    if (aprobacion.includes('por aprobar')) aprobacionClass = 'estado-pendiente';
+    else if (aprobacion === 'aprobado' || (aprobacion.includes('aprobado') && !aprobacion.includes('no'))) aprobacionClass = 'estado-contratada';
+    else if (aprobacion.includes('no aprobado')) aprobacionClass = 'estado-prueba';
+    else aprobacionClass = 'estado-pendiente';
+
     const fechaModificacion = item.FECHA_MODIFICACION || '—';
     const comentario = item.COMENTARIO_NUEVO || '-';
     const idHistorico = item.ID_HISTORICO;
+    const estadoAprobacionMostrar = item.ESTADO_APROBACION || 'Por Aprobar'; // ← NUEVO
     const noLeidos = parseInt(item.NO_LEIDOS) || 0;
-    //const noLeidos = 5; // prueba directa
+    
     console.log('ID:', idHistorico, 'Comentario:', comentario, 'NO_LEIDOS:', item.NO_LEIDOS);
+    console.log('Estado Aprobación:', item.ID_SOLICITUD, item.ESTADO_APROBACION); // ← NUEVO DEBUG
+    
     const comentarioMostrar = comentario !== '-' && idHistorico
-  ? `<div class="badge-container">
-        <button class="btn btn-sm btn-info btnVerComentarioSuper"
-                data-id="${idHistorico}"
-                title="Ver comentario">
-            <i class="fas fa-comment"></i> Ver
-        </button>
-        ${noLeidos > 0 ? `<span class="notification-badge ${noLeidos > 9 ? 'wide' : ''}">${noLeidos}</span>` : ''}
-    </div>`
-  : '<span class="text-muted">—</span>';
+      ? `<div class="badge-container">
+            <button class="btn btn-sm btn-info btnVerComentarioSuper"
+                    data-id="${idHistorico}"
+                    title="Ver comentario">
+                <i class="fas fa-comment"></i> Ver
+            </button>
+            ${noLeidos > 0 ? `<span class="notification-badge ${noLeidos > 9 ? 'wide' : ''}">${noLeidos}</span>` : ''}
+        </div>`
+      : '<span class="text-muted">—</span>';
 
     
     // Declarar variable acciones por cada fila
     let acciones = '';
 
     // Mostrar solo "Ver resumen" si hay selección
-if (estado.toLowerCase().includes('cvs')) {
-  if (parseInt(item.TIENE_SELECCION) === 1) {
-    acciones += `
-      <button class="btn btn-info btn-sm btnVerResumen" data-id="${item.ID_SOLICITUD}">
-          <i class="fas fa-eye"></i> Ver resumen
-      </button>`;
-  } else {
-    acciones += `
-      <button class="btn btn-primary btn-sm btnVerArchivos" data-id="${item.ID_SOLICITUD}">
-          <i class="fas fa-folder-open"></i> Archivos
-      </button>`;
-  }
-}
+    if (estado.toLowerCase().includes('cvs')) {
+      if (parseInt(item.TIENE_SELECCION) === 1) {
+        acciones += `
+          <button class="btn btn-info btn-sm btnVerResumen" data-id="${item.ID_SOLICITUD}">
+              <i class="fas fa-eye"></i> Ver resumen
+          </button>`;
+      } else {
+        acciones += `
+          <button class="btn btn-primary btn-sm btnVerArchivos" data-id="${item.ID_SOLICITUD}">
+              <i class="fas fa-folder-open"></i> Archivos
+          </button>`;
+      }
+    }
 
-if (estado.includes('psico')) {
-  acciones += `
-    <button class="btn btn-secondary btn-sm btnVerPruebas"
-            data-id="${item.ID_SOLICITUD}"
-            data-tipo="PSICOMETRICA">
-      <i class="fas fa-brain"></i> Ver Psicométrica
-    </button>`;
-} else if (estado.includes('poligrafo')) {
-  acciones += `
-    <button class="btn btn-dark btn-sm btnVerPruebas"
-            data-id="${item.ID_SOLICITUD}"
-            data-tipo="POLIGRAFO">
-      <i class="fas fa-fingerprint"></i> Ver Polígrafo
-    </button>`;
-}
-
+    if (estado.includes('psico')) {
+      acciones += `
+        <button class="btn btn-secondary btn-sm btnVerPruebas"
+                data-id="${item.ID_SOLICITUD}"
+                data-tipo="PSICOMETRICA">
+          <i class="fas fa-brain"></i> Ver Psicométrica
+        </button>`;
+    } else if (estado.includes('poligrafo')) {
+      acciones += `
+        <button class="btn btn-dark btn-sm btnVerPruebas"
+                data-id="${item.ID_SOLICITUD}"
+                data-tipo="POLIGRAFO">
+          <i class="fas fa-fingerprint"></i> Ver Polígrafo
+        </button>`;
+    }
 
     const row = `
       <tr data-id="${item.ID_SOLICITUD}">
@@ -828,6 +836,12 @@ if (estado.includes('psico')) {
         <td>
           <span class="status-badge ${statusClass}" title="${item.ULTIMO_COMENTARIO || 'Sin comentario'}">
             ${item.ESTADO_SOLICITUD}
+          </span>
+        </td>
+        <td>
+          <!-- ← NUEVA COLUMNA DE APROBACIÓN -->
+          <span class="status-badge ${aprobacionClass}" title="Estado de Aprobación por Gerencia">
+            ${estadoAprobacionMostrar}
           </span>
         </td>
         <td><small>${item.RAZON || '—'}</small></td>
