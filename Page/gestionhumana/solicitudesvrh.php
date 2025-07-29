@@ -2080,108 +2080,237 @@ $(document).off('click', '.btnVerHistorial').on('click', '.btnVerHistorial', fun
 });
 
 // FUNCIÓN PARA MOSTRAR EL HISTORIAL FILTRADO
+// ✅ FUNCIÓN PARA LIMPIAR CARACTERES PROBLEMÁTICOS
+function limpiarCaracteres(texto) {
+  if (!texto) return '—';
+  
+  let textoLimpio = texto.toString();
+  
+  // ✅ REEMPLAZOS DIRECTOS SIN REGEX PROBLEMÁTICA
+  textoLimpio = textoLimpio.replace(/\?\?n/g, 'ón');
+  textoLimpio = textoLimpio.replace(/\?\?\?/g, 'ción');
+  textoLimpio = textoLimpio.replace(/\?\?/g, 'ñ');
+  
+  // Otros caracteres problemáticos UTF-8
+  textoLimpio = textoLimpio.replace(/Ã±/g, 'ñ');
+  textoLimpio = textoLimpio.replace(/Ã³/g, 'ó');
+  textoLimpio = textoLimpio.replace(/Ã¡/g, 'á');
+  textoLimpio = textoLimpio.replace(/Ã©/g, 'é');
+  textoLimpio = textoLimpio.replace(/Ã­/g, 'í');
+  textoLimpio = textoLimpio.replace(/Ãº/g, 'ú');
+  textoLimpio = textoLimpio.replace(/Ã'/g, 'Ñ');
+  
+  return textoLimpio;
+}
+
+// ✅ TIMELINE CON LIMPIEZA DE CARACTERES
 function mostrarHistorialFiltrado(datos, filtros) {
-  let tabla = `
-    <div style="margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #28a745, #20c997); color: white; border-radius: 8px;">
-      <div class="row">
-        <div class="col-md-4">
-          <strong><i class="fas fa-calendar-check"></i> Período:</strong><br>
-          <span style="font-size: 14px;">${filtros.fechaInicial} - ${filtros.fechaFinal}</span>
-        </div>
-        <div class="col-md-4">
-          <strong><i class="fas fa-chart-bar"></i> Total Registros:</strong><br>
-          <span style="font-size: 18px; font-weight: bold;">${datos.length}</span>
-        </div>
-        <div class="col-md-4">
-          <strong><i class="fas fa-filter"></i> Filtros:</strong><br>
-          <span style="font-size: 12px;">
-            ${filtros.incluirAprobaciones ? '✓ Aprobaciones ' : ''}
-            ${filtros.incluirEstados ? '✓ Estados' : ''}
-          </span>
-        </div>
+  console.log('⏰ Timeline con filtros y limpieza UTF-8:', filtros);
+  
+  // ✅ LIMPIAR DATOS AL RECIBIRLOS
+  const datosLimpios = datos.map(registro => ({
+    ...registro,
+    ESTADO_ANTERIOR: limpiarCaracteres(registro.ESTADO_ANTERIOR) || '—',
+    ESTADO_NUEVO: limpiarCaracteres(registro.ESTADO_NUEVO) || '—',
+    APROBACION_ANTERIOR: limpiarCaracteres(registro.APROBACION_ANTERIOR) || 'Por Aprobar',
+    APROBACION_NUEVA: limpiarCaracteres(registro.APROBACION_NUEVA) || 'Por Aprobar',
+    COMENTARIO_NUEVO: limpiarCaracteres(registro.COMENTARIO_NUEVO) || '—',
+    PUESTO_SOLICITADO: limpiarCaracteres(registro.PUESTO_SOLICITADO) || '—',
+    SOLICITADO_POR: limpiarCaracteres(registro.SOLICITADO_POR) || '—'
+  }));
+  
+  // ✅ ELIMINAR DUPLICADOS CON DATOS LIMPIOS
+  const historialUnico = [];
+  const registrosVistos = new Set();
+  
+  datosLimpios.forEach(registro => {
+    const clave = `${registro.ID_SOLICITUD}_${registro.FECHA_CAMBIO}_${registro.ID_HISTORICO}`;
+    if (!registrosVistos.has(clave)) {
+      registrosVistos.add(clave);
+      historialUnico.push(registro);
+    }
+  });
+  
+  // ✅ APLICAR FILTROS (resto del código igual)
+  let datosFiltrados = [];
+  
+  if (filtros.incluirEstados && filtros.incluirAprobaciones) {
+    datosFiltrados = historialUnico;
+  } else if (filtros.incluirEstados && !filtros.incluirAprobaciones) {
+    datosFiltrados = historialUnico.filter(registro => {
+      const tieneEstadoAnterior = registro.ESTADO_ANTERIOR && registro.ESTADO_ANTERIOR !== '—';
+      const tieneEstadoNuevo = registro.ESTADO_NUEVO && registro.ESTADO_NUEVO !== '—';
+      return tieneEstadoAnterior || tieneEstadoNuevo;
+    });
+  } else if (filtros.incluirAprobaciones && !filtros.incluirEstados) {
+    datosFiltrados = historialUnico.filter(registro => {
+      const tieneAprobacionAnterior = registro.APROBACION_ANTERIOR && registro.APROBACION_ANTERIOR !== 'Por Aprobar';
+      const tieneAprobacionNueva = registro.APROBACION_NUEVA && registro.APROBACION_NUEVA !== 'Por Aprobar';
+      return tieneAprobacionAnterior || tieneAprobacionNueva;
+    });
+  } else {
+    datosFiltrados = [];
+  }
+  
+  // Ordenar por fecha
+  datosFiltrados.sort((a, b) => new Date(b.FECHA_CAMBIO) - new Date(a.FECHA_CAMBIO));
+  
+  // ✅ GENERAR TÍTULO SEGÚN FILTROS
+  let tituloFiltros = '';
+  if (filtros.incluirEstados && filtros.incluirAprobaciones) {
+    tituloFiltros = 'Estados y Aprobaciones';
+  } else if (filtros.incluirEstados) {
+    tituloFiltros = 'Solo Cambios de Estado';
+  } else if (filtros.incluirAprobaciones) {
+    tituloFiltros = 'Solo Cambios de Aprobación';
+  } else {
+    tituloFiltros = 'Sin Filtros Seleccionados';
+  }
+  
+  // ✅ GENERAR TIMELINE (resto igual pero con datos limpios)
+  let timeline = `
+    <div style="margin-bottom: 20px; text-align: center;">
+      <h5><i class="fas fa-clock"></i> ${tituloFiltros}</h5>
+      <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 10px 0;">
+        <small>
+          <strong>Período:</strong> ${filtros.fechaInicial} - ${filtros.fechaFinal} | 
+          <strong>Registros:</strong> ${datosFiltrados.length} | 
+          <strong>Filtros:</strong> 
+          ${filtros.incluirEstados ? '<span class="badge badge-info">Estados</span> ' : ''}
+          ${filtros.incluirAprobaciones ? '<span class="badge badge-success">Aprobaciones</span>' : ''}
+        </small>
       </div>
     </div>
     
-    <div style="max-height: 500px; overflow-y: auto;">
-      <table class="table table-bordered table-hover table-sm">
-        <thead class="thead-dark" style="position: sticky; top: 0; z-index: 10;">
-          <tr>
-            <th>#</th>
-            <th>Solicitud</th>
-            <th>Tienda</th>
-            <th>Estado Anterior</th>
-            <th>Estado Nuevo</th>
-            <th>Aprobación Anterior</th>
-            <th>Aprobación Nueva</th>
-            <th>Comentario</th>
-            <th>Fecha</th>
-            <th>Tipo</th>
-          </tr>
-        </thead>
-        <tbody>`;
-
-  datos.forEach((row, index) => {
-    // Determinar tipo de cambio
-    let tipoCambio = '';
-    let colorTipo = '';
-    if (row.APROBACION_ANTERIOR !== row.APROBACION_NUEVA && row.APROBACION_NUEVA) {
-      tipoCambio = 'Aprobación';
-      colorTipo = 'badge-success';
-    } else if (row.ESTADO_ANTERIOR !== row.ESTADO_NUEVO && row.ESTADO_NUEVO) {
-      tipoCambio = 'Estado';
-      colorTipo = 'badge-info';
-    } else {
-      tipoCambio = 'Mixto';
-      colorTipo = 'badge-warning';
-    }
-
-    tabla += `<tr>
-                <td>${index + 1}</td>
-                <td><span class="badge badge-primary">${row.ID_SOLICITUD || '—'}</span></td>
-                <td><span class="badge badge-secondary">${row.NUM_TIENDA || '—'}</span></td>
-                <td><small>${row.ESTADO_ANTERIOR || '—'}</small></td>
-                <td><strong style="color: #007bff;">${row.ESTADO_NUEVO || '—'}</strong></td>
-                <td><small>${row.APROBACION_ANTERIOR || '—'}</small></td>
-                <td><strong style="color: #28a745;">${row.APROBACION_NUEVA || '—'}</strong></td>
-                <td><small style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;" title="${row.COMENTARIO_NUEVO || '—'}">${(row.COMENTARIO_NUEVO || '—').substring(0, 50)}${(row.COMENTARIO_NUEVO || '').length > 50 ? '...' : ''}</small></td>
-                <td><small>${row.FECHA_CAMBIO || '—'}</small></td>
-                <td><span class="badge ${colorTipo}">${tipoCambio}</span></td>
-              </tr>`;
-  });
-
-  tabla += '</tbody></table></div>';
-
+    <div style="max-height: 500px; overflow-y: auto; padding: 20px;">
+  `;
+  
+  if (datosFiltrados.length === 0) {
+    timeline += `
+      <div style="text-align: center; padding: 50px; color: #666;">
+        <i class="fas fa-search" style="font-size: 48px; margin-bottom: 20px;"></i>
+        <h5>No se encontraron registros</h5>
+        <p>Ajusta los filtros o el rango de fechas para ver resultados.</p>
+      </div>
+    `;
+  } else {
+    datosFiltrados.forEach((evento, index) => {
+      // Determinar tipo de evento
+      let tipoEvento = '';
+      let iconoEvento = '';
+      let colorEvento = '';
+      let descripcionEvento = '';
+      
+      const cambioEstado = evento.ESTADO_ANTERIOR !== evento.ESTADO_NUEVO && 
+                          (evento.ESTADO_ANTERIOR !== '—' || evento.ESTADO_NUEVO !== '—');
+      const cambioAprobacion = evento.APROBACION_ANTERIOR !== evento.APROBACION_NUEVA;
+      
+      if (filtros.incluirEstados && filtros.incluirAprobaciones) {
+        if (cambioEstado && cambioAprobacion) {
+          tipoEvento = 'Cambio Múltiple';
+          iconoEvento = 'fas fa-exchange-alt';
+          colorEvento = '#ff6b6b';
+          descripcionEvento = `<div><strong>Estado:</strong> ${evento.ESTADO_ANTERIOR} → ${evento.ESTADO_NUEVO}</div>
+                              <div><strong>Aprobación:</strong> ${evento.APROBACION_ANTERIOR} → ${evento.APROBACION_NUEVA}</div>`;
+        } else if (cambioEstado) {
+          tipoEvento = 'Cambio de Estado';
+          iconoEvento = 'fas fa-arrow-right';
+          colorEvento = '#4ecdc4';
+          descripcionEvento = `<strong>Estado:</strong> ${evento.ESTADO_ANTERIOR} → ${evento.ESTADO_NUEVO}`;
+        } else if (cambioAprobacion) {
+          tipoEvento = 'Cambio de Aprobación';
+          iconoEvento = 'fas fa-check-circle';
+          colorEvento = '#45b7d1';
+          descripcionEvento = `<strong>Aprobación:</strong> ${evento.APROBACION_ANTERIOR} → ${evento.APROBACION_NUEVA}`;
+        } else {
+          tipoEvento = 'Actualización';
+          iconoEvento = 'fas fa-edit';
+          colorEvento = '#96ceb4';
+          descripcionEvento = 'Modificación en el registro';
+        }
+      } else if (filtros.incluirEstados) {
+        tipoEvento = 'Cambio de Estado';
+        iconoEvento = 'fas fa-arrow-right';
+        colorEvento = '#4ecdc4';
+        descripcionEvento = `<strong>Estado:</strong> ${evento.ESTADO_ANTERIOR} → ${evento.ESTADO_NUEVO}`;
+      } else if (filtros.incluirAprobaciones) {
+        tipoEvento = 'Cambio de Aprobación';
+        iconoEvento = 'fas fa-check-circle';
+        colorEvento = '#45b7d1';
+        descripcionEvento = `<strong>Aprobación:</strong> ${evento.APROBACION_ANTERIOR} → ${evento.APROBACION_NUEVA}`;
+      }
+      
+      timeline += `
+        <div style="display: flex; margin-bottom: 20px; position: relative;">
+          ${index < datosFiltrados.length - 1 ? 
+            '<div style="position: absolute; left: 24px; top: 50px; width: 2px; height: 30px; background: #ddd;"></div>' : ''}
+          
+          <div style="
+            width: 50px; height: 50px; border-radius: 50%; background: ${colorEvento}; 
+            display: flex; align-items: center; justify-content: center; color: white;
+            flex-shrink: 0; margin-right: 15px;">
+            <i class="${iconoEvento}"></i>
+          </div>
+          
+          <div style="
+            flex: 1; background: white; border: 1px solid #e0e0e0; border-radius: 10px; 
+            padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <h6 style="margin: 0; color: ${colorEvento};">
+                <strong>${tipoEvento}</strong>
+              </h6>
+              <small style="color: #666;">
+                <i class="fas fa-clock"></i> ${evento.FECHA_CAMBIO}
+              </small>
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+              <span class="badge badge-primary">Solicitud ${evento.ID_SOLICITUD}</span>
+              <span class="badge badge-secondary">Tienda ${evento.NUM_TIENDA}</span>
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+              ${descripcionEvento}
+            </div>
+            
+            ${evento.COMENTARIO_NUEVO && evento.COMENTARIO_NUEVO !== '—' ? 
+              `<div style="background: #f8f9fa; padding: 8px; border-radius: 5px; border-left: 3px solid ${colorEvento};">
+                <small><strong>Comentario:</strong> ${evento.COMENTARIO_NUEVO}</small>
+              </div>` : ''}
+          </div>
+        </div>
+      `;
+    });
+  }
+  
+  timeline += '</div>';
+  
+  // Mostrar modal
   Swal.fire({
-    title: '<i class="fas fa-history"></i> Historial Filtrado de Solicitudes',
-    html: tabla,
-    width: '95%',
-    customClass: { popup: 'swal-wide' },
+    title: '<i class="fas fa-history"></i> Timeline de Cambios',
+    html: timeline,
+    width: '90%',
     showCloseButton: true,
-    showConfirmButton: true,
-    confirmButtonText: '<i class="fas fa-check"></i> Cerrar',
+    confirmButtonText: '<i class="fas fa-times"></i> Cerrar',
     footer: `
-      <div class="d-flex justify-content-between align-items-center w-100">
-        <button id="btnExportarExcel" class="btn btn-success">
-          <i class="fas fa-file-excel"></i> Exportar Excel
+      <div class="d-flex justify-content-between w-100">
+        <button id="btnExportarExcel" class="btn btn-success btn-sm">
+          <i class="fas fa-file-excel"></i> Excel
         </button>
-        <button id="btnGenerarPDF" class="btn btn-danger">
-          <i class="fas fa-file-pdf"></i> Generar PDF
+        <button id="btnGenerarPDF" class="btn btn-danger btn-sm">
+          <i class="fas fa-file-pdf"></i> PDF
         </button>
-        <small class="text-muted">
-          <i class="fas fa-info-circle"></i>
-          Reporte generado el ${new Date().toLocaleDateString('es-ES')}
-        </small>
       </div>
     `,
     didOpen: () => {
-      // Event listeners para exportar
-      $('#btnExportarExcel').on('click', function() {
+      document.getElementById('btnExportarExcel').onclick = () => {
         window.open(`./gestionhumana/reporte_historial_pdf.php?formato=excel&fecha_inicial=${filtros.fechaInicial}&fecha_final=${filtros.fechaFinal}&incluir_aprobaciones=${filtros.incluirAprobaciones ? 1 : 0}&incluir_estados=${filtros.incluirEstados ? 1 : 0}`, '_blank');
-      });
-
-      $('#btnGenerarPDF').on('click', function() {
-        window.open(`./gestionhumana/reporte_historial_pdf.php?fecha_inicial=${filtros.fechaInicial}&fecha_final=${filtros.fechaFinal}&incluir_aprobaciones=${filtros.incluirAprobaciones ? 1 : 0}&incluir_estados=${filtros.incluirEstados ? 1 : 0}`, '_blank');  // ← SIN formato=pdf porque ya maneja ambos
-      });
+      };
+      
+      document.getElementById('btnGenerarPDF').onclick = () => {
+        window.open(`./gestionhumana/reporte_historial_pdf.php?fecha_inicial=${filtros.fechaInicial}&fecha_final=${filtros.fechaFinal}&incluir_aprobaciones=${filtros.incluirAprobaciones ? 1 : 0}&incluir_estados=${filtros.incluirEstados ? 1 : 0}`, '_blank');
+      };
     }
   });
 }

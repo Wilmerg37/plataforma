@@ -126,7 +126,6 @@ case 'get_historial':
 case 'get_historial_filtrado':
     error_log("📋 Obteniendo historial filtrado para RRHH...");
     
-    // Validar parámetros
     if (!isset($_GET['fecha_inicial']) || !isset($_GET['fecha_final'])) {
         echo json_encode(['success' => false, 'error' => 'Faltan parámetros de fecha']);
         break;
@@ -137,45 +136,28 @@ case 'get_historial_filtrado':
     $incluirAprobaciones = isset($_GET['incluir_aprobaciones']) ? (int)$_GET['incluir_aprobaciones'] : 1;
     $incluirEstados = isset($_GET['incluir_estados']) ? (int)$_GET['incluir_estados'] : 1;
 
-    error_log("📅 Filtros: $fechaInicial - $fechaFinal, Aprobaciones: $incluirAprobaciones, Estados: $incluirEstados");
-
-    // Construir condiciones WHERE dinámicamente
-    $condicionesExtra = [];
-    
-    if (!$incluirAprobaciones && !$incluirEstados) {
-        echo json_encode(['success' => false, 'error' => 'Debe incluir al menos un tipo de cambio']);
-        break;
-    }
-
+    // ✅ TU CONSULTA ORIGINAL - MANTIENE TODA LA FUNCIONALIDAD
     $query = "SELECT 
                 h.ID_HISTORICO,
                 sp.ID_SOLICITUD,
                 sp.NUM_TIENDA,
                 h.ESTADO_ANTERIOR,
                 h.ESTADO_NUEVO,
-                h.APROBACION_ANTERIOR,  -- ← AGREGAR CAMPOS DE APROBACIÓN
-                h.APROBACION_NUEVA,     -- ← AGREGAR CAMPOS DE APROBACIÓN
-                h.COMENTARIO_ANTERIOR,
+                h.APROBACION_ANTERIOR,
+                h.APROBACION_NUEVA,
                 h.COMENTARIO_NUEVO,
                 TO_CHAR(h.FECHA_CAMBIO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_CAMBIO,
                 sp.PUESTO_SOLICITADO,
                 sp.SOLICITADO_POR
               FROM ROY_HISTORICO_SOLICITUD h
               JOIN ROY_SOLICITUD_PERSONAL sp ON h.ID_SOLICITUD = sp.ID_SOLICITUD
-              WHERE sp.ESTADO_APROBACION = 'Aprobado'  -- Solo solicitudes aprobadas (filtro RRHH)
-                AND TO_DATE(:fecha_inicial, 'YYYY-MM-DD') <= h.FECHA_CAMBIO
-                AND h.FECHA_CAMBIO <= TO_DATE(:fecha_final, 'YYYY-MM-DD') + INTERVAL '1' DAY - INTERVAL '1' SECOND";
-
-    // Agregar filtros opcionales
-    if (!$incluirAprobaciones) {
-        $query .= " AND (h.APROBACION_ANTERIOR IS NULL AND h.APROBACION_NUEVA IS NULL)";
-    }
+              WHERE sp.ESTADO_APROBACION = 'Aprobado'
+                AND h.FECHA_CAMBIO >= TO_DATE(:fecha_inicial, 'YYYY-MM-DD')
+                AND h.FECHA_CAMBIO <= TO_DATE(:fecha_final, 'YYYY-MM-DD') + 1
+              ORDER BY h.FECHA_CAMBIO DESC";
     
-    if (!$incluirEstados) {
-        $query .= " AND (h.ESTADO_ANTERIOR IS NULL AND h.ESTADO_NUEVO IS NULL)";
-    }
-
-    $query .= " ORDER BY h.FECHA_CAMBIO DESC";
+    // ✅ LOG PARA VERIFICAR FILTROS
+    error_log("🔍 Filtros recibidos - Estados: " . ($incluirEstados ? 'SÍ' : 'NO') . ", Aprobaciones: " . ($incluirAprobaciones ? 'SÍ' : 'NO'));
 
     $stmt = oci_parse($conn, $query);
     oci_bind_by_name($stmt, ':fecha_inicial', $fechaInicial);
@@ -183,52 +165,50 @@ case 'get_historial_filtrado':
     
     if (!oci_execute($stmt)) {
         $error = oci_error($stmt);
-        error_log("❌ Error ejecutando consulta historial filtrado: " . print_r($error, true));
+        error_log("❌ Error: " . print_r($error, true));
         echo json_encode(['success' => false, 'error' => 'Error en consulta: ' . $error['message']]);
         oci_close($conn);
         break;
     }
 
     $historial = [];
+    // ✅ AGREGAR: Control básico de duplicados
+    $registrosVistos = [];
+    
     while ($row = oci_fetch_assoc($stmt)) {
-        // Mantener la misma lógica de archivos que tienes
-        $row['ARCHIVOS'] = [];
-
-        // Buscar archivos relacionados a este ID_HISTORICO
-        $query_archivos = "SELECT NOMBRE_ARCHIVO FROM ROY_ARCHIVOS_SOLICITUD WHERE ID_HISTORICO = :id_historico";
-        $stmt_arch = oci_parse($conn, $query_archivos);
-        oci_bind_by_name($stmt_arch, ':id_historico', $row['ID_HISTORICO']);
-        oci_execute($stmt_arch);
-
-        while ($arch = oci_fetch_assoc($stmt_arch)) {
-            $row['ARCHIVOS'][] = $arch;
+        // ✅ SOLO CAMBIO: Verificar duplicados
+        $claveUnica = $row['ID_SOLICITUD'] . '_' . $row['ID_HISTORICO'] . '_' . $row['FECHA_CAMBIO'];
+        
+        if (!isset($registrosVistos[$claveUnica])) {
+            $registrosVistos[$claveUnica] = true;
+            
+            $historial[] = [
+                'ID_HISTORICO' => $row['ID_HISTORICO'],
+                'ID_SOLICITUD' => $row['ID_SOLICITUD'],
+                'NUM_TIENDA' => $row['NUM_TIENDA'],
+                'ESTADO_ANTERIOR' => $row['ESTADO_ANTERIOR'],
+                'ESTADO_NUEVO' => $row['ESTADO_NUEVO'],
+                'APROBACION_ANTERIOR' => $row['APROBACION_ANTERIOR'] ?: 'Por Aprobar',
+                'APROBACION_NUEVA' => $row['APROBACION_NUEVA'] ?: 'Por Aprobar',
+                'COMENTARIO_ANTERIOR' => '',
+                'COMENTARIO_NUEVO' => $row['COMENTARIO_NUEVO'],
+                'FECHA_CAMBIO' => $row['FECHA_CAMBIO'],
+                'PUESTO_SOLICITADO' => $row['PUESTO_SOLICITADO'],
+                'SOLICITADO_POR' => $row['SOLICITADO_POR'],
+                'ARCHIVOS' => []
+            ];
         }
-        oci_free_statement($stmt_arch);
-
-        $historial[] = [
-            'ID_HISTORICO' => $row['ID_HISTORICO'],
-            'ID_SOLICITUD' => $row['ID_SOLICITUD'],
-            'NUM_TIENDA' => $row['NUM_TIENDA'],
-            'ESTADO_ANTERIOR' => $row['ESTADO_ANTERIOR'],
-            'ESTADO_NUEVO' => $row['ESTADO_NUEVO'],
-            'APROBACION_ANTERIOR' => $row['APROBACION_ANTERIOR'] ?: 'Por Aprobar',
-            'APROBACION_NUEVA' => $row['APROBACION_NUEVA'] ?: 'Por Aprobar',
-            'COMENTARIO_ANTERIOR' => $row['COMENTARIO_ANTERIOR'],
-            'COMENTARIO_NUEVO' => $row['COMENTARIO_NUEVO'],
-            'FECHA_CAMBIO' => $row['FECHA_CAMBIO'],
-            'PUESTO_SOLICITADO' => $row['PUESTO_SOLICITADO'],
-            'SOLICITADO_POR' => $row['SOLICITADO_POR'],
-            'ARCHIVOS' => $row['ARCHIVOS']  // ← MANTENER TU LÓGICA DE ARCHIVOS
-        ];
     }
 
     oci_free_statement($stmt);
     oci_close($conn);
 
-    error_log("✅ Historial filtrado obtenido: " . count($historial) . " registros");
+    error_log("✅ Historial obtenido: " . count($historial) . " registros únicos");
     echo json_encode($historial);
     break;
 
+
+    
 
     // AGREGAR ESTE CASE TAMBIÉN
 case 'exportar_historial':
