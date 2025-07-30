@@ -79,6 +79,24 @@ $(document).ready(function () {
     pagina = 'rvc';
   });
 
+ // reporte los 25 mas Vendidos
+    $('#8-79 a').on('click', function () {
+      $('section.content').load('filtro_t3.php');
+      $('#titulo').text('Top 25 (Los 25 mas Vendidos)');
+      sbs = $('#subsidiaria').val();
+      pagina = 't25';
+    });
+
+
+
+      // reporte Back Order
+     $('#8-80 a').on('click', function () {
+      $('section.content').load('tienda/backorder.php');
+      $('#titulo').text('Ingreso de Backorder');
+    });
+
+
+  
     // SUPERVISORES *******************************************
     //******************************************************* */
 
