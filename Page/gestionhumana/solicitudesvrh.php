@@ -577,13 +577,14 @@
               <th width="50">Tienda</th>
               <th width="160">Puesto</th>
               <th width="155">Supervisor</th>
-              <th width="140">Dirigido a</th>
+              <th width="155">Aprobado por</th>
+              <th width="155">Asignado a</th>
               <th width="120">Fecha Solicitud</th>
-              <th width="140">Modificación registrada</th>
+              <th width="150">Modificación registrada</th>
               <th width="160">Estado</th>
               <th width="130">Estado de Aprobacion</th>
               <th width="150">Razón</th>
-              <th width="30">Comentario</th>
+              <th width="20">Comentario</th>
               <th width="350">Acciones</th>
             </tr>
           </thead>
@@ -737,7 +738,7 @@
             allSolicitudes = data;
 
             // Cargar opciones únicas del campo DIRIGIDO_A
-            const nombresUnicos = [...new Set(allSolicitudes.map(item => item.DIRIGIDO_A).filter(Boolean))];
+            const nombresUnicos = [...new Set(allSolicitudes.map(item => item.DIRIGIDO_RH).filter(Boolean))];
 
             const select = $('#filtroDirigidoA');
             select.empty(); // Limpiar opciones anteriores
@@ -752,7 +753,7 @@
             $('#filtroDirigidoA').val(filtroGuardado);
 
             const datosFiltrados = filtroGuardado
-              ? allSolicitudes.filter(item => item.DIRIGIDO_A === filtroGuardado)
+              ? allSolicitudes.filter(item => item.DIRIGIDO_RH === filtroGuardado)
               : allSolicitudes;
 
             if (datosFiltrados.length === 0) {
@@ -781,8 +782,7 @@
       }
 
 
-  // FUNCIÓN PARA RENDERIZAR LA TABLA
-  // FUNCIÓN PARA RENDERIZAR LA TABLA
+// FUNCIÓN PARA RENDERIZAR LA TABLA
 function renderTable(data) {
   const tbody = $('#tblSolicitudes tbody');
   const thead = $('#tblSolicitudes thead');
@@ -793,7 +793,8 @@ function renderTable(data) {
   if (data.length > 0) {
     console.log("Primer item:", data[0]);
     console.log("Comentario del primer item:", data[0].COMENTARIO_SOLICITUD);
-    console.log("Estado Aprobación del primer item:", data[0].ESTADO_APROBACION); // ← NUEVO DEBUG
+    console.log("Estado Aprobación del primer item:", data[0].ESTADO_APROBACION);
+    console.log("Dirigido RH del primer item:", data[0].DIRIGIDO_RH); // ✅ NUEVO DEBUG
   }
   console.log("DEBUG FULL JSON", JSON.stringify(data, null, 2));
 
@@ -833,7 +834,7 @@ function renderTable(data) {
       statusClass = 'estado-pendiente'; // default
     }
 
-    // ← NUEVO: Estados del badge de aprobación
+    // Estados del badge de aprobación
     let aprobacionClass = '';
     const aprobacion = (item.ESTADO_APROBACION || 'Por Aprobar').toLowerCase();
     if (aprobacion.includes('por aprobar')) aprobacionClass = 'estado-pendiente';
@@ -844,11 +845,19 @@ function renderTable(data) {
     const fechaModificacion = item.FECHA_MODIFICACION || '—';
     const comentario = item.COMENTARIO_SOLICITUD || '-';
     const idHistorico = item.ID_HISTORICO;
-    const estadoAprobacionMostrar = item.ESTADO_APROBACION || 'Aprobado'; // ← NUEVO
+    const estadoAprobacionMostrar = item.ESTADO_APROBACION || 'Aprobado';
+
+    // ✅ AGREGAR LÓGICA PARA DIRIGIDO_RH
+    const dirigidoRH = item.DIRIGIDO_RH || null;
+    const mostrarDirigidoRH = dirigidoRH 
+      ? `<span class="text-success"><i class="fas fa-user-check mr-1"></i><strong>${dirigidoRH}</strong></span>`
+      : '<span class="text-muted"><i class="fas fa-user-times mr-1"></i>Sin asignación</span>';
   
     // Formatea el comentario para mostrar
     const noLeidos = parseInt(item.NO_LEIDOS) || 0;
     console.log('ID:', idHistorico, 'Comentario:', comentario, 'NO_LEIDOS:', item.NO_LEIDOS);
+    console.log('Dirigido RH:', item.ID_SOLICITUD, dirigidoRH); // ✅ NUEVO DEBUG
+    
     const comentarioMostrar = comentario !== '-' && idHistorico
       ? `<div class="badge-container">
             <button class="btn btn-sm btn-info btn-Ver-Comentario-Rh"
@@ -871,11 +880,11 @@ function renderTable(data) {
         <td><strong>${item.PUESTO_SOLICITADO}</strong></td>
         <td><small class="text-muted">${item.SOLICITADO_POR}</small></td>
         <td><small>${item.DIRIGIDO_A || '—'}</small></td>
+        <td><small class="text-info">${mostrarDirigidoRH}</small></td>
         <td><small>${item.FECHA_SOLICITUD}</small></td>
         <td><small class="text-muted">${fechaModificacion}</small></td>
         <td><span class="status-badge ${statusClass}">${item.ESTADO_SOLICITUD}</span></td>
         <td>
-          <!-- ← NUEVA COLUMNA DE APROBACIÓN -->
           <span class="status-badge ${aprobacionClass}" title="Estado de Aprobación por Gerencia">
             <i class="fas fa-check-circle"></i> ${estadoAprobacionMostrar}
           </span>
@@ -930,7 +939,8 @@ function renderTable(data) {
     `;
     
     console.log("Comentario de solicitud:", item.ID_SOLICITUD, item.COMENTARIO_SOLICITUD);
-    console.log("Estado Aprobación:", item.ID_SOLICITUD, item.ESTADO_APROBACION); // ← NUEVO DEBUG
+    console.log("Estado Aprobación:", item.ID_SOLICITUD, item.ESTADO_APROBACION);
+    console.log("Dirigido RH:", item.ID_SOLICITUD, item.DIRIGIDO_RH); // ✅ NUEVO DEBUG
     tbody.append(row);
   });
 
@@ -941,14 +951,13 @@ function renderTable(data) {
   }, 0);
 }
 
-
       //FUNCION PARA FILTRO POR ASESORA DE RRHH
 $('#filtroDirigidoA').on('change', function () {
   const filtro = $(this).val();
   localStorage.setItem('filtroDirigidoA', filtro);
 
   const datosFiltrados = filtro
-    ? allSolicitudes.filter(item => item.DIRIGIDO_A === filtro)
+    ? allSolicitudes.filter(item => item.DIRIGIDO_RH === filtro)
     : allSolicitudes;
 
   currentPage = 1;
@@ -2623,7 +2632,7 @@ $(document).off('click', '.btn-Ver-Comentario-Rh').on('click', '.btn-Ver-Comenta
                     });
 
                     // CORREGIDO - Usar nombres fijos según el contexto de RRHH
-                      const nombreRRHH = filaActual.find('td:nth-child(5)').text().trim() || 'RRHH'; 
+                      const nombreRRHH = filaActual.find('td:nth-child(6)').text().trim() || 'RRHH'; 
                       const nombreSupervisor = 'SUPERVISOR';
                       const esRRHH = true; // Cambiar nombre de variable y valor porque estás en el lado de RRHH
                       const remitente = nombreRRHH; // El remitente es RRHH

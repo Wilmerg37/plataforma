@@ -243,7 +243,6 @@ case 'exportar_historial':
     break;
 
 
-                // SOLICITUDES
 case 'get_solicitudes':
     error_log("📋 Obteniendo solicitudes APROBADAS para RRHH...");
     
@@ -252,7 +251,8 @@ case 'get_solicitudes':
         s.NUM_TIENDA,
         s.PUESTO_SOLICITADO,
         s.ESTADO_SOLICITUD,
-        s.ESTADO_APROBACION,  -- ← AGREGAR ESTA LÍNEA
+        s.ESTADO_APROBACION,
+        s.DIRIGIDO_RH,  -- ✅ AGREGAR ESTA LÍNEA
         TO_CHAR(s.FECHA_SOLICITUD, 'DD-MM-YYYY') AS FECHA_SOLICITUD,
         TO_CHAR(s.FECHA_MODIFICACION, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_MODIFICACION,
         s.SOLICITADO_POR,
@@ -324,7 +324,7 @@ case 'get_solicitudes':
         ) AS TIENE_SELECCION
 
     FROM ROY_SOLICITUD_PERSONAL s
-    WHERE s.ESTADO_APROBACION = 'Aprobado'  -- ← AGREGAR ESTE FILTRO
+    WHERE s.ESTADO_APROBACION = 'Aprobado'
     ORDER BY s.FECHA_SOLICITUD DESC";
 
     $stmt = oci_parse($conn, $query);
@@ -344,7 +344,8 @@ case 'get_solicitudes':
             'NUM_TIENDA' => $row['NUM_TIENDA'],
             'PUESTO_SOLICITADO' => $row['PUESTO_SOLICITADO'],
             'ESTADO_SOLICITUD' => $row['ESTADO_SOLICITUD'],
-            'ESTADO_APROBACION' => $row['ESTADO_APROBACION'] ?: 'Por Aprobar', // ← AGREGAR ESTA LÍNEA
+            'ESTADO_APROBACION' => $row['ESTADO_APROBACION'] ?: 'Por Aprobar',
+            'DIRIGIDO_RH' => $row['DIRIGIDO_RH'],  // ✅ AGREGAR ESTA LÍNEA
             'FECHA_SOLICITUD' => $row['FECHA_SOLICITUD'],
             'FECHA_MODIFICACION' => $row['FECHA_MODIFICACION'],
             'SOLICITADO_POR' => $row['SOLICITADO_POR'],

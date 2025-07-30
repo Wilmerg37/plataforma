@@ -350,7 +350,7 @@
 /* Amarillo para Pendiente */
 .status-badge.estado-pendiente {
   background: linear-gradient(to right, #FFB300, #FFD54F);
-  color: #fcf9f9ff; /* Texto oscuro para mejor contraste */
+  color: #1c1c1c; /* Texto oscuro para mejor contraste */
 }
 
 /* Azul para Activa */
@@ -483,6 +483,9 @@
   padding: 3px 8px;
 }
 
+
+
+
   </style>
 </head>
 
@@ -546,17 +549,18 @@
         <table id="tblSolicitudes" class="table table-modern" style="display: none;">
           <thead>
             <tr>
-              <th width="30"><i class="fas fa-expand-alt"></i></th>
+              <th width="25"><i class="fas fa-expand-alt"></i></th>
               <th width="50">Tienda</th>
               <th width="160">Puesto</th>
               <th width="155">Supervisor</th>
-              <th width="140">Dirigido a</th>
+              <th width="155">Gerente</th>
+              <th width="155">Asesora RH asignada</th>
               <th width="120">Fecha Solicitud</th>
-              <th width="140">Última Edición</th>
-              <th width="180">Estado</th>
+              <th width="155">Última Edición</th>
+              <th width="170">Estado</th>
               <th width="130">Estado de Aprobacion</th>
               <th width="150">Razón</th>
-              <th width="50">Comentario</th>
+              <th width="20">Comentario</th>
               <th width="300">Acciones</th>
             </tr>
           </thead>
@@ -669,7 +673,9 @@
         day: 'numeric'
       }));
 
-      // FUNCIÓN PARA CARGAR SOLICITUDES
+
+// ✅ FUNCIÓN CORREGIDA - MANEJA TANTO ARRAYS COMO OBJETOS
+     // FUNCIÓN PARA CARGAR SOLICITUDES
 function cargarSolicitudes() {
   $('#loading-indicator').show();
   $('#tblSolicitudes').hide();
@@ -729,6 +735,8 @@ function cargarSolicitudes() {
     }
   });
 }
+
+
 //RENDERIZAR TABLA
 function renderTable(data) {
   const tbody = $('#tblSolicitudes tbody');
@@ -757,7 +765,7 @@ function renderTable(data) {
     else if (estado.includes('contratada')) statusClass = 'estado-contratada';
     else statusClass = 'estado-pendiente'; // por defecto
 
-    // ← NUEVO: Estados del badge de aprobación
+    // Estados del badge de aprobación
     let aprobacionClass = '';
     const aprobacion = (item.ESTADO_APROBACION || 'Por Aprobar').toLowerCase();
     if (aprobacion.includes('por aprobar')) aprobacionClass = 'estado-pendiente';
@@ -768,22 +776,50 @@ function renderTable(data) {
     const fechaModificacion = item.FECHA_MODIFICACION || '—';
     const comentario = item.COMENTARIO_NUEVO || '-';
     const idHistorico = item.ID_HISTORICO;
-    const estadoAprobacionMostrar = item.ESTADO_APROBACION || 'Por Aprobar'; // ← NUEVO
+    const estadoAprobacionMostrar = item.ESTADO_APROBACION || 'Por Aprobar';
     const noLeidos = parseInt(item.NO_LEIDOS) || 0;
+
+    // NUEVO: Lógica para mostrar asesora de RRHH solo si está aprobada
+    const dirigidoRH = item.DIRIGIDO_RH || null;
+    const mostrarDirigidoRH = (aprobacion === 'aprobado' && dirigidoRH) 
+      ? `<span class="text-success"><i class="fas fa-user-check mr-1"></i><strong>${dirigidoRH}</strong></span>`
+      : '<span class="text-muted"><i class="fas fa-user-times mr-1"></i>Sin asignación</span>';
     
     console.log('ID:', idHistorico, 'Comentario:', comentario, 'NO_LEIDOS:', item.NO_LEIDOS);
-    console.log('Estado Aprobación:', item.ID_SOLICITUD, item.ESTADO_APROBACION); // ← NUEVO DEBUG
+    console.log('Estado Aprobación:', item.ID_SOLICITUD, item.ESTADO_APROBACION);
+    console.log('Dirigido RH:', item.ID_SOLICITUD, dirigidoRH, 'Mostrar:', mostrarDirigidoRH); // NUEVO DEBUG
     
-    const comentarioMostrar = comentario !== '-' && idHistorico
-      ? `<div class="badge-container">
-            <button class="btn btn-sm btn-info btnVerComentarioSuper"
-                    data-id="${idHistorico}"
-                    title="Ver comentario">
-                <i class="fas fa-comment"></i> Ver
-            </button>
-            ${noLeidos > 0 ? `<span class="notification-badge ${noLeidos > 9 ? 'wide' : ''}">${noLeidos}</span>` : ''}
-        </div>`
-      : '<span class="text-muted">—</span>';
+    const comentarioMostrar = (() => {
+    // Solo mostrar si hay comentario Y no es automático del sistema
+    if (idHistorico && comentario && comentario !== '-') {
+        
+        // ✅ FILTRAR COMENTARIOS AUTOMÁTICOS DEL GERENTE/SISTEMA
+        const esComentarioAutomatico = 
+            comentario.includes('Cambio de aprobación a:') ||
+            comentario.includes('Asignado a:') ||
+            comentario === 'Cambio de estado de aprobación' ||
+            comentario.includes('- Asignado a:') ||
+            comentario.startsWith('Cambio de aprobación a: Aprobado') ||
+            comentario.startsWith('Cambio de aprobación a: No Aprobado');
+        
+        // Solo mostrar si NO es automático (o sea, es de RRHH)
+        if (!esComentarioAutomatico) {
+            console.log('✅ COMENTARIO REAL DE RRHH:', comentario);
+            return `<div class="badge-container">
+                <button class="btn btn-sm btn-info btnVerComentarioSuper"
+                        data-id="${idHistorico}"
+                        title="Ver comentario de RRHH">
+                    <i class="fas fa-comment"></i> Ver
+                </button>
+                ${noLeidos > 0 ? `<span class="notification-badge ${noLeidos > 9 ? 'wide' : ''}">${noLeidos}</span>` : ''}
+            </div>`;
+        } else {
+            console.log('❌ COMENTARIO AUTOMÁTICO FILTRADO:', comentario);
+        }
+    }
+    
+    return '<span class="text-muted">—</span>';
+})();
 
     
     // Declarar variable acciones por cada fila
@@ -831,6 +867,7 @@ function renderTable(data) {
         <td><strong>${item.PUESTO_SOLICITADO}</strong></td>
         <td><small class="text-muted">${item.SOLICITADO_POR}</small></td>
         <td><small>${item.DIRIGIDO_A || '—'}</small></td>
+        <td><small class="text-info">${mostrarDirigidoRH}</small></td>
         <td><small>${item.FECHA_SOLICITUD}</small></td>
         <td><small class="text-muted">${fechaModificacion}</small></td>
         <td>
@@ -839,7 +876,6 @@ function renderTable(data) {
           </span>
         </td>
         <td>
-          <!-- ← NUEVA COLUMNA DE APROBACIÓN -->
           <span class="status-badge ${aprobacionClass}" title="Estado de Aprobación por Gerencia">
             ${estadoAprobacionMostrar}
           </span>
@@ -862,8 +898,7 @@ function renderTable(data) {
 }
 
 
-
-
+ 
       // FUNCIÓN PARA CONFIGURAR PAGINACIÓN
       function setupPagination(data) {
         const totalPages = Math.ceil(data.length / rowsPerPage);
@@ -1360,7 +1395,7 @@ $(document).off('click', '.btnVerResumen').on('click', '.btnVerResumen', functio
 
             // Obtener nombre del asesor de rh desde la fila de la tabla
             const filaActual = $(`button[data-id="${idHistorico}"]`).closest('tr');
-            const nombreRRHH = filaActual.find('td:nth-child(5)').text().trim() || 'RRHH';
+            const nombreRRHH = filaActual.find('td:nth-child(6)').text().trim() || 'RRHH';
 
             
             Swal.fire({
@@ -2252,18 +2287,17 @@ function mostrarModalSeleccionArchivos(archivos, idSolicitud) {
                         <div id="error_info" style="margin-top: 10px; display: none;"></div>
                     </div>
 
-                    <!-- Paso 2: Campo Dirigido a -->
+                    <!-- Paso 2: Campo Gerente -->
                     <div class="form-step" id="paso-2" style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: none;">
                         <h4 style="margin: 0 0 10px 0; color: #2e7d32;">
-                            <i class="fas fa-paper-plane"></i> 2. Dirigido a
+                            <i class="fas fa-paper-plane"></i> 2. Gerente
                         </h4>
                         <div class="form-group">
-                            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Dirigido a:</label>
+                            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Gerente:</label>
                             <select class="swal2-input" id="dirigido_a" name="dirigido_a" required style="margin: 0;">
                                 <option value="">Seleccione destinatario</option>
-                                <option value="Keisha Davila">Keisha Davila</option>
-                                <option value="Cristy Garcia">Cristy Garcia</option>
-                                <option value="Emma de Cea">Emma de Cea</option>
+                                <option value="Christian Quan">Christian Quan</option>
+                                <option value="Giovanni Cardoza">Giovanni Cardoza</option>
                             </select>
                         </div>
                     </div>
@@ -2605,7 +2639,7 @@ function mostrarModalSeleccionArchivos(archivos, idSolicitud) {
                                 </h5>
                                 <div style="margin-bottom: 8px;">
                                     <i class="fas fa-paper-plane" style="color: #6c757d; margin-right: 6px; width: 14px;"></i>
-                                    <strong>Dirigido a:</strong> ${dirigidoA}
+                                    <strong>Gerente:</strong> ${dirigidoA}
                                 </div>
                                 <div style="margin-bottom: 8px;">
                                     <i class="fas fa-store" style="color: #6c757d; margin-right: 6px; width: 14px;"></i>
@@ -2736,7 +2770,10 @@ function mostrarModalSeleccionArchivos(archivos, idSolicitud) {
 
 
 // FUNCIÓN PARA EDITAR SOLICITUD
-$(document).off('click', '.btnEditarSolicitud').on('click', '.btnEditarSolicitud', function () {
+$(document).off('click', '.btnEditarSolicitud').on('click', '.btnEditarSolicitud', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
     const index = $(this).data('index');
     const solicitud = solicitudes[index];
 
@@ -2883,11 +2920,11 @@ $(document).off('click', '.btnEditarSolicitud').on('click', '.btnEditarSolicitud
                                 </small>
                             </div>
 
-                            <!-- Dirigido A Field -->
+                            <!-- Gerente Field -->
                             <div style="margin-bottom: 10px;">
                                 <div style="display: flex; align-items: center; margin-bottom: 8px;">
                                     <i class="fas fa-user-check" style="color: #1976d2; margin-right: 8px;"></i>
-                                    <label style="font-weight: bold; color: #1976d2;">Dirigido A (RRHH):</label>
+                                    <label style="font-weight: bold; color: #1976d2;">Gerente:</label>
                                 </div>
                                 <select 
                                     id="dirigido_a_edit" 
@@ -2895,9 +2932,8 @@ $(document).off('click', '.btnEditarSolicitud').on('click', '.btnEditarSolicitud
                                     style="margin: 0; border: 2px solid #e0e0e0; border-radius: 6px; padding: 12px; font-size: 16px; background: white; color: #333; width: 100%; box-sizing: border-box; height: 50px;"
                                 >
                                     <option value="" style="color: #666;">Selecciona personal de RRHH...</option>
-                                    <option value="Keisha Davila" style="color: #333;" ${solicitud.DIRIGIDO_A === 'Keisha Davila' ? 'selected' : ''}>Keisha Davila</option>
-                                    <option value="Cristy Garcia" style="color: #333;" ${solicitud.DIRIGIDO_A === 'Cristy Garcia' ? 'selected' : ''}>Cristy Garcia</option>
-                                    <option value="Emma de Cea" style="color: #333;" ${solicitud.DIRIGIDO_A === 'Emma de Cea' ? 'selected' : ''}>Emma de Cea</option>
+                                    <option value="Christian Quan" style="color: #333;" ${solicitud.DIRIGIDO_A === 'Christian Quan' ? 'selected' : ''}>Christian Quan</option>
+                                    <option value="Giovanni Cardoza" style="color: #333;" ${solicitud.DIRIGIDO_A === 'Giovanni Cardoza' ? 'selected' : ''}>Giovanni Cardoza</option>
                                 </select>
                                 <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
                                     <i class="fas fa-info-circle"></i> Selecciona la persona de RRHH que procesará esta solicitud
@@ -2984,7 +3020,7 @@ $(document).off('click', '.btnEditarSolicitud').on('click', '.btnEditarSolicitud
                             }
 
                             if (dirigidoA !== solicitud.DIRIGIDO_A) {
-                                changes.push(`<div style="margin-bottom: 8px; color: #333;"><i class="fas fa-user-check" style="color: #1976d2; margin-right: 6px;"></i><strong>Dirigido A:</strong> ${solicitud.DIRIGIDO_A || 'Sin asignar'} → ${dirigidoA}</div>`);
+                                changes.push(`<div style="margin-bottom: 8px; color: #333;"><i class="fas fa-user-check" style="color: #1976d2; margin-right: 6px;"></i><strong>Gerente:</strong> ${solicitud.DIRIGIDO_A || 'Sin asignar'} → ${dirigidoA}</div>`);
                             }
 
                             if (changes.length > 0) {
@@ -3144,7 +3180,7 @@ $(document).off('click', '.btnEditarSolicitud').on('click', '.btnEditarSolicitud
                                                     <div><strong>Tienda:</strong> ${updatedData.tienda_no}</div>
                                                     <div><strong>Puesto:</strong> ${updatedData.puesto}</div>
                                                     <div><strong>Razón:</strong> ${updatedData.razon}</div>
-                                                    <div><strong>Dirigido A:</strong> ${updatedData.dirigido_a}</div>
+                                                    <div><strong>Gerente:</strong> ${updatedData.dirigido_a}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -3245,7 +3281,7 @@ $(document).off('click', '.btn-ver-historial-modificaciones').on('click', '.btn-
             campoFormateado = 'Razón de la Vacante';
             break;
           case 'DIRIGIDO_A':
-            campoFormateado = 'Dirigido A (RRHH)';
+            campoFormateado = 'Gerente';
             break;
           default:
             campoFormateado = h.CAMPO_MODIFICADO;

@@ -63,6 +63,22 @@
       border: 1px solid #e9ecef;
     }
 
+    /* ✅ NUEVOS ESTILOS PARA FILTROS */
+    .filters-section {
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      padding: 25px;
+      border-radius: 15px;
+      margin-bottom: 25px;
+      border: 2px solid #dee2e6;
+    }
+
+    .filter-title {
+      color: #495057;
+      font-weight: 700;
+      margin-bottom: 20px;
+      font-size: 1.3rem;
+    }
+
     .btn-custom {
       border-radius: 10px;
       padding: 12px 25px;
@@ -312,6 +328,16 @@
       color: white;
     }
 
+    /* ✅ ESTILOS PARA INFO DE FILTROS APLICADOS */
+    .info-filtros {
+      background: linear-gradient(135deg, #17a2b8, #20c997);
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 15px;
+      display: none;
+    }
+
     /* Responsive Design */
     @media (max-width: 768px) {
       .main-container {
@@ -365,23 +391,85 @@
         </div>
       </div>
 
-      <!-- Controls Section -->
-      <div class="controls-section">
-        <div class="row align-items-center">
-          <div class="col-md-6">
-            <div class="d-flex gap-3">
+      <!-- ✅ NUEVA SECCIÓN DE FILTROS -->
+      <div class="filters-section">
+        <h5 class="filter-title">
+          <i class="fas fa-filter mr-2"></i>
+          Filtros de Solicitudes
+        </h5>
+        <div class="row">
+          <!-- Filtro por Estado de Aprobación -->
+          <div class="col-md-3">
+            <label for="filtroEstado" class="font-weight-bold">
+              <i class="fas fa-check-circle mr-1"></i> Estado de Aprobación
+            </label>
+            <select id="filtroEstado" class="form-control">
+              <option value="">Todos los Estados</option>
+              <option value="Por Aprobar">Por Aprobar</option>
+              <option value="Aprobado">Aprobado</option>
+              <option value="No Aprobado">No Aprobado</option>
+            </select>
+          </div>
+
+          <!-- Filtro por Gerente -->
+          <div class="col-md-3">
+            <label for="filtroGerente" class="font-weight-bold">
+              <i class="fas fa-user-tie mr-1"></i> Dirigido a (Gerente)
+            </label>
+            <select id="filtroGerente" class="form-control">
+              <option value="">Todos los Gerentes</option>
+              <option value="Christian Quan">Christian Quan</option>
+              <option value="Giovanni Cardoza">Giovanni Cardoza</option>
+            </select>
+          </div>
+
+          <!-- Botones de Filtros -->
+          <div class="col-md-3 d-flex align-items-end">
+            <div class="w-100">
+              <button id="btnAplicarFiltros" class="btn btn-primary btn-block">
+                <i class="fas fa-search mr-1"></i> Aplicar Filtros
+              </button>
             </div>
           </div>
-          <div class="col-md-6">
+
+          <!-- Botón Limpiar -->
+          <div class="col-md-3 d-flex align-items-end">
+            <div class="w-100">
+              <button id="btnLimpiarFiltros" class="btn btn-secondary btn-block">
+                <i class="fas fa-eraser mr-1"></i> Limpiar Filtros
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Información de Filtros Aplicados -->
+        <div id="infoFiltros" class="info-filtros">
+          <i class="fas fa-info-circle mr-2"></i>
+          <span id="textoFiltros">Filtros aplicados</span>
+        </div>
+      </div>
+
+      <!-- Controls Section (búsqueda) -->
+      <div class="controls-section">
+        <div class="row align-items-center">
+          <div class="col-md-12">
             <div class="search-container">
               <div class="row">
-                <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-search"></i></span>
-                <input type="text" id="searchInput" class="form-control" placeholder="Buscar en solicitudes...">
+                <div class="col-md-6">
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    </div>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Buscar en solicitudes...">
+                  </div>
                 </div>
-                <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-store"></i></span>
-                <input type="text" id="searchTienda" class="form-control" placeholder="Buscar por tienda...">
+                <div class="col-md-6">
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text"><i class="fas fa-store"></i></span>
+                    </div>
+                    <input type="text" id="searchTienda" class="form-control" placeholder="Buscar por tienda...">
+                  </div>
                 </div>
               </div>
             </div>
@@ -404,6 +492,7 @@
               <th width="140">Puesto</th>
               <th width="150">Supervisor</th>
               <th width="120">Dirigido a</th>
+              <th width="120">Dirigido RRHH</th>
               <th width="120">Fecha Solicitud</th>
               <th width="140">Modificación registrada</th>
               <th width="160">Estado</th>
@@ -462,6 +551,7 @@
     $(document).ready(function () {
       let solicitudes = [];
       let allSolicitudes = [];
+      let solicitudesFiltradas = [];
       let rowsPerPage = 10;
       let currentPage = 1;
 
@@ -473,7 +563,7 @@
         day: 'numeric'
       }));
 
-      // FUNCIÓN PARA CARGAR SOLICITUDES
+      // ✅ FUNCIÓN PARA CARGAR SOLICITUDES (MODIFICADA PARA USAR FILTROS)
       function cargarSolicitudes() {
         $('#loading-indicator').show();
         $('#tblSolicitudes').hide();
@@ -481,14 +571,34 @@
 
         console.log("🔄 Iniciando carga de solicitudes...");
 
+        // ✅ OBTENER PARÁMETROS DE FILTROS
+        const filtroEstado = $('#filtroEstado').val();
+        const filtroGerente = $('#filtroGerente').val();
+
+        let url = './GerenteTDS/crudaprobaciones.php?action=get_solicitudes_gerentes';
+        
+        // ✅ AGREGAR FILTROS A LA URL SI ESTÁN SELECCIONADOS
+        if (filtroEstado) {
+          url += `&estado_aprobacion=${encodeURIComponent(filtroEstado)}`;
+        }
+        if (filtroGerente) {
+          url += `&dirigido_a=${encodeURIComponent(filtroGerente)}`;
+        }
+
+        console.log("📤 URL con filtros:", url);
+
         $.ajax({
-          url: './GerenteTDS/crudaprobaciones.php?action=get_solicitudes',
+          url: url,
           type: 'GET',
           dataType: 'json',
           success: function (data) {
             console.log("✅ Solicitudes cargadas:", data);
             allSolicitudes = data;
+            solicitudesFiltradas = data;
             solicitudes = data;
+
+            // ✅ ACTUALIZAR INFO DE FILTROS
+            actualizarInfoFiltros(filtroEstado, filtroGerente, data.length);
 
             if (data.length === 0) {
               $('#loading-indicator').hide();
@@ -517,7 +627,7 @@
                   <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px;">
                     <small><strong>Status:</strong> ${xhr.status}</small><br>
                     <small><strong>Error:</strong> ${error}</small><br>
-                    <small><strong>URL:</strong> ./GerenteTDS/crudaprobaciones.php</small>
+                    <small><strong>URL:</strong> ${url}</small>
                   </div>
                 </div>
               `,
@@ -529,17 +639,50 @@
         });
       }
 
-      // FUNCIÓN PARA RENDERIZAR LA TABLA
+      // ✅ NUEVA FUNCIÓN PARA ACTUALIZAR INFO DE FILTROS
+      function actualizarInfoFiltros(estado, gerente, cantidad) {
+        const infoDiv = $('#infoFiltros');
+        const textoSpan = $('#textoFiltros');
+        
+        if (estado || gerente) {
+          let texto = `Mostrando ${cantidad} solicitudes`;
+          if (estado) texto += ` | Estado: ${estado}`;
+          if (gerente) texto += ` | Gerente: ${gerente}`;
+          
+          textoSpan.text(texto);
+          infoDiv.show();
+        } else {
+          infoDiv.hide();
+        }
+      }
+
+      // ✅ EVENT LISTENERS PARA FILTROS
+      $('#btnAplicarFiltros').on('click', function() {
+        console.log("🔍 Aplicando filtros...");
+        currentPage = 1;
+        cargarSolicitudes();
+      });
+
+      $('#btnLimpiarFiltros').on('click', function() {
+        console.log("🧹 Limpiando filtros...");
+        $('#filtroEstado').val('');
+        $('#filtroGerente').val('');
+        $('#infoFiltros').hide();
+        currentPage = 1;
+        cargarSolicitudes();
+      });
+
+      // ✅ FUNCIÓN PARA RENDERIZAR LA TABLA
       function renderTable(data) {
-          const tbody = $('#tblSolicitudes tbody');
-          tbody.empty();
+        const tbody = $('#tblSolicitudes tbody');
+        tbody.empty();
 
-          const start = (currentPage - 1) * rowsPerPage;
-          const end = start + rowsPerPage;
-          const pageData = data.slice(start, end);
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const pageData = data.slice(start, end);
 
-          pageData.forEach((item, index) => {
-            const globalIndex = start + index;
+        pageData.forEach((item, index) => {
+          const globalIndex = start + index;
 
           // Estados del badge original (Estado Solicitud)
           let statusClass = '';
@@ -558,16 +701,16 @@
           else statusClass = 'estado-pendiente';
 
           // Estados del badge de aprobación
-            let aprobacionClass = '';
-            const aprobacion = (item.ESTADO_APROBACION || 'Por Aprobar').toLowerCase(); // ← CAMBIO
-            if (aprobacion.includes('por aprobar')) aprobacionClass = 'estado-pendiente'; // ← CAMBIO
-            else if (aprobacion === 'aprobado' || (aprobacion.includes('aprobado') && !aprobacion.includes('no'))) aprobacionClass = 'estado-contratada';
-            else if (aprobacion.includes('no aprobado')) aprobacionClass = 'estado-prueba';
-            else aprobacionClass = 'estado-pendiente';
+          let aprobacionClass = '';
+          const aprobacion = (item.ESTADO_APROBACION || 'Por Aprobar').toLowerCase();
+          if (aprobacion.includes('por aprobar')) aprobacionClass = 'estado-pendiente';
+          else if (aprobacion === 'aprobado' || (aprobacion.includes('aprobado') && !aprobacion.includes('no'))) aprobacionClass = 'estado-contratada';
+          else if (aprobacion.includes('no aprobado')) aprobacionClass = 'estado-prueba';
+          else aprobacionClass = 'estado-pendiente';
 
-            const fechaModificacion = item.FECHA_MODIFICACION || '—';
-            const estadoAprobacionMostrar = item.ESTADO_APROBACION || 'Por Aprobar'; // ← CAMBIO
-
+          const fechaModificacion = item.FECHA_MODIFICACION || '—';
+          const estadoAprobacionMostrar = item.ESTADO_APROBACION || 'Por Aprobar';
+          const dirigidoRH = item.DIRIGIDO_RH || '—';
 
           const row = `
             <tr data-id="${item.ID_SOLICITUD}">
@@ -580,6 +723,7 @@
               <td><strong>${item.PUESTO_SOLICITADO}</strong></td>
               <td><small class="text-muted">${item.SOLICITADO_POR}</small></td>
               <td><small>${item.DIRIGIDO_A || '—'}</small></td>
+              <td><small class="text-info"><strong>${dirigidoRH}</strong></small></td>
               <td><small>${item.FECHA_SOLICITUD}</small></td>
               <td><small class="text-muted">${fechaModificacion}</small></td>
               <td><span class="status-badge ${statusClass}">${item.ESTADO_SOLICITUD}</span></td>
@@ -587,14 +731,15 @@
               <td><small>${item.RAZON || '—'}</small></td>
               <td>
                 <div class="actions-container">
-                  <button class="btn btn-action btn-approval btnCambiarAprobacion"
+                  <button class="btn btn-action btn-approval btnProcesarSolicitud"
                           data-id="${item.ID_SOLICITUD}"
                           data-tienda="${item.NUM_TIENDA || ''}"
                           data-puesto="${item.PUESTO_SOLICITADO || ''}"
                           data-supervisor="${item.SOLICITADO_POR || ''}"
+                          data-razon="${item.RAZON || ''}"
                           data-aprobacion-actual="${estadoAprobacionMostrar}"
-                          title="Cambiar Aprobación">
-                    <i class="fas fa-check-circle"></i> Cambiar Aprobación
+                          title="Procesar Solicitud">
+                    <i class="fas fa-gavel mr-1"></i> Procesar
                   </button>
                 </div>
               </td>
@@ -641,348 +786,462 @@
             </a>
           </li>
         `);
+      }
 
-        // Event listeners para paginación
-        $('.pagination .page-link').off('click').on('click', function (e) {
-          e.preventDefault();
-          const page = parseInt($(this).data('page'));
-          
-          if (page && page !== currentPage && page >= 1 && page <= totalPages) {
-            currentPage = page;
-            renderTable(data);
-            setupPagination(data);
+      // Event listener para paginación
+      $('.pagination').on('click', 'a', function(e) {
+        e.preventDefault();
+        const page = parseInt($(this).data('page'));
+        if (page && page !== currentPage) {
+          currentPage = page;
+          renderTable(solicitudes);
+          setupPagination(solicitudes);
+        }
+      });
+
+      // ✅ FUNCIÓN DE BÚSQUEDA MEJORADA (SIN DUPLICAR FILTROS)
+      function performSearch() {
+        const searchText = $('#searchInput').val().toLowerCase();
+        const searchTienda = $('#searchTienda').val().toLowerCase();
+
+        // ✅ USAR solicitudesFiltradas COMO BASE (ya contiene filtros aplicados)
+        let filtered = solicitudesFiltradas.filter(item => {
+          const matchesSearch = !searchText || 
+            (item.PUESTO_SOLICITADO || '').toLowerCase().includes(searchText) ||
+            (item.SOLICITADO_POR || '').toLowerCase().includes(searchText) ||
+            (item.DIRIGIDO_A || '').toLowerCase().includes(searchText) ||
+            (item.DIRIGIDO_RH || '').toLowerCase().includes(searchText) ||
+            (item.ESTADO_SOLICITUD || '').toLowerCase().includes(searchText) ||
+            (item.ESTADO_APROBACION || '').toLowerCase().includes(searchText) ||
+            (item.RAZON || '').toLowerCase().includes(searchText);
+
+          const matchesTienda = !searchTienda || 
+            (item.NUM_TIENDA || '').toString().toLowerCase().includes(searchTienda);
+
+          return matchesSearch && matchesTienda;
+        });
+
+        solicitudes = filtered;
+        currentPage = 1;
+        
+        if (filtered.length === 0) {
+          $('#tblSolicitudes').hide();
+          $('#empty-state').show();
+          $('.pagination').empty();
+        } else {
+          $('#empty-state').hide();
+          $('#tblSolicitudes').show();
+          renderTable(solicitudes);
+          setupPagination(solicitudes);
+        }
+      }
+
+      // Event listeners para búsqueda
+      $('#searchInput, #searchTienda').on('input', performSearch);
+
+      // ✅ EVENT LISTENER PARA VER HISTORIAL
+      $(document).on('click', '.btn-ver-historial', function() {
+        const idSolicitud = $(this).data('id');
+        console.log("📊 Ver historial de solicitud:", idSolicitud);
+        
+        $('#modalHistorialIndividual').modal('show');
+        cargarHistorialIndividual(idSolicitud);
+      });
+
+      // ✅ FUNCIÓN PARA CARGAR HISTORIAL INDIVIDUAL
+      function cargarHistorialIndividual(idSolicitud) {
+        $('#contenidoHistorial').html(`
+          <div class="text-center">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p class="mt-2">Cargando historial...</p>
+          </div>
+        `);
+
+        $.ajax({
+          url: './GerenteTDS/crudaprobaciones.php',
+          type: 'GET',
+          data: {
+            action: 'get_historial_solicitud',
+            id_solicitud: idSolicitud
+          },
+          dataType: 'json',
+          success: function(response) {
+            console.log("✅ Historial cargado:", response);
+            
+            if (response.success && response.data && response.data.length > 0) {
+              let html = '<div class="timeline">';
+              
+              response.data.forEach((evento, index) => {
+                const fecha = new Date(evento.FECHA_CAMBIO).toLocaleString('es-ES');
+                const usuario = evento.USUARIO_CAMBIO || 'Sistema';
+                const estadoAnterior = evento.ESTADO_ANTERIOR || 'N/A';
+                const estadoNuevo = evento.ESTADO_NUEVO || 'N/A';
+                const comentarios = evento.COMENTARIOS || '';
+
+                html += `
+                  <div class="timeline-item mb-4">
+                    <div class="card">
+                      <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0">
+                          <i class="fas fa-clock mr-2"></i>
+                          ${fecha} - ${usuario}
+                        </h6>
+                      </div>
+                      <div class="card-body">
+                        <div class="row">
+                          <div class="col-md-6">
+                            <strong>Estado Anterior:</strong><br>
+                            <span class="badge badge-secondary">${estadoAnterior}</span>
+                          </div>
+                          <div class="col-md-6">
+                            <strong>Estado Nuevo:</strong><br>
+                            <span class="badge badge-success">${estadoNuevo}</span>
+                          </div>
+                        </div>
+                        ${comentarios ? `
+                          <div class="mt-3">
+                            <strong>Comentarios:</strong><br>
+                            <p class="text-muted">${comentarios}</p>
+                          </div>
+                        ` : ''}
+                      </div>
+                    </div>
+                  </div>
+                `;
+              });
+              
+              html += '</div>';
+              $('#contenidoHistorial').html(html);
+            } else {
+              $('#contenidoHistorial').html(`
+                <div class="text-center text-muted">
+                  <i class="fas fa-info-circle fa-3x mb-3"></i>
+                  <h5>Sin historial</h5>
+                  <p>No se encontró historial para esta solicitud.</p>
+                </div>
+              `);
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error('❌ Error cargando historial:', error);
+            $('#contenidoHistorial').html(`
+              <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                Error al cargar el historial: ${error}
+              </div>
+            `);
           }
         });
       }
 
-      // FILTROS DE BÚSQUEDA
-      $('#searchInput, #searchTienda').on('input', function () {
-        const searchValueGeneral = $('#searchInput').val().toLowerCase();
-        const searchValueTienda = $('#searchTienda').val().toLowerCase();
+// FUNCIÓN PARA CAMBIAR APROBACIÓN - CON DEBUG COMPLETO
+$(document).on('click', '.btnProcesarSolicitud', function() {
+  const id = $(this).data('id');
+  const tienda = $(this).data('tienda');
+  const puesto = $(this).data('puesto');
+  const supervisor = $(this).data('supervisor');
+  const aprobacionActual = $(this).data('aprobacion-actual') || 'Por Aprobar';
 
-        const filteredData = allSolicitudes.filter(item => {
-          const matchGeneral = !searchValueGeneral || Object.values(item).some(value =>
-            value && value.toString().toLowerCase().includes(searchValueGeneral)
-          );
+  Swal.fire({
+    title: '<i class="fas fa-user-check"></i> Cambiar Estado de Aprobación',
+    html: `
+      <div style="text-align: left; margin-bottom: 30px;">
+        <div style="background: #cce7ff; border: 1px solid #99d1ff; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+          <h6 style="margin: 0 0 15px 0; font-weight: 600; color: #0066cc;">
+            <i class="fas fa-info-circle"></i> Información de la Solicitud
+          </h6>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px; color: #333;">
+            <div>
+              <strong><i class="fas fa-hashtag"></i> ID:</strong> ${id}
+            </div>
+            <div>
+              <strong><i class="fas fa-calendar-alt"></i> Fecha:</strong> ${new Date().toLocaleDateString('es-ES')}
+            </div>
+            <div style="grid-column: 1 / -1;">
+              <strong><i class="fas fa-user"></i> Solicitado por:</strong> ${supervisor}
+            </div>
+          </div>
+        </div>
+        
+        <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin-bottom: 25px;">
+          <div style="display: flex; align-items: center; color: #856404;">
+            <i class="fas fa-info-circle" style="font-size: 18px; margin-right: 10px;"></i>
+            <div>
+              <strong>Estado Actual de Aprobación:</strong><br>
+              <span style="background: #ffc107; color: #1c1f20ff; padding: 6px 12px; border-radius: 16px; font-size: 14px; font-weight: bold;">
+                ${aprobacionActual}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label style="font-weight: 700; margin-bottom: 15px; font-size: 18px; color: #333;">
+          <i class="fas fa-check-double"></i> Seleccione el Nuevo Estado de Aprobación:
+        </label>
+        <select id="nuevaAprobacion" class="form-control" style="
+          font-size: 18px; 
+          padding: 15px 20px; 
+          border: 2px solid #ddd; 
+          border-radius: 10px;
+          background: #f8f9fa;
+          font-weight: 600;
+          height: auto;
+        ">
+          <option value="" style="color: #999;">Seleccione una opción...</option>
+          <option value="Aprobado" style="color: #28a745; font-weight: bold;">
+            Aprobado
+          </option>
+          <option value="No Aprobado" style="color: #dc3545; font-weight: bold;">
+            No Aprobado
+          </option>
+          <option value="Por Aprobar" style="color: #ffc107; font-weight: bold;">
+            Por Aprobar
+          </option>
+        </select>
+      </div>
 
-          const matchTienda = !searchValueTienda || 
-            (item.NUM_TIENDA && item.NUM_TIENDA.toString().toLowerCase().includes(searchValueTienda));
+      <!-- ✅ CAMPO CONDICIONAL PARA ASIGNAR RRHH -->
+      <div id="campo-rrhh" class="form-group" style="display: none;">
+        <div class="alert alert-success">
+          <i class="fas fa-user-plus mr-2"></i>
+          <strong>Solicitud Aprobada - Asignar a RRHH</strong>
+        </div>
+        <label for="swal-dirigido-rh"><strong>Asignar a:</strong></label>
+        <select id="swal-dirigido-rh" class="form-control">
+          <option value="">Seleccionar persona de RRHH...</option>
+          <option value="Keisha Davila">Keisha Davila</option>
+          <option value="Cristy Garcia">Cristy Garcia</option>
+          <option value="Emma de Cea">Emma de Cea</option>
+        </select>
+        <small class="form-text text-muted">
+          <i class="fas fa-info-circle mr-1"></i>
+          Seleccione la persona de RRHH que se encargará de esta solicitud
+        </small>
+      </div>
+    `,
+    width: '700px',
+    showCancelButton: true,
+    confirmButtonText: '<i class="fas fa-save"></i> Confirmar Cambio',
+    cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+    confirmButtonColor: '#28a745',
+    cancelButtonColor: '#6c757d',
+    buttonsStyling: false,
+    customClass: {
+      popup: 'aprobacion-modal-grande',
+      confirmButton: 'btn btn-success btn-lg px-4',
+      cancelButton: 'btn btn-secondary btn-lg px-4 mr-2'
+    },
+    preConfirm: () => {
+      const nuevaAprobacion = $('#nuevaAprobacion').val();
+      const dirigidoRH = $('#swal-dirigido-rh').val(); // ✅ AGREGAR ESTA LÍNEA
+      
+      if (!nuevaAprobacion) {
+        Swal.showValidationMessage(`
+          <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
+            <i class="fas fa-exclamation-triangle" style="margin-right: 8px; font-size: 16px;"></i>
+            <span style="font-weight: 600;">Debe seleccionar un estado de aprobación</span>
+         </div>
+       `);
+       return false;
+     }
 
-          return matchGeneral && matchTienda;
-        });
-
-        currentPage = 1;
-        renderTable(filteredData);
-        setupPagination(filteredData);
-      });
-
-      // FUNCIÓN PARA CAMBIAR APROBACIÓN - CON DEBUG COMPLETO
-        $(document).on('click', '.btnCambiarAprobacion', function() {
-          const id = $(this).data('id');
-          const tienda = $(this).data('tienda');
-          const puesto = $(this).data('puesto');
-          const supervisor = $(this).data('supervisor');
-          const aprobacionActual = $(this).data('aprobacion-actual') || 'Por Aprobar'; // ← CAMBIO
-
-          Swal.fire({
-            title: '<i class="fas fa-user-check"></i> Cambiar Estado de Aprobación',
-            html: `
-              <div style="text-align: left; margin-bottom: 30px;">
-                <div style="background: #cce7ff; border: 1px solid #99d1ff; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
-                  <h6 style="margin: 0 0 15px 0; font-weight: 600; color: #0066cc;">
-                    <i class="fas fa-info-circle"></i> Información de la Solicitud
-                  </h6>
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px; color: #333;">
-                    <div>
-                      <strong><i class="fas fa-hashtag"></i> ID:</strong> ${id}
-                    </div>
-                    <div>
-                      <strong><i class="fas fa-calendar-alt"></i> Fecha:</strong> ${new Date().toLocaleDateString('es-ES')}
-                    </div>
-                    <div style="grid-column: 1 / -1;">
-                      <strong><i class="fas fa-user"></i> Solicitado por:</strong> ${supervisor}
-                    </div>
-                  </div>
-                </div>
-                
-                <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin-bottom: 25px;">
-                  <div style="display: flex; align-items: center; color: #856404;">
-                    <i class="fas fa-info-circle" style="font-size: 18px; margin-right: 10px;"></i>
-                    <div>
-                      <strong>Estado Actual de Aprobación:</strong><br>
-                      <span style="background: #ffc107; color: #1c1f20ff; padding: 6px 12px; border-radius: 16px; font-size: 14px; font-weight: bold;">
-                        ${aprobacionActual}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="form-group">
-                <label style="font-weight: 700; margin-bottom: 15px; font-size: 18px; color: #333;">
-                  <i class="fas fa-check-double"></i> Seleccione el Nuevo Estado de Aprobación:
-                </label>
-                <select id="nuevaAprobacion" class="form-control" style="
-                  font-size: 18px; 
-                  padding: 15px 20px; 
-                  border: 2px solid #ddd; 
-                  border-radius: 10px;
-                  background: #f8f9fa;
-                  font-weight: 600;
-                  height: auto;
-                ">
-                  <option value="" style="color: #999;">Seleccione una opción...</option>
-                  <option value="Aprobado" style="color: #28a745; font-weight: bold;">
-                    Aprobado
-                  </option>
-                  <option value="No Aprobado" style="color: #dc3545; font-weight: bold;">
-                    No Aprobado
-                  </option>
-                  <option value="Por Aprobar" style="color: #ffc107; font-weight: bold;">
-                    Por Aprobar
-                  </option>
-                </select>
-              </div>
-            `,
-          width: '700px',
-          showCancelButton: true,
-          confirmButtonText: '<i class="fas fa-save"></i> Confirmar Cambio',
-          cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
-          confirmButtonColor: '#28a745',
-          cancelButtonColor: '#6c757d',
-          buttonsStyling: false,
-          customClass: {
-            popup: 'aprobacion-modal-grande',
-            confirmButton: 'btn btn-success btn-lg px-4',
-            cancelButton: 'btn btn-secondary btn-lg px-4 mr-2'
-          },
-          preConfirm: () => {
-            const nuevaAprobacion = $('#nuevaAprobacion').val();
-            
-            if (!nuevaAprobacion) {
-              Swal.showValidationMessage(`
-                <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
-                  <i class="fas fa-exclamation-triangle" style="margin-right: 8px; font-size: 16px;"></i>
-                  <span style="font-weight: 600;">Debe seleccionar un estado de aprobación</span>
-               </div>
-             `);
-             return false;
-           }
-           
-           return { nuevaAprobacion };
-         },
-         didOpen: () => {
-           // Agregar estilos personalizados
-           if (!document.getElementById('aprobacion-styles-grande')) {
-             const styles = document.createElement('style');
-             styles.id = 'aprobacion-styles-grande';
-             styles.textContent = `
-               .aprobacion-modal-grande {
-                 border-radius: 16px !important;
-                 box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2) !important;
-                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-               }
-               .aprobacion-modal-grande .swal2-title {
-                 font-size: 24px !important;
-                 font-weight: 700 !important;
-                 color: #333 !important;
-                 margin-bottom: 20px !important;
-               }
-               .aprobacion-modal-grande select:focus {
-                 border-color: #667eea !important;
-                 box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
-                 outline: none !important;
-               }
-               .aprobacion-modal-grande .btn {
-                 font-weight: 600 !important;
-                 border-radius: 10px !important;
-                 padding: 12px 24px !important;
-                 font-size: 16px !important;
-                 transition: all 0.3s ease !important;
-                 margin: 5px !important;
-               }
-               .aprobacion-modal-grande .btn:hover {
-                 transform: translateY(-2px) !important;
-                 box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
-               }
-               .aprobacion-modal-grande .swal2-actions {
-                 margin-top: 30px !important;
-               }
-             `;
-             document.head.appendChild(styles);
-           }
-           
-           // Focus en el select
-           setTimeout(() => {
-             $('#nuevaAprobacion').focus();
-           }, 100);
-         }
-       }).then((result) => {
-         if (result.isConfirmed) {
-           console.log("📤 Enviando cambio de aprobación:", {
-             id_solicitud: id,
-             nueva_aprobacion: result.value.nuevaAprobacion
-           });
-
-           // Mostrar loading
-           Swal.fire({
-             title: '<i class="fas fa-spinner fa-spin"></i> Procesando cambio...',
-             html: `
-               <div style="text-align: center; padding: 20px;">
-                 <div style="font-size: 16px; margin-bottom: 10px;">
-                   Actualizando estado de aprobación
-                 </div>
-                 <div style="color: #666; font-size: 14px;">
-                   Por favor espera un momento...
-                 </div>
-               </div>
-             `,
-             allowOutsideClick: false,
-             didOpen: () => Swal.showLoading()
-           });
-
-           $.ajax({
-             url: './GerenteTDS/crudaprobaciones.php?action=cambiar_aprobacion',
-             type: 'POST',
-             dataType: 'json',
-             data: {
-               id_solicitud: id,
-               nueva_aprobacion: result.value.nuevaAprobacion,
-               comentario: `Cambio de aprobación a: ${result.value.nuevaAprobacion}`
-             },
-             success: function(response) {
-               console.log("✅ Respuesta exitosa del servidor:", response);
-               if (response.success) {
-                 Swal.fire({
-                   icon: 'success',
-                   title: '<i class="fas fa-check-circle"></i> Cambio Realizado!',
-                   html: `
-                     <div style="text-align: center; padding: 15px;">
-                       <div style="font-size: 16px; margin-bottom: 10px;">
-                         El estado de aprobación ha sido actualizado correctamente
-                       </div>
-                       <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 12px; color: #155724;">
-                         <strong><i class="fas fa-check"></i> Nuevo Estado:</strong> ${result.value.nuevaAprobacion}
-                       </div>
-                     </div>
-                   `,
-                   timer: 3000,
-                   showConfirmButton: false
-                 });
-                 cargarSolicitudes();
-               } else {
-                 console.error("❌ Error en respuesta del servidor:", response);
-                 Swal.fire({
-                   icon: 'error',
-                   title: '<i class="fas fa-exclamation-circle"></i> Error',
-                   text: response.error || 'Error al actualizar el estado de aprobación',
-                   confirmButtonText: 'Entendido'
-                 });
-               }
-             },
-             error: function(xhr, status, error) {
-               console.error('❌ Error AJAX completo:', {
-                 status: xhr.status,
-                 statusText: xhr.statusText,
-                 responseText: xhr.responseText,
-                 error: error,
-                 url: './GerenteTDS/crudaprobaciones.php?action=cambiar_aprobacion'
-               });
-               
-               Swal.fire({
-                 icon: 'error',
-                 title: '<i class="fas fa-wifi"></i> Error de Conexión',
-                 html: `
-                   <div style="text-align: left;">
-                     <p>No se pudo conectar al servidor.</p>
-                     <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px;">
-                       <small><strong>Status:</strong> ${xhr.status}</small><br>
-                       <small><strong>Status Text:</strong> ${xhr.statusText}</small><br>
-                       <small><strong>Error:</strong> ${error}</small><br>
-                       <small><strong>URL:</strong> ./GerenteTDS/crudaprobaciones.php</small><br>
-                       <small><strong>Response:</strong> ${xhr.responseText ? xhr.responseText.substring(0, 200) + '...' : 'Sin respuesta'}</small>
-                     </div>
-                   </div>
-                 `,
-                 confirmButtonText: 'Entendido'
-               });
-             }
-           });
-         }
-       });
-     });
-
-     // FUNCIÓN HISTORIAL INDIVIDUAL
-     $(document).on('click', '.btn-ver-historial', function () {
-       const idSolicitud = $(this).data('id');
-
-       if (!Number.isInteger(Number(idSolicitud))) {
-         Swal.fire('Error', 'ID de solicitud inválido.', 'error');
-         return;
+     // ✅ AGREGAR VALIDACIÓN PARA RRHH
+     if (nuevaAprobacion === 'Aprobado' && !dirigidoRH) {
+       Swal.showValidationMessage(`
+         <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
+           <i class="fas fa-exclamation-triangle" style="margin-right: 8px; font-size: 16px;"></i>
+           <span style="font-weight: 600;">Debe seleccionar una persona de RRHH para la solicitud aprobada</span>
+        </div>
+      `);
+      return false;
+    }
+     
+     return { 
+       nuevaAprobacion: nuevaAprobacion, 
+       dirigidoRH: dirigidoRH || null  // ✅ AGREGAR ESTA LÍNEA
+     };
+   },
+   didOpen: () => {
+     // ✅ AGREGAR LISTENER PARA MOSTRAR/OCULTAR CAMPO DE RRHH
+     $('#nuevaAprobacion').on('change', function() {
+       const decision = $(this).val();
+       const campoRRHH = $('#campo-rrhh');
+       
+       if (decision === 'Aprobado') {
+         campoRRHH.slideDown(300);
+         $('#swal-dirigido-rh').attr('required', true);
+       } else {
+         campoRRHH.slideUp(300);
+         $('#swal-dirigido-rh').attr('required', false).val('');
        }
-
-       $('#btnPdfIndividual').attr('href', './GerenteTDS/reporte_historial_pdf.php?id=' + idSolicitud);
-       $('#modalHistorialIndividual').modal('show');
-       $('#contenidoHistorial').html('<div class="text-center">Cargando historial...</div>');
-
-       $.ajax({
-         url: './GerenteTDS/crudaprobaciones.php?action=get_historial_individual&id=' + idSolicitud,
-         method: 'GET',
-         dataType: 'json',
-         success: function (datos) {
-           if (datos.length === 0) {
-             $('#contenidoHistorial').html('<div class="text-center text-muted">No hay historial para esta solicitud.</div>');
-             return;
-           }
-
-           let html = `
-             <div class="table-responsive">
-               <table class="table table-bordered table-hover">
-                 <thead class="thead-dark">
-                   <tr>
-                     <th>#</th>
-                     <th>Tienda</th>
-                     <th>Estado Anterior</th>
-                     <th>Estado Nuevo</th>
-                     <th>Aprobación Anterior</th>
-                     <th>Aprobación Nueva</th>
-                     <th>Comentario</th>
-                     <th>Fecha</th>
-                   </tr>
-                 </thead>
-                 <tbody>`;
-
-           datos.forEach((h, index) => {
-             html += `<tr>
-               <td>${index + 1}</td>
-               <td>${h.NUM_TIENDA || '-'}</td>
-               <td>${h.ESTADO_ANTERIOR || '-'}</td>
-               <td>${h.ESTADO_NUEVO || '-'}</td>
-               <td>${h.APROBACION_ANTERIOR || '-'}</td>
-               <td><strong style="color: #28a745;">${h.APROBACION_NUEVA || '-'}</strong></td>
-               <td>${h.COMENTARIO_NUEVO || '-'}</td>
-               <td>${h.FECHA_CAMBIO || '-'}</td>
-             </tr>`;
-           });
-
-           html += '</tbody></table></div>';
-           $('#contenidoHistorial').html(html);
-         },
-         error: function (xhr, status, error) {
-           console.error('❌ Error cargando historial individual:', {
-             status: xhr.status,
-             responseText: xhr.responseText,
-             error: error
-           });
-           $('#contenidoHistorial').html('<div class="alert alert-danger">Error al cargar historial.</div>');
-         }
-       });
      });
 
-     // CARGAR SOLICITUDES AL INICIO
-     console.log("🚀 Iniciando aplicación...");
-     cargarSolicitudes();
-   });
- </script>
+     // Agregar estilos personalizados
+     if (!document.getElementById('aprobacion-styles-grande')) {
+       const styles = document.createElement('style');
+       styles.id = 'aprobacion-styles-grande';
+       styles.textContent = `
+         .aprobacion-modal-grande {
+           border-radius: 16px !important;
+           box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2) !important;
+           font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+         }
+         .aprobacion-modal-grande .swal2-title {
+           font-size: 24px !important;
+           font-weight: 700 !important;
+           color: #333 !important;
+           margin-bottom: 20px !important;
+         }
+         .aprobacion-modal-grande select:focus {
+           border-color: #667eea !important;
+           box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+           outline: none !important;
+         }
+         .aprobacion-modal-grande .btn {
+           font-weight: 600 !important;
+           border-radius: 10px !important;
+           padding: 12px 24px !important;
+           font-size: 16px !important;
+           transition: all 0.3s ease !important;
+           margin: 5px !important;
+         }
+         .aprobacion-modal-grande .btn:hover {
+           transform: translateY(-2px) !important;
+           box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
+         }
+         .aprobacion-modal-grande .swal2-actions {
+           margin-top: 30px !important;
+         }
+       `;
+       document.head.appendChild(styles);
+     }
+     
+     // Focus en el select
+     setTimeout(() => {
+       $('#nuevaAprobacion').focus();
+     }, 100);
+   }
+ }).then((result) => {
+   if (result.isConfirmed) {
+     console.log("📤 Enviando cambio de aprobación:", {
+       id_solicitud: id,
+       nueva_aprobacion: result.value.nuevaAprobacion,
+       dirigido_rh: result.value.dirigidoRH  // ✅ AGREGAR ESTA LÍNEA
+     });
+
+     // Mostrar loading
+     Swal.fire({
+       title: '<i class="fas fa-spinner fa-spin"></i> Procesando cambio...',
+       html: `
+         <div style="text-align: center; padding: 20px;">
+           <div style="font-size: 16px; margin-bottom: 10px;">
+             Actualizando estado de aprobación
+           </div>
+           <div style="color: #666; font-size: 14px;">
+             Por favor espera un momento...
+           </div>
+         </div>
+       `,
+       allowOutsideClick: false,
+       didOpen: () => Swal.showLoading()
+     });
+
+     // ✅ MODIFICAR EL AJAX PARA INCLUIR dirigido_rh
+     const dataToSend = {
+       id_solicitud: id,
+       nueva_aprobacion: result.value.nuevaAprobacion,
+       comentario: `Cambio de aprobación a: ${result.value.nuevaAprobacion}${result.value.dirigidoRH ? ` - Asignado a: ${result.value.dirigidoRH}` : ''}`
+     };
+
+     // ✅ AGREGAR dirigido_rh SI LA SOLICITUD ES APROBADA
+     if (result.value.nuevaAprobacion === 'Aprobado' && result.value.dirigidoRH) {
+       dataToSend.dirigido_rh = result.value.dirigidoRH;
+     }
+
+     $.ajax({
+       url: './GerenteTDS/crudaprobaciones.php?action=procesar_aprobacion_gerente',
+       type: 'POST',
+       dataType: 'json',
+       data: dataToSend, // ✅ USAR dataToSend EN LUGAR DE OBJETO INLINE
+       success: function(response) {
+         console.log("✅ Respuesta exitosa del servidor:", response);
+         if (response.success) {
+           // ✅ MODIFICAR MENSAJE DE ÉXITO PARA INCLUIR ASIGNACIÓN
+           let mensajeExito = `
+             <div style="text-align: center; padding: 15px;">
+               <div style="font-size: 16px; margin-bottom: 10px;">
+                 El estado de aprobación ha sido actualizado correctamente
+               </div>
+               <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 12px; color: #155724;">
+                 <strong><i class="fas fa-check"></i> Nuevo Estado:</strong> ${result.value.nuevaAprobacion}
+               </div>`;
+
+           if (result.value.nuevaAprobacion === 'Aprobado' && result.value.dirigidoRH) {
+             mensajeExito += `
+               <div style="background: #cce5ff; border: 1px solid #99d1ff; border-radius: 8px; padding: 12px; color: #004085; margin-top: 10px;">
+                 <strong><i class="fas fa-user-check"></i> Asignada a:</strong> ${result.value.dirigidoRH}
+               </div>`;
+           }
+
+           mensajeExito += `</div>`;
+           
+           Swal.fire({
+             icon: 'success',
+             title: '<i class="fas fa-check-circle"></i> Cambio Realizado!',
+             html: mensajeExito,
+             timer: 3000,
+             showConfirmButton: false
+           });
+           cargarSolicitudes();
+         } else {
+           console.error("❌ Error en respuesta del servidor:", response);
+           Swal.fire({
+             icon: 'error',
+             title: '<i class="fas fa-exclamation-circle"></i> Error',
+             text: response.error || 'Error al actualizar el estado de aprobación',
+             confirmButtonText: 'Entendido'
+           });
+         }
+       },
+       error: function(xhr, status, error) {
+         console.error('❌ Error AJAX completo:', {
+           status: xhr.status,
+           statusText: xhr.statusText,
+           responseText: xhr.responseText,
+           error: error,
+           url: './GerenteTDS/crudaprobaciones.php?action=procesar_aprobacion_gerente'
+         });
+         
+         Swal.fire({
+           icon: 'error',
+           title: '<i class="fas fa-wifi"></i> Error de Conexión',
+           html: `
+             <div style="text-align: left;">
+               <p>No se pudo conectar al servidor.</p>
+               <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                 <small><strong>Status:</strong> ${xhr.status}</small><br>
+                 <small><strong>Status Text:</strong> ${xhr.statusText}</small><br>
+                 <small><strong>Error:</strong> ${error}</small><br>
+                 <small><strong>URL:</strong> ./GerenteTDS/crudaprobaciones.php</small><br>
+                 <small><strong>Response:</strong> ${xhr.responseText ? xhr.responseText.substring(0, 200) + '...' : 'Sin respuesta'}</small>
+               </div>
+             </div>
+           `,
+           confirmButtonText: 'Entendido'
+         });
+       }
+     });
+   }
+ });
+});
+
+      // ✅ CARGAR SOLICITUDES AL INICIAR
+      cargarSolicitudes();
+
+      console.log("✅ Panel de Gerentes inicializado correctamente");
+    });
+  </script>
 </body>
 </html>
