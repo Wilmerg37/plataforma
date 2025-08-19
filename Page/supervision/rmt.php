@@ -3,7 +3,6 @@ require_once "../../Funsiones/consulta.php";
 require_once "../../Funsiones/kpi.php";
 require_once "../../Funsiones/supervision/queryRpro.php";
 
-
 $tienda = (isset($_POST['tienda'])) ? $_POST['tienda'] : '';
 $fi = date('Y-m-d', strtotime(substr($_POST['fecha'], 0, -13)));
 $ff = date('Y-m-d', strtotime(substr($_POST['fecha'], -10)));
@@ -24,65 +23,79 @@ $semanas = rangoWe($fi, $ff);
 $tiendas = explode(',', $tienda);
 sort($tiendas);
 
+// Function to calculate time difference
+function calcularDiferenciaTiempo($entrada, $salida) {
+    if ($entrada == '00:00' || $salida == '00:00' || $entrada == 'DESCANSO' || $salida == 'DESCANSO') {
+        return '--';
+    }
+    
+    $timeEntrada = strtotime($entrada);
+    $timeSalida = strtotime($salida);
+    
+    if ($timeSalida < $timeEntrada) {
+        // Si la salida es al día siguiente
+        $timeSalida += 24 * 3600;
+    }
+    
+    $diferencia = $timeSalida - $timeEntrada;
+    $horas = floor($diferencia / 3600);
+    $minutos = floor(($diferencia % 3600) / 60);
+    
+    return sprintf('%02d:%02d', $horas, $minutos);
+}
 ?>
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Horarios</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+     <link rel="stylesheet" href="../css/estilosmarcaje.css">
+</head>
 
+<body>
+<div class="main-container">
+    <div class="page-header">
+        <h1><i class="fas fa-clock"></i> Control de Horarios y Asistencia</h1>
+        <p class="mb-0">Período: <?php echo date('d/m/Y', strtotime($fi)) . ' - ' . date('d/m/Y', strtotime($ff)); ?></p>
+    </div>
 
-<div class="container-fluid shadow rounded py-3 px-4">
+    <div class="legend-container">
+        <div class="legend-box etiqueta-1"><i class="fas fa-users"></i> GTO Presencial</div>
+        <div class="legend-box etiqueta-2"><i class="fas fa-video"></i> GTO Virtual</div>
+        <div class="legend-box etiqueta-3"><i class="fas fa-tv"></i> TV Presencial</div>
+        <div class="legend-box etiqueta-4"><i class="fas fa-desktop"></i> TV Virtual</div>
+        <div class="legend-box etiqueta-5"><i class="fas fa-handshake"></i> Reunión GTS</div>
+        <div class="legend-box etiqueta-6"><i class="fas fa-comments"></i> Reunión ASS</div>
+        <div class="legend-box etiqueta-7"><i class="fas fa-graduation-cap"></i> Inducción ROY</div>
+        <div class="legend-box etiqueta-8"><i class="fas fa-birthday-cake"></i> Cumpleaños</div>
+        <div class="legend-box etiqueta-9"><i class="fas fa-umbrella-beach"></i> Vacaciones</div>
+        <div class="legend-box etiqueta-10"><i class="fas fa-user-shield"></i> Cobertura</div>
+        <div class="legend-box etiqueta-11"><i class="fas fa-ban"></i> Suspensión LABORAL</div>
+        <div class="legend-box etiqueta-12"><i class="fas fa-medkit"></i> Suspensión IGSS</div>
+        <div class="legend-box etiqueta-13"><i class="fas fa-baby"></i> Lactancia</div>
+    </div>
 
-<style>
-    .alerta-hora {
-        background-color: #f8d7da !important;
-        color: #721c24 !important;
-        font-weight: bold;
-        text-align: center;
-    }
+    <?php
+    foreach ($tiendas as $tienda) {
+        $total = array(
+            $factura = 0,
+            $pare_roy = 0,
+            $pares_otro = 0,
+            $tota_pares = 0,
+            $accesorios = 0,
+            $venta = 0,
+            $meta = 0,
+            $hora = 0,
+            $mt_prs = 0,
+            $vta_prs = 0,
+            $dif_prs = 0
+        );
 
-    .legend-container {
-    display: flex;
-    flex-wrap: nowrap; /* ✅ Evita que pasen a otra fila */
-    gap: 10px;
-    justify-content: center; /* O 'center' si quieres centrarlos */
-    margin-top: 20px;
-    overflow-x: auto; /* ✅ Para permitir scroll horizontal si no caben */
-}
-
-
-  .legend-box {
-      padding: 10px 15px;
-      border-radius: 5px;
-      color: #000;
-      font-weight: bold;
-      text-align: center;
-      min-width: 50px;
-  }
-
-
-                      @media (max-width: 600px) {
-                        .legend-box {
-                        flex: 1 1 100%; /* En móviles: cada div ocupa toda la fila */
-                        }
-                    }
-
-</style>
-  <?php
-  foreach ($tiendas as $tienda) {
-  
-      $total = array(
-        $factura = 0,
-        $pare_roy = 0,
-        $pares_otro = 0,
-        $tota_pares = 0,
-        $accesorios = 0,
-        $venta = 0,
-        $meta = 0,
-        $hora = 0,
-        $mt_prs = 0 ,
-        $vta_prs = 0 ,
-        $dif_prs = 0
-      );
-
-      $query = "  SELECT 
+        $query = "  SELECT 
                         HR.TIENDA, 
                         HR.CODIGO_EMPL, 
                         HR.NOMBRE_EMPL, 
@@ -138,436 +151,514 @@ sort($tiendas);
                     ORDER BY 
                         HR.CODIGO_EMPL, 
                         TO_DATE(HR.FECHA, 'YYYY-MM-DD')";
-      $resultado = consultaOracle(3, $query);      
-      $cnt=1;
-   
-  ?>
-
- <div class="legend-container">
-                <div class="legend-box" style="background-color:rgb(117, 36, 172);">GTO Presencial</div>
-                <div class="legend-box" style="background-color:rgb(87, 244, 250);">GTO Virtual</div>
-                <div class="legend-box" style="background-color:rgb(55, 118, 255);">TV Presencial</div>
-                <div class="legend-box" style="background-color:rgb(82, 247, 90);">TV Virtual</div>
-                <div class="legend-box" style="background-color:rgb(252, 239, 62);">Reunión GTS</div>
-                <div class="legend-box" style="background-color:rgb(255, 124, 36);">Reunión ASS</div>
-                <div class="legend-box" style="background-color:rgb(141, 69, 1);">Induccion ROY</div>
-                <div class="legend-box" style="background-color:rgb(255, 104, 235);">Cumpleaños</div>
-                <div class="legend-box" style="background-color:rgb(148, 148, 148);">Vacaciones</div>
-                <div class="legend-box" style="background-color:rgb(117, 71, 97);">Cobertura</div>
-                <div class="legend-box" style="background-color:rgb(68, 119, 66);">Suspensión LABORAL</div>
-                <div class="legend-box" style="background-color:rgb(64, 68, 151);">Suspensión IGSS</div>
-                <div class="legend-box" style="background-color:rgb(138, 28, 129);">Lactancia</div>
-             </div>
-
-      <h3 class="text-center font-weight-bold text-primary">Tienda: <?php echo $tienda?>
-         
-     <style>
-                thead th {
-                    vertical-align: middle !important;
-                    text-align: center;
-                }
-
-                .descanso {
-                    background-color:rgb(250, 95, 95) !important;
-                    color: #000;
-                    font-style: italic;
-                }
-
-                .celda-meta {
-                    background-color: #28a745 !important; /* Bootstrap's success green */
-                    color: white !important;
-                    font-weight: bold;
-                }
-
-                 .celda-fecha {
-                    background-color:rgb(221, 124, 68) !important; /* Bootstrap's success green */
-                    color: white !important;
-                    font-weight: bold;
-                }
-
-                .celda-inout {
-                    background-color: white !important;
-                    color: black !important;
-                    font-weight: bold;
-                }
-                
-                .borde-izquierdo-total {
-                     border-left: 1px solid #dee2e6; /* Borde izquierdo igual al de Bootstrap */
-                   }
-
-                    .etiqueta-1 {
-                  background-color:rgb(158, 35, 240)!important; /* verde claro */
-                  }
-                  .etiqueta-2 {
-                   background-color:rgb(87, 244, 250) !important; /* celeste */
-                  }
-                  .etiqueta-3 {
-                    background-color:rgb(55, 118, 255) !important; /* amarillo claro */
-                  }
-                  .etiqueta-4 {
-                  background-color:rgb(82, 247, 90) !important; /* naranja claro */
-                  }
-                  .etiqueta-5 {
-                    background-color:rgb(252, 239, 62) !important; /* rosa claro */
-                  }
-                  .etiqueta-6 {
-                    background-color:rgb(255, 124, 36) !important; /* VERDE claro */
-                  }
-                  .etiqueta-7 {
-                    background-color:rgb(141, 69, 1) !important; /* VERDE claro */
-                  }
-                  .etiqueta-8 {
-                    background-color:rgb(255, 104, 235) !important; /* VERDE claro */
-                  }
-                   .etiqueta-9 {
-                  background-color:rgb(148, 148, 148) !important; /* naranja claro */
-                  }
-                  .etiqueta-10 {
-                   background-color:rgb(117, 71, 97) !important; /* rosa claro */                    
-                  }
-                  .etiqueta-11 {
-                   background-color:rgb(68, 119, 66) !important; /* VERDE claro */
-                  }
-                  .etiqueta-12 {
-                    background-color:rgb(64, 68, 151) !important; /* VERDE claro */
-                  }
-                  .etiqueta-13 {
-                    background-color:rgb(209, 133, 203) !important; /* VERDE claro */
-                  }
-
-                </style>
-
-      <table style="font-size:14px;" class="table table-hover table-sm tbrdst">
-    <thead class="bg-primary">
-        <td>No</td>
-        <td>ID REGISTRO</td>
-        <td>Tienda</td>
-        <td>Codigo</td>          
-        <td>Nombre</td>
-        <td>Puesto</td>
-        <td>Dia</td>
-        <td>Fecha</td>
-        <td>HORA INGRESO</td>
-        <td>MARCO ENTRADA</td>
-        <td>HORA SALIDA</td>
-        <td>MARCO SALIDA</td>
-        <td>JUSTIFICACION</td>
-        <td>FECHA INICIO</td>
-        <td>FECHA FINAL</td>
-        <td>HORA INICIO</td>
-        <td>HORA FINAL</td>
-        <td>FECHA JUST.</td>
-        <td>ACCION</td>
-    </thead>
-    
-    
-
-<tbody class="align-middle font-size" style="width:100%; color: black; font-weight: normal;">
-<?php
-foreach ($resultado as $rdst) {
-    $cnt++;
-
-    // Validación de HORA INGRESO y MARCO ENTRADA
-    $hora_ingreso = ($rdst[6] != 'DESCANSO') ? strtotime($rdst[6]) : false;
-    $marco_entrada = ($rdst[7] != '00:00') ? strtotime($rdst[7]) : false;
-
-    $claseEntrada = '';
-    if (!$marco_entrada || !$hora_ingreso) {
-        $claseEntrada = 'alerta-hora';
-    } elseif ($marco_entrada > $hora_ingreso) {
-        $claseEntrada = 'alerta-hora';
-    }
-
-    // Validación de HORA SALIDA y MARCO SALIDA
-    $hora_salida = ($rdst[8] != 'DESCANSO') ? strtotime($rdst[8]) : false;
-    $marco_salida = ($rdst[9] != '00:00') ? strtotime($rdst[9]) : false;
-
-    $claseSalida = '';
-    if (!$marco_salida || !$hora_salida) {
-        $claseSalida = 'alerta-hora';
-    } elseif ($marco_salida < $hora_salida) {
-        $claseSalida = 'alerta-hora';
-    }
-
+        $resultado = consultaOracle(3, $query);
+        $cnt = 1;
     ?>
-    <tr class="align-middle font-size">
-        <td><?php echo $cnt ?></td>
-        <td><?php echo $rdst[14] ?></td> <!-- TIENDA -->
-        <td><?php echo $rdst[0] ?></td> <!-- TIENDA -->
-        <td><?php echo $rdst[1] ?></td> <!-- CODIGO -->
-        <td><?php echo $rdst[2] ?></td> <!-- NOMBRE -->
-        <td><?php echo $rdst[3] ?></td> <!-- PUESTO -->
-        <td><?php echo $rdst[4] ?></td> <!-- DIA -->
-        <td><?php echo $rdst[5] ?></td> <!-- FECHA -->
-                 
-                 <?php
-            $etiquetaClase = !empty($rdst[18]) ? 'etiqueta-' . intval($rdst[12]) : '';
+
+    <div class="store-section">
+        <div class="store-header">
+            <i class="fas fa-store"></i>
+            <h3>Tienda: <?php echo $tienda?></h3>
+        </div>
+
+        <div class="export-section">
+            <button class="btn btn-export btn-modern" onclick="exportarExcel('tabla_<?php echo $tienda; ?>')">
+                <i class="fas fa-file-excel"></i> Exportar a Excel
+            </button>
+        </div>
+
+        <table id="tabla_<?php echo $tienda; ?>" class="professional-table table-responsive">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-hashtag"></i> No</th>
+                    <th><i class="fas fa-id-card"></i> ID Registro</th>
+                    <th><i class="fas fa-store"></i> Tienda</th>
+                    <th><i class="fas fa-user-tag"></i> Código</th>          
+                    <th><i class="fas fa-user"></i> Nombre</th>
+                    <th><i class="fas fa-briefcase"></i> Puesto</th>
+                    <th><i class="fas fa-calendar-day"></i> Día</th>
+                    <th><i class="fas fa-calendar"></i> Fecha</th>
+                    <th><i class="fas fa-clock"></i> Hora Ingreso</th>
+                    <th><i class="fas fa-sign-in-alt"></i> Marco Entrada</th>
+                    <th><i class="fas fa-clock"></i> Hora Salida</th>
+                    <th><i class="fas fa-sign-out-alt"></i> Marco Salida</th>
+                    <th><i class="fas fa-stopwatch"></i> Tiempo Trabajado</th>
+                    <th><i class="fas fa-comment-alt"></i> Justificación</th>
+                    <th><i class="fas fa-calendar-plus"></i> Fecha Inicio</th>
+                    <th><i class="fas fa-calendar-minus"></i> Fecha Final</th>
+                    <th><i class="fas fa-clock"></i> Hora Inicio</th>
+                    <th><i class="fas fa-clock"></i> Hora Final</th>
+                    <th><i class="fas fa-calendar-check"></i> Fecha Just.</th>
+                    <th><i class="fas fa-cogs"></i> Acción</th>
+                </tr>
+            </thead>
+            
+            <tbody>
+            <?php
+            foreach ($resultado as $rdst) {
+                $cnt++;
+
+                // Validación de HORA INGRESO y MARCO ENTRADA
+                $hora_ingreso = ($rdst[6] != 'DESCANSO') ? strtotime($rdst[6]) : false;
+                $marco_entrada = ($rdst[7] != '00:00') ? strtotime($rdst[7]) : false;
+
+                $claseEntrada = '';
+                if (!$marco_entrada || !$hora_ingreso) {
+                    $claseEntrada = 'alerta-hora';
+                } elseif ($marco_entrada > $hora_ingreso) {
+                    $claseEntrada = 'alerta-hora';
+                }
+
+                // Validación de HORA SALIDA y MARCO SALIDA
+                $hora_salida = ($rdst[8] != 'DESCANSO') ? strtotime($rdst[8]) : false;
+                $marco_salida = ($rdst[9] != '00:00') ? strtotime($rdst[9]) : false;
+
+                $claseSalida = '';
+                if (!$marco_salida || !$hora_salida) {
+                    $claseSalida = 'alerta-hora';
+                } elseif ($marco_salida < $hora_salida) {
+                    $claseSalida = 'alerta-hora';
+                }
+
+                // Calcular diferencia de tiempo
+                $tiempoTrabajado = calcularDiferenciaTiempo($rdst[7], $rdst[9]);
+                ?>
+                <tr>
+                    <td><?php echo $cnt ?></td>
+                    <td><?php echo $rdst[14] ?></td>
+                    <td><?php echo $rdst[0] ?></td>
+                    <td><?php echo $rdst[1] ?></td>
+                    <td style="text-align: left;"><?php echo $rdst[2] ?></td>
+                    <td><?php echo $rdst[3] ?></td>
+                    <td><?php echo $rdst[4] ?></td>
+                    <td><?php echo $rdst[5] ?></td>
+                             
+                    <?php
+                    $etiquetaClase = !empty($rdst[12]) ? 'etiqueta-' . intval($rdst[12]) : '';
+                    ?>
+                    <td class="<?php echo $etiquetaClase; ?>"><?php echo $rdst[6] ?></td>
+                    <td class="<?php echo $claseEntrada . ' ' . $etiquetaClase; ?>"><?php echo $rdst[7] ?></td>
+                    <td class="<?php echo $etiquetaClase; ?>"><?php echo $rdst[8] ?></td>
+                    <td class="<?php echo $claseSalida . ' ' . $etiquetaClase; ?>"><?php echo $rdst[9] ?></td>
+                    <td class="tiempo-diferencia"><?php echo $tiempoTrabajado ?></td>
+
+                    <td style="text-align: left;"><?php echo $rdst[13] ?></td>
+                    <td><?php echo $rdst[15] ?></td>
+                    <td><?php echo $rdst[16] ?></td>
+                    <td><?php echo $rdst[18] ?></td>
+                    <td><?php echo $rdst[19] ?></td>
+                    <td><?php echo $rdst[17] ?></td>
+                    
+                    <td>
+                        <button class="btn btn-justify btn-modern justificar-btn" 
+                                data-id="<?php echo $rdst[14]; ?>" 
+                                data-nombre="<?php echo $rdst[2]; ?>" 
+                                data-codigo="<?php echo $rdst[1]; ?>"
+                                data-fecha="<?php echo htmlspecialchars($rdst[5]); ?>"
+                                data-dia="<?php echo $rdst[4]; ?>"
+                                data-hora-in="<?php echo $rdst[6]; ?>"
+                                data-hora-out="<?php echo $rdst[8]; ?>"
+                                data-justificacion="<?php echo htmlspecialchars($rdst[13]); ?>">
+                            <i class="fas fa-edit"></i> Justificar
+                        </button>
+                    </td>
+
+                </tr>
+                <?php
+                if ($rdst[3] === 'VACACIONISTA') {
+                    $rdst[6] = 0;
+                }
+            }
             ?>
-            <td class="<?php echo $etiquetaClase; ?>"><?php echo $rdst[6] ?></td> <!-- HORA INGRESO -->
-            <td class="<?php echo $claseEntrada . ' ' . $etiquetaClase; ?>"><?php echo $rdst[7] ?></td> <!-- MARCO ENTRADA -->
-            <td class="<?php echo $etiquetaClase; ?>"><?php echo $rdst[8] ?></td> <!-- HORA SALIDA -->
-            <td class="<?php echo $claseSalida . ' ' . $etiquetaClase; ?>"><?php echo $rdst[9] ?></td> <!-- MARCO SALIDA -->
-
-        <td><?php echo $rdst[13] ?></td> <!-- JUSTIFICACION -->
-        <td><?php echo $rdst[15] ?></td> <!-- JUSTIFICACION -->
-        <td><?php echo $rdst[16] ?></td> <!-- JUSTIFICACION -->
-          <td><?php echo $rdst[18] ?></td> <!-- JUSTIFICACION -->
-        <td><?php echo $rdst[19] ?></td> <!-- JUSTIFICACION -->
-        <td><?php echo $rdst[17] ?></td> <!-- JUSTIFICACION -->
-        
-        <td>
-  <button class="btn btn-sm btn-warning justificar-btn" 
-          data-id="<?php echo $rdst[14]; ?>" 
-          data-nombre="<?php echo $rdst[2]; ?>" 
-          data-codigo="<?php echo $rdst[1]; ?>"
-          data-fecha="<?php echo htmlspecialchars($rdst[5]); ?>"
-          data-dia="<?php echo $rdst[4]; ?>"
-          data-hora-in="<?php echo $rdst[6]; ?>"
-          data-hora-out="<?php echo $rdst[8]; ?>"
-          data-justificacion="<?php echo htmlspecialchars($rdst[13]); ?>">
-    Justificar
-  </button>
-
-  
-</td>
-
-    </tr>
-    <?php
-    // Por si quieres manejar casos especiales como VACACIONISTA
-    if ($rdst[3] === 'VACACIONISTA') {
-        $rdst[6] = 0;
-    }
-}
-?>
-
-<script>
-     $(document).on('click', '.justificar-btn', function () {
-  // Rellenar el modal con los datos de la fila
-  $('#id_registro').val($(this).data('id'));
-  $('#nombre_empleado').val($(this).data('nombre'));
-  $('#codigo_empleado').val($(this).data('codigo'));
-  $('#fecha').val($(this).data('fecha'));
-  $('#dia').val($(this).data('dia'));
-  $('#hora_in').val($(this).data('hora-in'));
-  $('#hora_out').val($(this).data('hora-out'));
-  $('#justificacion').val($(this).data('justificacion'));
-
-  $('#justificarModal').modal('show');
-});
-
-// Guardar justificación
-$('#formJustificacion').submit(function (e) {
-  e.preventDefault();
-  console.log($(this).serialize()); // ← Agregado para depurar
-  $.ajax({
-    url: '/roy/Page/supervision/guardar_justificacion.php',
- // ruta al archivo PHP que guardará
-    type: 'POST',
-    data: $(this).serialize(),
-    success: function (response) {
-      alert('Justificación guardada correctamente');
-      $('#justificarModal').modal('hide');
+            </tbody>
+        </table>
+    </div>
     
-    },
-    error: function () {
-      alert('Ocurrió un error al guardar la justificación');
-    }
-  });
-});
-
- $('#motivo_select').on('change', function () {
-  var selected = $(this).val();
-
-  // Mostrar fechas si aplica
-  if (['SUSPENSION IGSS', 'SUSPENSION LABORAL', 'VACACIONES','CUMPLEANOS'].includes(selected)) {
-    $('#fechasSuspension').show();
-  } else {
-    $('#fechasSuspension').hide();
-    $('#fecha_inicio').val('');
-    $('#fecha_fin').val('');
-  }
-
-  // Mostrar horas si seleccionan GTO PRESENCIAL
-  if (['GTO PRESENCIAL', 'GTO VIRTUAL', 'TV PRESENCIAL','TV VIRTUAL','REUNION GTS' , 'REUNION ASS','INDUCCION ROY', 'LACTANCIA','COBERTURA'].includes(selected)) {
-    $('#horasGTO').show();
-  } else {
-    $('#horasGTO').hide();
-    $('#gto_hora_ingreso').val('');
-    $('#gto_hora_salida').val('');
-  }
-
-  // Justificación automática o editable
-  if (selected === 'OTROS' || selected === '') {
-    $('#justificacion').val('').prop('readonly', false);
-  } else {
-    $('#justificacion').val(selected).prop('readonly', true);
-  }
-
-  //almacena el valor de la etiqueta
-var etiquetas = {
-  "GTO PRESENCIAL": 1,
-  "GTO VIRTUAL": 2,
-  "TV PRESENCIAL": 3,
-  "TV VIRTUAL": 4,
-  "REUNION GTS": 5,
-  "REUNION ASS": 6,
-  "INDUCCION ROY": 7,
-  "CUMPLEANOS": 8,
-  "VACACIONES": 9,
-  "COBERTURA": 10,
-  "SUSPENSION LABORAL": 11,
-  "SUSPENSION IGSS": 12,
-  "LACTANCIA": 13
-};
-
-$('#etiqueta').val(etiquetas[selected] || '');
-
-
-});
-
-</script>
-</tbody>
-
-    
-    <tfoot>
-    </tfoot>
-</table>
-
-         
-      <hr>
-  <?php
-   
-  }
-  ?>
+    <?php } ?>
 </div>
 
 <!-- Modal Justificación -->
 <div class="modal fade" id="justificarModal" tabindex="-1" role="dialog" aria-labelledby="justificarModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog modal-lg" role="document">
     <form id="formJustificacion">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Justificación de Horario</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+          <h5 class="modal-title"><i class="fas fa-edit"></i> Justificación de Horario</h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">           
-  <input type="hidden" name="id_registro" id="id_registro">
-  <input type="hidden" name="etiqueta" id="etiqueta">
+            <input type="hidden" name="id_registro" id="id_registro">
+            <input type="hidden" name="etiqueta" id="etiqueta">
 
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Empleado</label>
+                        <input type="text" class="form-control" id="nombre_empleado" disabled>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label><i class="fas fa-user-tag"></i> Código</label>
+                        <input type="text" class="form-control" id="codigo_empleado" disabled>
+                    </div>
+                </div>
+            </div>
 
-  <div class="form-group">
-    <label>Empleado</label>
-    <input type="text" class="form-control" id="nombre_empleado" disabled>
-  </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar"></i> Fecha</label>
+                        <input type="text" class="form-control" id="fecha" disabled>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-day"></i> Día</label>
+                        <input type="text" class="form-control" id="dia" disabled>
+                    </div>
+                </div>
+            </div>
 
-  <div class="form-group">
-    <label>Código</label>
-    <input type="text" class="form-control" id="codigo_empleado" disabled>
-  </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label><i class="fas fa-clock"></i> Hora Ingreso</label>
+                        <input type="text" class="form-control" id="hora_in" disabled>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label><i class="fas fa-clock"></i> Hora Salida</label>
+                        <input type="text" class="form-control" id="hora_out" disabled>
+                    </div>
+                </div>
+            </div>
 
-  <div class="form-group">
-    <label>Fecha</label>
-    <input type="text" class="form-control" id="fecha" disabled>
-  </div>
+            <div class="form-group">
+                <label><i class="fas fa-list"></i> Seleccionar motivo</label>
+                <select class="form-control" id="motivo_select">
+                    <option value="">-- Seleccione un motivo --</option>
+                    <option value="HOME OFFICE">HOME OFFICE</option>
+                    <option value="GTO PRESENCIAL">GTO PRESENCIAL</option>
+                    <option value="GTO VIRTUAL">GTO VIRTUAL</option>
+                    <option value="TV PRESENCIAL">TV PRESENCIAL</option>
+                    <option value="TV VIRTUAL">TV VIRTUAL</option>
+                    <option value="REUNION GTS">REUNION GTS</option>
+                    <option value="REUNION ASS">REUNION ASS</option>
+                    <option value="INDUCCION ROY">INDUCCION ROY</option>
+                    <option value="CUMPLEANOS">CUMPLEAÑOS</option>
+                    <option value="VACACIONES">VACACIONES</option>
+                    <option value="COBERTURA">COBERTURA</option>
+                    <option value="SUSPENSION LABORAL">SUSPENSION LABORAL</option>
+                    <option value="SUSPENSION IGGSS">SUSPENSION IGSS</option>
+                    <option value="LACTANCIA">LACTANCIA</option>
+                    <option value="OTROS">OTROS</option>
+                </select>
+            </div>
 
-  <div class="form-group">
-    <label>Día</label>
-    <input type="text" class="form-control" id="dia" disabled>
-  </div>
+            <!-- Fechas de SUSPENSION -->
+            <div id="fechasSuspension" style="display: none;">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-plus"></i> Fecha Inicio</label>
+                            <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-minus"></i> Fecha Fin</label>
+                            <input type="date" class="form-control" name="fecha_fin" id="fecha_fin">
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-  <div class="form-group">
-    <label>Hora Ingreso</label>
-    <input type="text" class="form-control" id="hora_in" disabled>
-  </div>
+            <!-- Horas para capacitaciones -->
+            <div id="horasGTO" style="display: none;">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label><i class="fas fa-clock"></i> Hora Ingreso</label>
+                            <input type="time" class="form-control" name="gto_hora_ingreso" id="gto_hora_ingreso">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label><i class="fas fa-clock"></i> Hora Salida</label>
+                            <input type="time" class="form-control" name="gto_hora_salida" id="gto_hora_salida">
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-  <div class="form-group">
-    <label>Hora Salida</label>
-    <input type="text" class="form-control" id="hora_out" disabled>
-  </div>
-
-  <!-- NUEVO SELECT DE MOTIVOS -->
-  <div class="form-group">
-    <label>Seleccionar motivo</label>
-    <select class="form-control" id="motivo_select">
-      <option value="">-- Seleccione un motivo --</option>
-      <option value="HOME OFFICE">HOME OFFICE</option>
-      <option value="GTO PRESENCIAL">GTO PRESENCIAL</option> <!-- ← NUEVA OPCIÓN -->
-         <option value="GTO VIRTUAL">GTO VIRTUAL</option> <!-- ← NUEVA OPCIÓN -->
-         <option value="TV PRESENCIAL">TV PRESENCIAL</option> <!-- ← NUEVA OPCIÓN -->
-         <option value="TV VIRTUAL">TV VIRTUAL</option> <!-- ← NUEVA OPCIÓN -->
-          <option value="REUNION GTS">REUNION GTS</option> <!-- ← NUEVA OPCIÓN -->
-          <option value="REUNION ASS">REUNION ASS</option> <!-- ← NUEVA OPCIÓN -->
-          <option value="INDUCCION ROY">INDUCCION ROY</option> <!-- ← NUEVA OPCIÓN -->
-         <option value="CUMPLEANOS">CUMPLEAÑOS</option> <!-- ← NUEVA OPCIÓN -->
-         <option value="VACACIONES">VACACIONES</option> <!-- ← NUEVA OPCIÓN -->
-         <option value="COBERTURA">COBERTURA</option> <!-- ← NUEVA OPCIÓN -->
-         <option value="SUSPENSION LABORAL">SUSPENSION LABORAL</option> <!-- ← NUEVA OPCIÓN -->
-         <option value="SUSPENSION IGGSS">SUSPENSION IGSS</option> <!-- ← NUEVA OPCIÓN -->
-           <option value="LACTANCIA">LACTANCIA</option> <!-- ← NUEVA OPCIÓN -->
-      <option value="OTROS">OTROS</option>
-    </select>
-  </div>
-
-  <!-- NUEVO: Fechas de SUSPENSION -->
-<div id="fechasSuspension" style="display: none;">
-  <div class="form-group">
-    <label>Fecha Inicio</label>
-    <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio">
-  </div>
-  <div class="form-group">
-    <label>Fecha Fin</label>
-    <input type="date" class="form-control" name="fecha_fin" id="fecha_fin">
-  </div>
-</div>
-
-<!-- NUEVO: Horas para GTO PRESENCIAL -->
-<div id="horasGTO" style="display: none;">
-  <div class="form-group">
-    <label>Hora Ingreso</label>
-    <input type="time" class="form-control" name="gto_hora_ingreso" id="gto_hora_ingreso">
-  </div>
-  <div class="form-group">
-    <label>Hora Salida</label>
-    <input type="time" class="form-control" name="gto_hora_salida" id="gto_hora_salida">
-  </div>
-</div>
-
-
-  <div class="form-group">
-    <label>Justificación</label>
-    <textarea class="form-control" name="justificacion" id="justificacion" rows="3"></textarea>
-  </div>
-</div>
+            <div class="form-group">
+                <label><i class="fas fa-comment-alt"></i> Justificación</label>
+                <textarea class="form-control" name="justificacion" id="justificacion" rows="3"></textarea>
+            </div>
+        </div>
 
         <div class="modal-footer">
-          <button type="submit" class="btn btn-success">Guardar</button>
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            <button type="submit" class="btn btn-success btn-modern">
+                <i class="fas fa-save"></i> Guardar
+            </button>
+                              </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-comment-alt"></i> Justificación</label>
+                <textarea class="form-control" name="justificacion" id="justificacion" rows="3"></textarea>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-success btn-modern">
+                <i class="fas fa-save"></i> Guardar
+            </button>
+            <button type="button" class="btn btn-secondary btn-modern" data-dismiss="modal">
+                <i class="fas fa-times"></i> Cerrar
+            </button>
         </div>
       </div>
     </form>
   </div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
+$(document).ready(function() {
+    // Inicializar DataTables con configuración profesional
+    $('.professional-table').each(function() {
+        $(this).DataTable({
+            "searching": true,
+            "paging": true,
+            "pageLength": 25,
+            "ordering": true,
+            "info": true,
+            "responsive": true,
+            "autoWidth": false,
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
+            },
+            "dom": '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+                   '<"row"<"col-sm-12"tr>>' +
+                   '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+            "columnDefs": [
+                { "orderable": false, "targets": [-1] } // Deshabilitar ordenamiento en la columna de acciones
+            ]
+        });
+    });
 
+    // Función para exportar a Excel
+    window.exportarExcel = function(tableId) {
+        const table = document.getElementById(tableId);
+        const wb = XLSX.utils.table_to_book(table, {sheet: "Horarios"});
+        
+        // Agregar fecha al nombre del archivo
+        const fecha = new Date().toLocaleDateString('es-ES').replace(/\//g, '-');
+        const filename = `Horarios_${tableId}_${fecha}.xlsx`;
+        
+        XLSX.writeFile(wb, filename);
+        
+        // Mostrar notificación de éxito
+        showNotification('Archivo Excel generado correctamente', 'success');
+    };
 
+    // Función para mostrar notificaciones
+    function showNotification(message, type) {
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+        
+        const notification = $(`
+            <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+                 style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                <i class="fas ${icon} mr-2"></i>
+                ${message}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        `);
+        
+        $('body').append(notification);
+        
+        // Auto-remover después de 3 segundos
+        setTimeout(() => {
+            notification.alert('close');
+        }, 3000);
+    }
 
-  $('.tbrdst').DataTable({
-    "searching": false,
-    "paging": false,
-    "ordering": false,
-    "info": false,
-    "responsive": true,
-    "autoWidth": false
-  });
+    // Manejar click en botón justificar
+    $(document).on('click', '.justificar-btn', function () {
+        // Rellenar el modal con los datos de la fila
+        $('#id_registro').val($(this).data('id'));
+        $('#nombre_empleado').val($(this).data('nombre'));
+        $('#codigo_empleado').val($(this).data('codigo'));
+        $('#fecha').val($(this).data('fecha'));
+        $('#dia').val($(this).data('dia'));
+        $('#hora_in').val($(this).data('hora-in'));
+        $('#hora_out').val($(this).data('hora-out'));
+        $('#justificacion').val($(this).data('justificacion'));
 
-  $('.tooltip').tooltip();
+        $('#justificarModal').modal('show');
+    });
 
-  var url = "../Js/supervision/supervisor.js";
-  $.getScript(url);
-   
- 
+    // Guardar justificación
+    $('#formJustificacion').submit(function (e) {
+        e.preventDefault();
+        
+        // Mostrar loader en el botón
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalText = submitBtn.html();
+        submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Guardando...')
+                 .prop('disabled', true);
+        
+        $.ajax({
+            url: '/roy/Page/supervision/guardar_justificacion.php',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function (response) {
+                showNotification('Justificación guardada correctamente', 'success');
+                $('#justificarModal').modal('hide');
+                
+                // Opcional: recargar la página o actualizar la tabla
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            },
+            error: function (xhr, status, error) {
+                showNotification('Error al guardar la justificación: ' + error, 'error');
+            },
+            complete: function() {
+                // Restaurar el botón
+                submitBtn.html(originalText).prop('disabled', false);
+            }
+        });
+    });
+
+    // Manejar cambio en el select de motivo
+    $('#motivo_select').on('change', function () {
+        var selected = $(this).val();
+
+        // Mostrar fechas si aplica
+        if (['SUSPENSION IGSS', 'SUSPENSION LABORAL', 'VACACIONES','CUMPLEANOS'].includes(selected)) {
+            $('#fechasSuspension').slideDown();
+        } else {
+            $('#fechasSuspension').slideUp();
+            $('#fecha_inicio').val('');
+            $('#fecha_fin').val('');
+        }
+
+        // Mostrar horas si seleccionan capacitaciones o actividades especiales
+        if (['GTO PRESENCIAL', 'GTO VIRTUAL', 'TV PRESENCIAL','TV VIRTUAL','REUNION GTS' , 'REUNION ASS','INDUCCION ROY', 'LACTANCIA','COBERTURA'].includes(selected)) {
+            $('#horasGTO').slideDown();
+        } else {
+            $('#horasGTO').slideUp();
+            $('#gto_hora_ingreso').val('');
+            $('#gto_hora_salida').val('');
+        }
+
+        // Justificación automática o editable
+        if (selected === 'OTROS' || selected === '') {
+            $('#justificacion').val('').prop('readonly', false);
+        } else {
+            $('#justificacion').val(selected).prop('readonly', true);
+        }
+
+        // Almacena el valor de la etiqueta
+        var etiquetas = {
+            "GTO PRESENCIAL": 1,
+            "GTO VIRTUAL": 2,
+            "TV PRESENCIAL": 3,
+            "TV VIRTUAL": 4,
+            "REUNION GTS": 5,
+            "REUNION ASS": 6,
+            "INDUCCION ROY": 7,
+            "CUMPLEANOS": 8,
+            "VACACIONES": 9,
+            "COBERTURA": 10,
+            "SUSPENSION LABORAL": 11,
+            "SUSPENSION IGSS": 12,
+            "LACTANCIA": 13
+        };
+
+        $('#etiqueta').val(etiquetas[selected] || '');
+    });
+
+    // Mejorar la experiencia del usuario con tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // Agregar tooltips a los botones
+    $('.justificar-btn').attr('data-toggle', 'tooltip')
+                        .attr('data-placement', 'top')
+                        .attr('title', 'Agregar o editar justificación');
+    
+    $('.btn-export').attr('data-toggle', 'tooltip')
+                    .attr('data-placement', 'top')
+                    .attr('title', 'Descargar tabla en formato Excel');
+});
+
+// Función adicional para imprimir tabla específica
+function imprimirTabla(tableId) {
+    const tabla = document.getElementById(tableId);
+    const ventana = window.open('', '_blank');
+    
+    ventana.document.write(`
+        <html>
+        <head>
+            <title>Reporte de Horarios</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+                th { background-color: #2c3e50; color: white; }
+                .page-header { text-align: center; margin-bottom: 30px; }
+                @media print { 
+                    .btn { display: none; } 
+                    .no-print { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="page-header">
+                <h2>Reporte de Control de Horarios</h2>
+                <p>Generado el: ${new Date().toLocaleDateString('es-ES')}</p>
+            </div>
+            ${tabla.outerHTML}
+            <script>
+                window.onload = function() {
+                    // Remover botones de la tabla para impresión
+                    const botones = document.querySelectorAll('.btn, .justificar-btn');
+                    botones.forEach(btn => btn.style.display = 'none');
+                    
+                    window.print();
+                    window.onafterprint = function() {
+                        window.close();
+                    }
+                }
+            </script>
+        </body>
+        </html>
+    `);
+    
+    ventana.document.close();
+}
+
+// Cargar script adicional si existe
+var url = "../Js/supervision/supervisor.js";
+$.getScript(url).fail(function() {
+    console.log('Script supervisor.js no encontrado, continuando sin él...');
+});
 </script>
+
+</body>
+</html>

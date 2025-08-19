@@ -1,72 +1,147 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Asignación de Metas Semanales</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+
+    .form-label i {
+      margin-right: 8px;
+    }
+
+    .card {
+      border-radius: 10px;
+    }
+
+    .table thead th {
+      vertical-align: middle;
+    }
+
+    .meta, .hours, .percentage {
+      min-width: 90px;
+      text-align: center;
+    }
+
+    .table-responsive {
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .table tfoot {
+      background-color: #f1f1f1;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
 
+<div class="container mt-5">
+  <!-- Título -->
+  <div class="text-center mb-4">
+    <h2 class="text-primary fw-bold">
+      <i class="fas fa-chart-line me-2"></i>Asignación de Metas Semanales
+    </h2>
+  </div>
 
-<div class="container mt-5">
-    <h3 class="text-center font-weight-bold text-primary"><i class="fas fa-chart-area"></i> Asignacion de Metas Semanal</h3>
-    <form id="form-horarios" method="POST">
-    <div class="form-group">
-            <label class="text-center font-weight-bold text-primary" for="week_number"><i class="fas fa-calendar-week"></i> Ingrese el número de semana:</label>
-            <input type="number" id="week_number" name="week_number" class="form-control" min="1" max="52" placeholder="Número de semana" required>
-        </div>
-        <div class="form-group">
-            <label class="text-center font-weight-bold text-primary" for="employee_code"><i class="fas fa-user"></i> Seleccione Supervisor:</label>
-            <select id="employee_code" name="employee_code" class="form-control" required>
-                <option value="" disabled selected>Seleccione un supervisor</option>
+  <!-- Formulario -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <form id="form-horarios" method="POST">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label for="week_number" class="form-label text-primary fw-bold">
+              <i class="fas fa-calendar-week"></i> Semana
+            </label>
+            <input type="number" id="week_number" name="week_number" class="form-control" min="1" max="52" required />
+          </div>
+
+          <div class="col-md-3">
+            <label for="year" class="form-label text-primary fw-bold">
+              <i class="fas fa-calendar-alt"></i> Año
+            </label>
+            <input type="number" id="year" name="year" class="form-control" min="2000" max="3000" value="2025" required />
+          </div>
+
+          <div class="col-md-3">
+            <label for="employee_code" class="form-label text-primary fw-bold">
+              <i class="fas fa-user-tie"></i> Supervisor
+            </label>
+            <select id="employee_code" name="employee_code" class="form-select" required>
+              <option value="" disabled selected>Seleccione un supervisor</option>
             </select>
-        </div>
-        <div class="form-group">
-            <label class="text-center font-weight-bold text-primary" for="store_no"><i class="fas fa-store"></i> Seleccione Tienda:</label>
-            <select id="store_no" name="store_no" class="form-control" required>
-                <option value="" disabled selected>Seleccione una tienda</option>
+          </div>
+
+          <div class="col-md-3">
+            <label for="store_no" class="form-label text-primary fw-bold">
+              <i class="fas fa-store"></i> Tienda
+            </label>
+            <select id="store_no" name="store_no" class="form-select" required>
+              <option value="" disabled selected>Seleccione una tienda</option>
             </select>
+          </div>
         </div>
-        <div class="form-group">
-            <label class="text-center font-weight-bold text-primary" for="year"><i class="fas fa-calendar-alt"></i> Ingrese el año:</label>
-            <input type="number" id="year" name="year" class="form-control" min="2000" max="3000" value="2025" required>
+
+        <div class="form-check mt-3">
+          <input class="form-check-input" type="checkbox" id="showVacationistas" />
+          <label class="form-check-label" for="showVacationistas">
+            Mostrar Vacacionistas
+          </label>
         </div>
-        <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="showVacationistas">
-            <label class="form-check-label" for="showVacationistas">Mostrar Vacacionistas</label>
-        </div>
-    </form>
-</div>
-<div class="container mt-5">
-    <h3 id="title-meta" class="text-center font-weight-bold text-primary">Metas</h3>
-</div>
-<div class="mt-4">
-<table id="empleadosTable" class="table table-hover table-sm tbavxv">
-    <thead class="thead-dark">
+      </form>
+    </div>
+  </div>
+
+  <!-- Título metas -->
+  <div class="text-center mb-3">
+    <h4 id="title-meta" class="fw-bold text-primary">Metas</h4>
+  </div>
+
+  <!-- Tabla -->
+  <div class="table-responsive mb-5">
+    <table id="empleadosTable" class="table table-bordered table-hover align-middle text-center table-sm">
+      <thead class="table-dark">
         <tr>
-            <th>CÓDIGO</th>
-            <th>ASESORA</th>
-            <th>PUESTO</th>
-            <th>HORAS SEMANA</th>
-            <th>PORCENTAJE</th>
-            <th>MONTO SEMANAL</th>
-            <th>Acciones</th>
+          <th>Código</th>
+          <th>Asesora</th>
+          <th>Puesto</th>
+          <th>Horas</th>
+          <th>%</th>
+          <th>Monto Semanal</th>
+          <th>Acciones</th>
         </tr>
-    </thead>
-    <tbody>
-    </tbody>
-    <tfoot>
-    <tr>
-    <th colspan="4">Total Meta Semana:</th>
-    <th id="percentageTotal"></th>
-    <th id="totalMetas"></th>
-    <td><button id="saveAllMetas" class="btn btn-success">Guardar Meta</button></td>
-    </tr>
-    </tfoot>
-</table>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4" class="text-end">Total Meta Semana:</td>
+          <td id="percentageTotal"></td>
+          <td id="totalMetas"></td>
+          <td>
+            <button id="saveAllMetas" class="btn btn-success btn-sm">
+              <i class="fas fa-save me-1"></i>Guardar
+            </button>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
 </div>
+
+<!-- Tu script completo debe ir aquí -->
 <script>
-    var storeMeta = 0; // Almacena la meta total de la tienda
+ var storeMeta = 0; // Almacena la meta total de la tienda
 
     function getCurrentWeekNumber() {
         const now = new Date();
@@ -252,50 +327,6 @@
         });
 
        
-    // Funcion guardar metas
- /*    $('#empleadosTable').on('click', '.save-meta', function() {
-        var $row = $(this).closest('tr');
-        var storeNo = $('#store_no').val();
-        var employeeCode = $row.find('td:first').text();
-        var meta = $row.find('.meta').text();
-        var weekNumber = $('#week_number').val();
-        var tipo = $row.find('td:eq(2)').text(); 
-        var year = $('#year').val();
-        var hours = $row.find('.hours').text(); 
-
- */
-    
-            // Llamar al backend para actualizar la base de datos
-/*             $.ajax({
-                url: 'backendmetas.php?action=update_meta',
-                type: 'POST',
-                data: {
-                    store_no: storeNo,
-                    employee_name: employeeCode,
-                    meta: meta,
-                    semana: weekNumber,
-                    tipo: tipo,
-                    anio: year,
-                    hora: hours  
-                },
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        alert('Meta actualizada correctamente');
-                        $row.find('.edit-meta').show(); // Mostrar botón editar
-                        $row.find('.save-meta').hide(); // Ocultar botón guardar
-                        $row.find('.meta').attr('contenteditable', 'false'); // Deshabilitar edición
-                        updateTotalMetas(); // Recalcular y actualizar el total de metas
-                    } else {
-                        alert('Error al actualizar la meta: ' + response.error);
-                    }
-                },
-                error: function(xhr) {
-                    alert('Error al conectar con el backend: ' + xhr.responseText);
-                }
-            });
-        });
- */
             // Permitir solo números en el campo .meta
             $(document).on('keypress', '.meta', function(event) {
                 const charCode = event.which;
@@ -490,5 +521,8 @@
         });
 
 </script>
+
+<!-- Bootstrap JS (para algunos componentes interactivos si los necesitas) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -95,6 +95,13 @@ $(document).ready(function () {
       $('#titulo').text('Ingreso de Backorder');
     });
 
+ // reporte corte diario
+    $('#8-111 a').on('click', function () {
+      $('section.content').load('filtro_t3.php');
+      $('#titulo').text('Corte Diario');
+      sbs = $('#subsidiaria').val();
+      pagina = 'diarioventas';
+    });
 
   
     // SUPERVISORES *******************************************
@@ -382,8 +389,11 @@ $(document).ready(function () {
     });
   });
 
-
-
+//INGRESO DE DEPOSITOS
+  $('#18-173 a').on('click', function () {
+      $('section.content').load('tienda/depositos.php');
+      $('#titulo').text('Ingreso de cortes');
+    });
 
     // OPERACIONES TIENDAS
 

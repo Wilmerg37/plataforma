@@ -197,7 +197,11 @@ if (!isset($horas_extras_acumuladas[$unique_key])) {
       $metas_por_fecha[$fecha] = $meta;
     }
 
-    sort($fechas_unicas);
+usort($fechas_unicas, function($a, $b) {
+    $dateA = DateTime::createFromFormat('d/m/Y', $a);
+    $dateB = DateTime::createFromFormat('d/m/Y', $b);
+    return $dateA <=> $dateB;
+});
 
     // Días en español
     $dias = [

@@ -1,103 +1,83 @@
-<?php
-require_once "../Funsiones/global.php";
-?>
-<nav class="navbar navbar-light bg-light justify-content-center">
-  <form class="form-inline" id="frmfiltro">
+<?php require_once "../Funsiones/global.php"; ?>
 
-    <div class="form-group mx-2">
+<!-- Filtro de Supervisión -->
+<nav class="navbar navbar-light bg-light justify-content-center py-3">
+  <form class="form-inline row g-2 align-items-center w-100" id="frmfiltro">
+    
+    <!-- Subsidiaria -->
+    <div class="col-md-3">
+      <label for="sbs" class="form-label">Subsidiaria</label>
       <div class="input-group">
-        <div class="input-group-prepend">
-          <span class="input-group-text">
-            <i class="fas fa-building"></i>
-          </span>
-        </div>
-        <select name="sbs" onchange="" class="validate[required] form-control" >
-        <option value="">Subsidiaria...</option>
-        <?php echo Subsidiaria() ?>
+        <span class="input-group-text"><i class="fas fa-building"></i></span>
+        <select name="sbs" id="sbs" class="form-control validate[required]">
+          <option value="">Seleccione...</option>
+          <?php echo Subsidiaria(); ?>
         </select>
       </div>
-      <!-- /.input group -->
-
     </div>
-    <div class="form-group">
+
+    <!-- Código de Supervisor -->
+    <div class="col-md-2">
+      <label for="tienda" class="form-label">Código Supervisor</label>
       <div class="input-group">
-        <div class="input-group-prepend">
-          <span class="input-group-text">
-            <i class="fas fa-store"></i>
-          </span>
-        </div>
-        <input type="text" name="tienda" id="tienda" class="form-control float-right" placeholder="Codigo Supervisor" autocomplete="off">
+        <span class="input-group-text"><i class="fas fa-store"></i></span>
+        <input type="text" name="tienda" id="tienda" class="form-control" placeholder="Ej. 1234" autocomplete="off">
       </div>
-      <!-- /.input group -->
     </div>
 
-    <div class="form-group mx-2">
+    <!-- Fecha -->
+    <div class="col-md-3">
+      <label for="fecha" class="form-label">Rango de Fecha</label>
       <div class="input-group">
-        <div class="input-group-prepend">
-          <span class="input-group-text">
-            <i class="far fa-calendar-alt"></i>
-          </span>
-        </div>
-        <input type="text" name="fecha" id="fecha" class="form-control float-right fecha" autocomplete="off">
+        <span class="input-group-text"><i class="far fa-calendar-alt"></i></span>
+        <input type="text" name="fecha" id="fecha" class="form-control fecha" autocomplete="off">
       </div>
-      <!-- /.input group -->
     </div>
 
-    <div class="form-check ">
-      <input class="form-check-input" name="iva" type="checkbox" value="1" id="Check1">
-      <label class="form-check-label" for="Check1"> Iva </label>
+    <!-- Checkboxes -->
+    <div class="col-md-2 d-flex align-items-center">
+      <div class="form-check me-3">
+        <input class="form-check-input" type="checkbox" name="iva" id="Check1" value="1">
+        <label class="form-check-label" for="Check1">IVA</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="vacacionista" id="Check2" value="1">
+        <label class="form-check-label" for="Check2">Vacacionistas</label>
+      </div>
     </div>
-    <div class="form-check mx-2">
-      <input class="form-check-input" name="vacacionista" type="checkbox" value="1" id="Check2">
-      <label class="form-check-label" for="Check2">Vacacionistas </label>
+
+    <!-- Botón Generar -->
+    <div class="col-md-2 text-end">
+      <button class="btn btn-outline-primary w-100" type="submit">
+        <i class="fas fa-search"></i> Generar
+      </button>
     </div>
-    <button class="btn btn-outline-primary my-2 my-sm-0" type="submit"> <i class="fas fa-search"></i>Generar</button>
+
   </form>
 </nav>
 
+<!-- Tabla de resultados -->
+<div class="container-fluid mt-4" id="Tablas"></div>
+
+<!-- Scripts -->
 <script>
   $('.fecha').daterangepicker({
-    "showDropdowns": true,
-   // "showISOWeekNumbers": true,
-    "autoApply": true,
-    "locale": {
-      "format": "DD-MM-YYYY",
-      "separator": " a ",
-      "weekLabel": "Sm",
-      "daysOfWeek": [
-        "Do",
-        "Lu",
-        "Ma",
-        "Mi",
-        "Ju",
-        "Vi",
-        "Sa"
+    showDropdowns: true,
+    autoApply: true,
+    locale: {
+      format: 'DD-MM-YYYY',
+      separator: ' a ',
+      weekLabel: 'Sm',
+      daysOfWeek: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'],
+      monthNames: [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
       ],
-      "monthNames": [
-        "Enero",
-        "Febrero",
-        "Marzo",
-        "Abril",
-        "Mayo",
-        "Junio",
-        "Julio",
-        "Agosto",
-        "Septiembre",
-        "Octubre",
-        "Noviembre",
-        "Deciembre"
-      ],
-      "firstDay": 0
-    },
+      firstDay: 0
+    }
   });
-</script>
 
-
-<div class="container-fluid" id="Tablas">
-
-</div>
-
-<script>
+  // Cargar script adicional
   var url = "../Js/supervision/filtro.js";
   $.getScript(url);
 </script>

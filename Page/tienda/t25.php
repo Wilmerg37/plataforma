@@ -3,6 +3,7 @@ require_once "../../Funsiones/consulta.php";
 require_once "../../Funsiones/kpi.php";
 require_once "../../Funsiones/tienda/queryRpro.php";
 
+
 $tienda = isset($_POST['tienda']) ? $_POST['tienda'] : '';
 $fi = date('Y-m-d', strtotime(substr($_POST['fecha'], 0, -13)));
 $ff = date('Y-m-d', strtotime(substr($_POST['fecha'], -10)));
@@ -20,16 +21,106 @@ sort($tiendas);
 ?>
 
 <style>
-    body { font-family: Arial, sans-serif; font-size: 13px; }
-    .reporte-container { padding: 20px; }
-    h2, h3, h4 { text-align: center; margin: 5px 0; }
-    table { width: auto; border-collapse: collapse; margin-bottom: 25px; }
-    th, td { border: 1px solid #ccc; padding: 4px 8px; text-align: center; }
-    th { background-color: #2493f3ff; color: white; font-weight: bold; }
-    .proveedor { background-color: #eee; padding: 8px; font-weight: bold; font-size: 15px; margin-top: 25px; }
-    .estilo { padding-left: 10px; font-weight: bold; margin: 10px 0; }
-    .estatus { font-style: italic; padding-left: 10px; margin-bottom: 15px; }
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 13px;
+        background-color: #f5f7fa;
+        color: #333;
+    }
+
+    .reporte-container {
+        padding: 30px;
+        background-color: #fff;
+        border-radius: 8px;
+        margin: 0 auto;
+        max-width: 1200px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h2, h3, h4 {
+        text-align: center;
+        margin: 8px 0;
+    }
+
+    h2 {
+        font-size: 22px;
+        color: #1a73e8;
+    }
+
+    h3 {
+        font-size: 18px;
+        color: #444;
+    }
+
+    h4 {
+        font-size: 15px;
+        color: #666;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        background-color: #fff;
+        border: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #1a73e8;
+        color: #fff;
+        padding: 8px;
+        text-transform: uppercase;
+        font-size: 12px;
+    }
+
+    td {
+        padding: 6px;
+        text-align: center;
+        border: 1px solid #eee;
+        font-size: 13px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    .estilo {
+        background-color: #e3eaf4;
+        padding: 12px 15px;
+        font-weight: bold;
+        font-size: 17px;
+        margin: 25px 0 10px;
+        border-left: 5px solid #1a73e8;
+    }
+
+    .estatus {
+        font-style: italic;
+        font-weight: bold;
+        font-size: 15px;
+        margin: 15px 0;
+        padding-left: 10px;
+        color: #555;
+    }
+
+    hr {
+        border: none;
+        border-top: 1px solid #ccc;
+        margin: 30px 0;
+    }
+
+    p {
+        text-align: center;
+        color: #999;
+        font-style: italic;
+    }
+
+    .low-stock {
+    background-color: #fdecea;
+    color: #d93025;
+    font-weight: bold;
+}
 </style>
+
 
 <div class="reporte-container">
 <?php
@@ -191,15 +282,21 @@ return $b['total_venta'] <=> $a['total_venta'];
         echo "</tr>";
 
         // Existencia
-        $total_exist = 0;
-        echo "<tr><td>Existencia</td>";
-        foreach ($tallas_completas as $t) {
-            $val = $data['tallas'][$t]['exist'];
-            $total_exist += $val;
-            echo "<td>" . number_format($val) . "</td>";
-        }
-        echo "<td><strong>" . number_format($total_exist) . "</strong></td>";
-        echo "</tr>";
+       // Existencia
+$total_exist = 0;
+echo "<tr><td>Existencia</td>";
+foreach ($tallas_completas as $t) {
+    $val = $data['tallas'][$t]['exist'];
+    $min = $data['tallas'][$t]['min'];
+    $total_exist += $val;
+
+    // Aquí aplicamos estilo si el stock es menor al mínimo
+    $clase = ($val < $min) ? "class='low-stock'" : "";
+    echo "<td $clase>" . number_format($val) . "</td>";
+}
+echo "<td><strong>" . number_format($total_exist) . "</strong></td>";
+echo "</tr>";
+
 
         // Mínimo
         $total_min = 0;
@@ -224,3 +321,4 @@ return $b['total_venta'] <=> $a['total_venta'];
 }
 ?>
 </div>
+
