@@ -292,7 +292,7 @@
       }
     }
 
-    /* Mejoras adicionales */
+    /* Mejoras adicionales para sistema*/
     .swal-wide { 
       max-width: 90vw !important; 
     }
@@ -653,7 +653,330 @@
 
 
   <!-- JavaScript Principal -->
+
   <script>
+    //=================================================================================
+    // FUNCIONES PRINCIPALES PARA EL SISTEMA Y AVALES 
+    //=================================================================================
+
+// 🎯 FUNCIÓN PARA CARGAR Y MOSTRAR RESULTADO DEL AVAL
+function cargarResultadoAvalSupervisor(idSolicitud, tienda, puesto, supervisor, razon) {
+  // Mostrar loading
+  Swal.fire({
+    title: '<i class="fas fa-spinner fa-spin"></i> Cargando resultado...',
+    text: 'Obteniendo información de la decisión gerencial',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  // Obtener datos del backend
+  $.ajax({
+    url: './supervision/crudsolicitudes.php',
+    method: 'GET',
+    data: {
+      action: 'obtener_resultado_aval_supervisor',
+      id_solicitud: idSolicitud
+    },
+    dataType: 'json',
+    success: function(response) {
+      Swal.close(); // Cerrar loading
+      
+      if (response.success) {
+        mostrarModalResultadoAval(response.data, idSolicitud, tienda, puesto, supervisor, razon);
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: response.error || 'No se pudo cargar el resultado del aval'
+        });
+      }
+    },
+    error: function(xhr, status, error) {
+      Swal.close(); // Cerrar loading
+      
+      console.error('Error AJAX:', xhr.responseText);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de conexión',
+        text: 'No se pudo conectar al servidor para obtener el resultado'
+      });
+    }
+  });
+}
+
+// 🎯 FUNCIÓN PARA MOSTRAR EL MODAL DEL RESULTADO
+function mostrarModalResultadoAvalSupervisor(data, idSolicitud, tienda, puesto, supervisor, razon) {
+  const solicitud = data.solicitud || {};
+  const aval = data.aval || {};
+  
+  // Determinar si fue aprobado o rechazado
+  const esAprobado = aval.decision === 'APROBADO';
+  const decision = esAprobado ? 'APROBADO' : 'RECHAZADO';
+  
+  // Configurar colores y textos según la decisión
+  const config = esAprobado ? {
+    color: '#2ecc71',
+    bgColor: '#d4edda',
+    borderColor: '#c3e6cb',
+    textColor: '#155724',
+    icon: 'fas fa-check-circle',
+    titulo: 'Solicitud Aprobada',
+    subtitulo: 'Su solicitud ha sido revisada por el gerente y ha sido aprobada',
+    estadoBadge: 'APROBADA',
+    badgeClass: 'badge-success'
+  } : {
+    color: '#e74c3c',
+    bgColor: '#f8d7da',
+    borderColor: '#f1b0b7',
+    textColor: '#721c24',
+    icon: 'fas fa-times-circle',
+    titulo: 'Solicitud Rechazada',
+    subtitulo: 'Su solicitud ha sido revisada por el gerente y no ha sido aprobada',
+    estadoBadge: 'RECHAZADA',
+    badgeClass: 'badge-danger'
+  };
+
+  // Próximos pasos según la decisión
+  const proximosPasos = esAprobado ? [
+    '<i class="fas fa-check-circle"></i> La solicitud continuará con el proceso normal de contratación',
+    '<i class="fas fa-arrow-right"></i> RH procederá con los siguientes pasos del proceso',
+    '<i class="fas fa-bell"></i> Se notificará cuando haya actualizaciones del estado'
+  ] : [
+    '<i class="fas fa-clipboard-list"></i> Puede revisar el motivo del rechazo para entender las razones de la decisión',
+    '<i class="fas fa-redo"></i> Si considera necesario, puede crear una nueva solicitud corrigiendo los aspectos mencionados',
+    '<i class="fas fa-comments"></i> Para dudas adicionales, puede contactar directamente con el gerente para aclaraciones'
+  ];
+
+  Swal.fire({
+    title: `
+      <div class="resultado-header" style="background: ${config.bgColor}; border: 2px solid ${config.borderColor}; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+          <div style="width: 60px; height: 60px; background: ${config.color}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
+            <i class="${config.icon}"></i>
+          </div>
+          <div style="text-align: left;">
+            <h3 style="margin: 0; color: ${config.textColor}; font-weight: 600;">${config.titulo}</h3>
+            <p style="margin: 5px 0 0 0; color: ${config.textColor}; font-size: 14px;">${config.subtitulo}</p>
+          </div>
+        </div>
+      </div>
+    `,
+    html: `
+      <style>
+        .info-section {
+          background: #f8f9fa;
+          border-radius: 10px;
+          padding: 20px;
+          margin-bottom: 20px;
+          border-left: 4px solid #007bff;
+        }
+        .info-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 15px;
+          margin-bottom: 15px;
+        }
+        .info-item {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+        }
+        .info-label {
+          font-weight: 600;
+          color: #495057;
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .info-value {
+          color: #212529;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        .decision-section {
+          background: ${config.bgColor};
+          border: 2px solid ${config.borderColor};
+          border-radius: 10px;
+          padding: 20px;
+          margin-bottom: 20px;
+        }
+        .decision-badge {
+          display: inline-block;
+          padding: 8px 20px;
+          border-radius: 25px;
+          font-weight: 600;
+          font-size: 14px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+        .badge-success {
+          background: #2ecc71;
+          color: white;
+        }
+        .badge-danger {
+          background: #e74c3c;
+          color: white;
+        }
+        .motivo-section {
+          background: #fff3cd;
+          border: 2px solid #ffc107;
+          border-radius: 10px;
+          padding: 20px;
+          margin-bottom: 20px;
+        }
+        .motivo-content {
+          background: white;
+          padding: 15px;
+          border-radius: 8px;
+          border-left: 4px solid #ffc107;
+          font-style: italic;
+          line-height: 1.6;
+          color: #856404;
+        }
+        .pasos-section {
+          background: #e8f4f8;
+          border: 2px solid #17a2b8;
+          border-radius: 10px;
+          padding: 20px;
+        }
+        .paso-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          margin-bottom: 10px;
+          padding: 8px;
+          background: white;
+          border-radius: 6px;
+        }
+        .paso-item:last-child {
+          margin-bottom: 0;
+        }
+        .section-title {
+          font-weight: 600;
+          color: #2c3e50;
+          margin-bottom: 15px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .fecha-decision {
+          text-align: center;
+          color: #6c757d;
+          font-size: 12px;
+          margin-top: 15px;
+          padding-top: 15px;
+          border-top: 1px solid #dee2e6;
+        }
+      </style>
+      
+      <div style="text-align: left; max-height: 600px; overflow-y: auto; padding: 0 10px;">
+        
+        <!-- INFORMACIÓN DE LA SOLICITUD -->
+        <div class="info-section">
+          <h6 class="section-title">
+            <i class="fas fa-info-circle"></i> Información de la Solicitud
+          </h6>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label"><i class="fas fa-hashtag"></i> ID Solicitud</span>
+              <span class="info-value">#${solicitud.id}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label"><i class="fas fa-store"></i> Tienda</span>
+              <span class="info-value">Tienda ${solicitud.tienda}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label"><i class="fas fa-briefcase"></i> Puesto Solicitado</span>
+              <span class="info-value">${solicitud.puesto}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label"><i class="fas fa-calendar-alt"></i> Fecha de Solicitud</span>
+              <span class="info-value">${solicitud.fecha_solicitud}</span>
+            </div>
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label"><i class="fas fa-user-tie"></i> Supervisor</span>
+              <span class="info-value">${solicitud.supervisor}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label"><i class="fas fa-edit"></i> Razón de la Vacante</span>
+              <span class="info-value">${solicitud.razon}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ESTADO DE APROBACIÓN -->
+        <div class="decision-section">
+          <h6 class="section-title" style="color: ${config.textColor};">
+            <i class="fas fa-gavel"></i> Estado de Aprobación
+          </h6>
+          <div style="text-align: center; margin-bottom: 15px;">
+            <span class="decision-badge ${config.badgeClass}">${config.estadoBadge}</span>
+          </div>
+          <div style="text-align: center; color: ${config.textColor};">
+            <strong>Revisado por:</strong> ${aval.gerente}<br>
+            <small>Fecha de decisión: ${aval.fecha_decision}</small>
+          </div>
+        </div>
+
+        <!-- MOTIVO DE LA DECISIÓN -->
+        <div class="motivo-section">
+          <h6 class="section-title" style="color: #856404;">
+            <i class="fas fa-comment-alt"></i> ${esAprobado ? 'Comentarios del Gerente' : 'Motivo del Rechazo'}
+          </h6>
+          <div class="motivo-content">
+            ${aval.comentario || 'Sin comentarios adicionales'}
+          </div>
+        </div>
+
+        <!-- PRÓXIMOS PASOS -->
+        <div class="pasos-section">
+          <h6 class="section-title" style="color: #17a2b8;">
+            <i class="fas fa-route"></i> Próximos Pasos
+          </h6>
+          ${proximosPasos.map(paso => `
+            <div class="paso-item">
+              <span style="flex: 1; color: #495057;">${paso}</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="fecha-decision">
+          <i class="fas fa-clock"></i> Última actualización: ${aval.fecha_decision}
+        </div>
+
+      </div>
+    `,
+    width: '800px',
+    showCancelButton: false,
+    confirmButtonText: '<i class="fas fa-check"></i> Entendido',
+    confirmButtonColor: config.color,
+    customClass: {
+      popup: 'resultado-aval-popup'
+    }
+  });
+}
+
+// 🎯 FUNCIÓN PARA AGREGAR EL BOTÓN EN LAS TABLAS
+function agregarBotonResultadoAval(idSolicitud, tienda, puesto, supervisor, razon) {
+  return `
+    <button class="btn btn-info btn-sm btnVerResultadoAval" 
+            data-id="${idSolicitud}"
+            data-tienda="${tienda}"
+            data-puesto="${puesto}"
+            data-supervisor="${supervisor}"
+            data-razon="${razon}"
+            title="Ver resultado del aval gerencial">
+      <i class="fas fa-clipboard-check"></i> Ver Resultado
+    </button>
+  `;
+}
+
+
+    //=================================================================================
+    // INICIALIZACION DE TODO EL PROGRAMA
+    //=================================================================================
     $(document).ready(function () {
 
       let archivosOriginales =[];
@@ -789,73 +1112,196 @@ function renderTable(data) {
     console.log('Estado Aprobación:', item.ID_SOLICITUD, item.ESTADO_APROBACION);
     console.log('Dirigido RH:', item.ID_SOLICITUD, dirigidoRH, 'Mostrar:', mostrarDirigidoRH); // NUEVO DEBUG
     
+// SOLUCIÓN FORZADA - ELIMINAR COMPLETAMENTE EL BOTÓN DE COMENTARIO
     const comentarioMostrar = (() => {
-    // Solo mostrar si hay comentario Y no es automático del sistema
-    if (idHistorico && comentario && comentario !== '-') {
-        
-        // ✅ FILTRAR COMENTARIOS AUTOMÁTICOS DEL GERENTE/SISTEMA
-        const esComentarioAutomatico = 
-            comentario.includes('Cambio de aprobación a:') ||
-            comentario.includes('Asignado a:') ||
-            comentario === 'Cambio de estado de aprobación' ||
-            comentario.includes('- Asignado a:') ||
-            comentario.startsWith('Cambio de aprobación a: Aprobado') ||
-            comentario.startsWith('Cambio de aprobación a: No Aprobado');
-        
-        // Solo mostrar si NO es automático (o sea, es de RRHH)
-        if (!esComentarioAutomatico) {
-            console.log('✅ COMENTARIO REAL DE RRHH:', comentario);
-            return `<div class="badge-container">
-                <button class="btn btn-sm btn-info btnVerComentarioSuper"
-                        data-id="${idHistorico}"
-                        title="Ver comentario de RRHH">
-                    <i class="fas fa-comment"></i> Ver
-                </button>
-                ${noLeidos > 0 ? `<span class="notification-badge ${noLeidos > 9 ? 'wide' : ''}">${noLeidos}</span>` : ''}
-            </div>`;
-        } else {
-            console.log('❌ COMENTARIO AUTOMÁTICO FILTRADO:', comentario);
-        }
+    const estadoAprobacion = (item.ESTADO_APROBACION || 'Por Aprobar').toLowerCase().trim();
+    
+    console.log('🔍 VERIFICANDO COMENTARIO PARA SOLICITUD:', item.ID_SOLICITUD);
+    console.log('📊 Estado de aprobación:', estadoAprobacion);
+    console.log('💬 Comentario:', comentario);
+    
+    // REGLA ÚNICA: Solo mostrar comentarios si está "APROBADO"
+    if (estadoAprobacion !== 'aprobado') {
+        console.log('🚫 NO ESTÁ APROBADO - NO MOSTRAR COMENTARIO');
+        console.log('📋 Estados que no muestran comentario: Por Aprobar, No Aprobado');
+        return '<span class="text-muted">—</span>';
     }
     
-    return '<span class="text-muted">—</span>';
+    console.log('✅ ESTADO APROBADO - VERIFICANDO COMENTARIO');
+    
+    // ❌ Si no hay comentario real, no mostrar
+    if (!comentario || 
+        comentario === '-' || 
+        comentario === '' || 
+        comentario.trim() === '' ||
+        comentario === 'null' ||
+        comentario === 'undefined') {
+        console.log('❌ SIN COMENTARIO VÁLIDO');
+        return '<span class="text-muted">—</span>';
+    }
+    
+    // ❌ Filtrar comentarios automáticos del sistema/gerente
+    const esComentarioAutomatico = 
+        // Comentarios típicos del gerente
+        comentario.includes('Cambio de aprobación a:') ||
+        comentario.includes('Asignado a:') ||
+        comentario.includes('- Asignado a:') ||
+        
+        // Comentarios del sistema
+        comentario === 'Cambio de estado de aprobación' ||
+        comentario === 'Estado de aprobación actualizado' ||
+        comentario === 'Aprobación procesada por gerente' ||
+        comentario.includes('Estado actualizado por gerente') ||
+        comentario.includes('Procesado por gerencia') ||
+        comentario.includes('Decisión del gerente:') ||
+        
+        // Patrones automáticos
+        /^Cambio de aprobación a: .+/.test(comentario) ||
+        /^.+ - Asignado a: .+/.test(comentario) ||
+        
+        // Comentarios cortos con palabras del sistema
+        (comentario.length < 50 && 
+         (comentario.toLowerCase().includes('aprobación') ||
+          comentario.toLowerCase().includes('asignado') ||
+          comentario.toLowerCase().includes('procesado'))) ||
+        
+        // Estados puros
+        comentario === 'Aprobado' ||
+        comentario === 'No Aprobado' ||
+        comentario === 'Por Aprobar';
+    
+    if (esComentarioAutomatico) {
+        console.log('❌ COMENTARIO AUTOMÁTICO DEL SISTEMA FILTRADO');
+        return '<span class="text-muted">—</span>';
+    }
+    
+    // ✅ Todo OK: Estado APROBADO + Comentario real de RRHH
+    console.log('✅ COMENTARIO REAL DE RRHH EN SOLICITUD APROBADA - MOSTRANDO BOTÓN');
+    return `<div class="badge-container">
+        <button class="btn btn-sm btn-info btnVerComentarioSuper"
+                data-id="${idHistorico}"
+                title="Ver comentario de RRHH">
+            <i class="fas fa-comment"></i> Ver
+        </button>
+        ${noLeidos > 0 ? `<span class="notification-badge ${noLeidos > 9 ? 'wide' : ''}">${noLeidos}</span>` : ''}
+    </div>`;
 })();
-
     
-    // Declarar variable acciones por cada fila
-    let acciones = '';
+             // Declarar variable acciones por cada fila
+                let acciones = '';
+                // ✅ NUEVO: AGREGAR BOTÓN CONDICIONAL PARA VER RESULTADO DE APROBACIÓN
+                if (aprobacion === 'no aprobado') {
+                acciones += `
+                    <button class="btn btn-warning btn-sm btnVerResultadoAprobacion" 
+                            data-id="${item.ID_SOLICITUD}"
+                            data-aprobacion="${item.ESTADO_APROBACION}"
+                            title="Ver motivo del rechazo">
+                    <i class="fas fa-exclamation-circle"></i> Ver Resultado
+                    </button>`;
+                }
 
-    // Mostrar solo "Ver resumen" si hay selección
-    if (estado.toLowerCase().includes('cvs')) {
-      if (parseInt(item.TIENE_SELECCION) === 1) {
-        acciones += `
-          <button class="btn btn-info btn-sm btnVerResumen" data-id="${item.ID_SOLICITUD}">
-              <i class="fas fa-eye"></i> Ver resumen
-          </button>`;
-      } else {
-        acciones += `
-          <button class="btn btn-primary btn-sm btnVerArchivos" data-id="${item.ID_SOLICITUD}">
-              <i class="fas fa-folder-open"></i> Archivos
-          </button>`;
-      }
-    }
+                // Mostrar solo "Ver resumen" si hay selección
+                if (estado.toLowerCase().includes('cvs')) {
+                if (parseInt(item.TIENE_SELECCION) === 1) {
+                    acciones += `
+                    <button class="btn btn-info btn-sm btnVerCVResumen" data-id="${item.ID_SOLICITUD}">
+                        <i class="fas fa-eye"></i> Ver resumen
+                    </button>`;
+                } else {
+                    acciones += `
+                    <button class="btn btn-primary btn-sm btnVerArchivos" data-id="${item.ID_SOLICITUD}">
+                        <i class="fas fa-folder-open"></i> Archivos
+                    </button>`;
+                }
+                }
 
-    if (estado.includes('psico')) {
-      acciones += `
-        <button class="btn btn-secondary btn-sm btnVerPruebas"
-                data-id="${item.ID_SOLICITUD}"
-                data-tipo="PSICOMETRICA">
-          <i class="fas fa-brain"></i> Ver Psicométrica
-        </button>`;
-    } else if (estado.includes('poligrafo')) {
-      acciones += `
-        <button class="btn btn-dark btn-sm btnVerPruebas"
-                data-id="${item.ID_SOLICITUD}"
-                data-tipo="POLIGRAFO">
-          <i class="fas fa-fingerprint"></i> Ver Polígrafo
-        </button>`;
-    }
+                if (estado.includes('psico')) {
+                acciones += `
+                    <button class="btn btn-secondary btn-sm btnVerPruebas"
+                            data-id="${item.ID_SOLICITUD}"
+                            data-tipo="PSICOMETRICA">
+                    <i class="fas fa-brain"></i> Ver Psicométrica
+                    </button>`;
+                } else if (estado.includes('poligrafo')) {
+                acciones += `
+                    <button class="btn btn-dark btn-sm btnVerPruebas"
+                            data-id="${item.ID_SOLICITUD}"
+                            data-tipo="POLIGRAFO">
+                    <i class="fas fa-fingerprint"></i> Ver Polígrafo
+                    </button>`;
+                }
 
+
+                // VERIFICAR SI NECESITA BOTÓN DE OBSERVACIONES DEL DÍA DE PRUEBA
+                    const esDiaDePrueba = estado.toLowerCase().includes('día de prueba') || estado.toLowerCase().includes('dia de prueba');
+                    const esObservacionesEnviadas = estado.toLowerCase().includes('enviado') || estado.toLowerCase().includes('enviadas');
+
+                        //  NUEVA VERIFICACIÓN ESPECÍFICA PARA PENDIENTE AVAL GERENCIA
+                        const esPendienteAvalGerencia = estado.toLowerCase().includes('pendiente aval gerencia');
+
+                        console.log(`🔍 EVALUANDO OBSERVACIONES - Solicitud ${item.ID_SOLICITUD}:`);
+                        console.log(`📊 Estado actual: "${estado}"`);
+                        console.log(`🔍 esDiaDePrueba: ${esDiaDePrueba}`);
+                        console.log(`📨 esObservacionesEnviadas: ${esObservacionesEnviadas}`);
+                        console.log(`⏳ esPendienteAvalGerencia: ${esPendienteAvalGerencia}`);
+
+                        // PRIMERO VERIFICAR SI ES PENDIENTE AVAL GERENCIA
+                        if (estado.toLowerCase().includes('aval enviado')) {
+                            console.log('✅ ESTADO AVAL ENVIADO → Mostrar botón resultado');
+                            acciones += `
+                                <button class="btn btn-success btn-sm btnVerResultadoAval" 
+                                        data-id="${item.ID_SOLICITUD}"
+                                        data-tienda="${item.NUM_TIENDA}"
+                                        data-puesto="${item.PUESTO_SOLICITADO}"
+                                        data-supervisor="${item.SOLICITADO_POR}"
+                                        data-razon="${item.RAZON || ''}"
+                                        title="Ver resultado del aval gerencial">
+                                    <i class="fas fa-clipboard-check"></i> Ver Resultado Aval
+                                </button>`;
+                        }
+                        // ✅ SEGUNDO: VERIFICAR SI ES PENDIENTE AVAL GERENCIA
+                        else if (esPendienteAvalGerencia) {
+                            console.log('🚫 ESTADO PENDIENTE AVAL GERENCIA → Mostrar mensaje de espera');
+                            acciones += `
+                                <span style="background: #ff6b6b; color: white; padding: 6px 12px; border-radius: 15px; font-size: 11px; font-weight: 600; display: inline-block;">
+                                    <i class="fas fa-clock"></i> Esperando confirmacion Aval
+                                </span>`;
+                        }
+                        // ✅ TERCERO: SI NO ES PENDIENTE AVAL, CONTINUAR CON LA LÓGICA NORMAL
+                        else if (esDiaDePrueba) {
+                            if (esObservacionesEnviadas) {
+                                console.log('OBSERVACIONES ENVIADAS → Mostrar solo VER');
+                                acciones += `
+                                    <button class="btn btn-info btn-sm btnVerObservacionesDiaPrueba" 
+                                            data-id="${item.ID_SOLICITUD}"
+                                            title="Ver resumen de observaciones enviadas">
+                                        <i class="fas fa-eye"></i> Ver Observaciones
+                                    </button>`;
+                            } else {
+                                console.log('📝 SIN OBSERVACIONES → Mostrar SUBIR');
+                                acciones += `
+                                    <button class="btn btn-warning btn-sm btnSubirObservacionesDiaPrueba" 
+                                            data-id="${item.ID_SOLICITUD}"
+                                            data-puesto="${item.PUESTO_SOLICITADO}"
+                                            data-tienda="${item.NUM_TIENDA}"
+                                            data-supervisor="${item.SOLICITADO_POR}"
+                                            title="Subir observaciones del día de prueba">
+                                        <i class="fas fa-upload"></i> Subir Observaciones
+                                    </button>`;
+                            }
+                        }
+                        // ✅ CUARTO: VERIFICAR OTROS ESTADOS DE OBSERVACIONES
+                        else if (estado.toLowerCase().includes('observaciones') && 
+                                (estado.toLowerCase().includes('enviadas') || estado.toLowerCase().includes('enviado'))) {
+                            
+                            console.log(`📨 OTRO ESTADO DE OBSERVACIONES ENVIADAS`);
+                            acciones += `
+                                <button class="btn btn-info btn-sm btnVerObservacionesDiaPrueba" 
+                                        data-id="${item.ID_SOLICITUD}"
+                                        title="Ver observaciones enviadas">
+                                    <i class="fas fa-eye"></i> Ver Observaciones
+                                </button>`;
+                        }
     const row = `
       <tr data-id="${item.ID_SOLICITUD}">
         <td>
@@ -1021,7 +1467,7 @@ $(document).off('click', '.btnVerPruebas').on('click', '.btnVerPruebas', functio
 
 
 //FUNCION PARA VER RESUMEN DE SELECCIONES #
-$(document).off('click', '.btnVerResumen').on('click', '.btnVerResumen', function (e) {
+$(document).off('click', '.btnVerCVResumen').on('click', '.btnVerCVResumen', function (e) {
     e.preventDefault();
     e.stopImmediatePropagation(); // Evitar múltiples ejecuciones
     const idSolicitud = $(this).data('id');
@@ -2325,11 +2771,9 @@ function mostrarModalSeleccionArchivos(archivos, idSolicitud) {
                             <option value="SUB JEFE DE TIENDA">Sub Jefe de Tienda</option>
                             <option value="ASESOR DE VENTAS">Asesor de Ventas</option>
                             <option value="VACACIONISTA">Vacacionista</option>
-                            <option value="SUPERVISOR">Supervisor</option>
-                            <option value="TEMPORAL">Temporal</option>
                             <option value="CAJERO">Cajero</option>
-                            <option value="BODEGUERO">Bodeguero</option>
-                            <option value="SEGURIDAD">Seguridad</option>
+                            <option value="TEMPORAL POR VACACIONES">Temporal por vacaciones</option>
+                            <option value="TEMPORAL POR MATERNIDAD">Temporal por maternidad</option>
                         </select>
                     </div>
 
@@ -2343,7 +2787,8 @@ function mostrarModalSeleccionArchivos(archivos, idSolicitud) {
                             <option value="">Selecciona la razón...</option>
                             <option value="Renuncia Voluntaria">Renuncia Voluntaria</option>
                             <option value="Despido por Causa Justa">Despido por Causa Justa</option>
-                            <option value="Despido sin Causa Justa">Despido sin Causa Justa</option>
+                            <option value="Cubre Vacaciones">Cubre Vacaciones</option>
+                            <option value="Personal Interino por Maternidad">Personal Interino por Maternidad</option>
                             <option value="Abandono de Trabajo">Abandono de Trabajo</option>
                             <option value="Vencimiento de Contrato">Vencimiento de Contrato</option>
                             <option value="Promoción Interna">Promoción Interna</option>
@@ -2879,11 +3324,9 @@ $(document).off('click', '.btnEditarSolicitud').on('click', '.btnEditarSolicitud
                                     <option value="SUB JEFE DE TIENDA" style="color: #333;" ${solicitud.PUESTO_SOLICITADO === 'SUB JEFE DE TIENDA' ? 'selected' : ''}>Sub Jefe de Tienda</option>
                                     <option value="ASESOR DE VENTAS" style="color: #333;" ${solicitud.PUESTO_SOLICITADO === 'ASESOR DE VENTAS' ? 'selected' : ''}>Asesor de Ventas</option>
                                     <option value="VACACIONISTA" style="color: #333;" ${solicitud.PUESTO_SOLICITADO === 'VACACIONISTA' ? 'selected' : ''}>Vacacionista</option>
-                                    <option value="SUPERVISOR" style="color: #333;" ${solicitud.PUESTO_SOLICITADO === 'SUPERVISOR' ? 'selected' : ''}>Supervisor</option>
-                                    <option value="TEMPORAL" style="color: #333;" ${solicitud.PUESTO_SOLICITADO === 'TEMPORAL' ? 'selected' : ''}>Temporal</option>
                                     <option value="CAJERO" style="color: #333;" ${solicitud.PUESTO_SOLICITADO === 'CAJERO' ? 'selected' : ''}>Cajero</option>
-                                    <option value="BODEGUERO" style="color: #333;" ${solicitud.PUESTO_SOLICITADO === 'BODEGUERO' ? 'selected' : ''}>Bodeguero</option>
-                                    <option value="SEGURIDAD" style="color: #333;" ${solicitud.PUESTO_SOLICITADO === 'SEGURIDAD' ? 'selected' : ''}>Seguridad</option>
+                                    <option value="TEMPORAL POR VACACIONES" style="color: #333;" ${solicitud.PUESTO_SOLICITADO === 'TEMPORAL POR VACACIONES' ? 'selected' : ''}>Temporal por vaciones</option>
+                                    <option value="TEMPORAL POR MATERNIDAD" style="color: #333;" ${solicitud.PUESTO_SOLICITADO === 'TEMPORAL POR MATERNIDAD' ? 'selected' : ''}>Temporal por maternidad</option>
                                 </select>
                                 <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
                                     <i class="fas fa-info-circle"></i> Selecciona el tipo de puesto que se necesita cubrir
@@ -3320,6 +3763,824 @@ $(document).off('click', '.btn-ver-historial-modificaciones').on('click', '.btn-
     }
   });
 });
+
+
+// 🆕 FUNCIÓN PARA VER RESULTADO DE APROBACIÓN (SOLO LECTURA)
+// 🆕 FUNCIÓN PARA VER RESULTADO DE APROBACIÓN (CON PRIORIDAD MÁXIMA)
+$(document).off('click', '.btnVerResultadoAprobacion');
+
+// ✅ USAR CAPTURE PHASE PARA MÁXIMA PRIORIDAD
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.btnVerResultadoAprobacion')) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    
+    const btn = e.target.closest('.btnVerResultadoAprobacion');
+    const idSolicitud = btn.dataset.id;
+    const estadoAprobacion = btn.dataset.aprobacion;
+    
+    console.log("📋 Ver resultado de aprobación para solicitud:", idSolicitud);
+    console.log("🔍 Evento capturado correctamente");
+    
+    // Mostrar loading
+    Swal.fire({
+      title: '<i class="fas fa-spinner fa-spin"></i> Cargando información...',
+      text: 'Obteniendo detalles del resultado de aprobación',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => Swal.showLoading()
+    });
+    
+    // ✅ OBTENER INFORMACIÓN DETALLADA
+    $.ajax({
+      url: './supervision/crudsolicitudes.php?action=get_resultado_aprobacion',
+      type: 'POST',
+      dataType: 'json',
+      data: {
+        id_solicitud: idSolicitud
+      },
+      success: function(response) {
+        console.log("✅ Respuesta del servidor:", response);
+        
+        if (response.success) {
+          const datos = response.data;
+          
+          // ✅ CONSTRUIR MODAL DE SOLO LECTURA
+          const modalHtml = `
+            <div style="text-align: left; max-width: 100%;">
+              <!-- Encabezado con estado actual -->
+              <div style="background: linear-gradient(135deg, #dc3545, #c82333); color: white; padding: 25px; border-radius: 15px; margin-bottom: 25px; text-align: center;">
+                <div style="font-size: 24px; font-weight: 700; margin-bottom: 10px;">
+                  <i class="fas fa-exclamation-triangle" style="margin-right: 12px;"></i>
+                  Solicitud Rechazada
+                </div>
+                <div style="font-size: 16px; opacity: 0.9;">
+                  Su solicitud ha sido revisada por el gerente y no ha sido aprobada
+                </div>
+              </div>
+              
+              <!-- Información de la solicitud -->
+              <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <h5 style="margin: 0 0 15px 0; color: #495057; font-weight: 600;">
+                  <i class="fas fa-info-circle mr-2"></i>Información de la Solicitud
+                </h5>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                  <div>
+                    <strong><i class="fas fa-hashtag mr-1"></i>ID Solicitud:</strong><br>
+                    <span style="color: #007bff; font-weight: 600;">#${datos.ID_SOLICITUD}</span>
+                  </div>
+                  <div>
+                    <strong><i class="fas fa-store mr-1"></i>Tienda:</strong><br>
+                    <span style="color: #6f42c1; font-weight: 600;">Tienda ${datos.NUM_TIENDA}</span>
+                  </div>
+                  <div>
+                    <strong><i class="fas fa-briefcase mr-1"></i>Puesto Solicitado:</strong><br>
+                    <span style="color: #e83e8c; font-weight: 600;">${datos.PUESTO_SOLICITADO}</span>
+                  </div>
+                  <div>
+                    <strong><i class="fas fa-calendar-alt mr-1"></i>Fecha de Solicitud:</strong><br>
+                    <span style="color: #20c997; font-weight: 600;">${datos.FECHA_SOLICITUD}</span>
+                  </div>
+                  <div style="grid-column: 1 / -1;">
+                    <strong><i class="fas fa-clipboard-list mr-1"></i>Razón de la Vacante:</strong><br>
+                    <span style="color: #fd7e14; font-weight: 600;">${datos.RAZON}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Estado de aprobación actual -->
+              <div style="background: #fff5f5; border: 2px solid #fc8181; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <h5 style="margin: 0 0 15px 0; color: #c53030; font-weight: 600;">
+                  <i class="fas fa-times-circle mr-2"></i>Estado de Aprobación
+                </h5>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <div>
+                    <div style="font-size: 18px; font-weight: 700; color: #c53030;">
+                      ${datos.ESTADO_APROBACION}
+                    </div>
+                    <div style="font-size: 14px; color: #718096; margin-top: 5px;">
+                      Revisado por: ${datos.GERENTE_DECISION || 'Gerente'}
+                    </div>
+                  </div>
+                  <div style="background: #c53030; color: white; padding: 12px 20px; border-radius: 25px; font-weight: 600;">
+                    <i class="fas fa-ban mr-2"></i>RECHAZADA
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Motivo del rechazo -->
+              <div style="background: #fffbf0; border: 2px solid #f6ad55; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <h5 style="margin: 0 0 15px 0; color: #c05621; font-weight: 600;">
+                  <i class="fas fa-comment-alt mr-2"></i>Motivo del Rechazo
+                </h5>
+                <div style="background: white; border: 1px solid #f6ad55; border-radius: 8px; padding: 15px;">
+                  <div style="font-size: 16px; color: #2d3748; line-height: 1.6; min-height: 40px;">
+                    ${datos.COMENTARIO_RECHAZO || 'No se proporcionó un motivo específico para el rechazo.'}
+                  </div>
+                </div>
+                <div style="margin-top: 12px; font-size: 12px; color: #718096;">
+                  <i class="fas fa-clock mr-1"></i>
+                  Fecha del rechazo: ${datos.FECHA_RECHAZO || datos.FECHA_MODIFICACION}
+                </div>
+              </div>
+              
+              <!-- Información adicional y próximos pasos -->
+              <div style="background: #e6fffa; border: 1px solid #81e6d9; border-radius: 12px; padding: 20px;">
+                <h5 style="margin: 0 0 15px 0; color: #234e52; font-weight: 600;">
+                  <i class="fas fa-lightbulb mr-2"></i>Próximos Pasos
+                </h5>
+                <div style="color: #2c7a7b; font-size: 14px; line-height: 1.6;">
+                  <div style="margin-bottom: 10px;">
+                    <i class="fas fa-arrow-right mr-2"></i>
+                    <strong>Puede revisar el motivo del rechazo</strong> para entender las razones de la decisión
+                  </div>
+                  <div style="margin-bottom: 10px;">
+                    <i class="fas fa-arrow-right mr-2"></i>
+                    <strong>Si considera necesario,</strong> puede crear una nueva solicitud corrigiendo los aspectos mencionados
+                  </div>
+                  <div>
+                    <i class="fas fa-arrow-right mr-2"></i>
+                    <strong>Para dudas adicionales,</strong> puede contactar directamente con el gerente para aclaraciones
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          
+          // ✅ MOSTRAR MODAL DE SOLO LECTURA
+          Swal.fire({
+            title: false,
+            html: modalHtml,
+            width: '800px',
+            showCloseButton: true,
+            showConfirmButton: true,
+            confirmButtonText: '<i class="fas fa-check"></i> Entendido',
+            confirmButtonColor: '#6c757d'
+          });
+          
+        } else {
+          // ✅ ERROR EN LA RESPUESTA
+          Swal.fire({
+            icon: 'error',
+            title: '<i class="fas fa-exclamation-triangle"></i> Error',
+            text: response.error || 'No se pudo obtener la información del resultado de aprobación',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#dc3545'
+          });
+        }
+      },
+      error: function(xhr, status, error) {
+        console.error('❌ Error obteniendo resultado de aprobación:', {
+          status: xhr.status,
+          responseText: xhr.responseText,
+          error: error
+        });
+        
+        Swal.fire({
+          icon: 'error',
+          title: '<i class="fas fa-wifi"></i> Error de Conexión',
+          text: 'No se pudo conectar al servidor para obtener la información',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#dc3545'
+        });
+      }
+    });
+    
+    return false;
+  }
+}, true); // ← TRUE = CAPTURE PHASE (MÁXIMA PRIORIDAD)
+
+
+// 🔄 FUNCIÓN MEJORADA PARA DETECTAR SI SE PUEDE ENVIAR OBSERVACIONES
+function puedeEnviarObservaciones(solicitud) {
+    // 1. Verificar que el estado actual sea "Día de Prueba"
+    const esDiaDePrueba = solicitud.ESTADO_SOLICITUD && 
+                         solicitud.ESTADO_SOLICITUD.toLowerCase().includes('día de prueba');
+    
+    if (!esDiaDePrueba) {
+        return {
+            puede: false,
+            razon: 'El estado actual no es "Día de Prueba"'
+        };
+    }
+    
+    // 2. Verificar si ya tiene observaciones para el ciclo actual
+    const tieneObservacionesCicloActual = solicitud.TIENE_OBSERVACIONES_DIA_PRUEBA === 1;
+    
+    if (tieneObservacionesCicloActual) {
+        return {
+            puede: false,
+            razon: 'Ya se enviaron observaciones para este ciclo de "Día de Prueba"'
+        };
+    }
+    
+    return {
+        puede: true,
+        razon: 'Puede enviar observaciones para este nuevo ciclo'
+    };
+}
+
+// 🆕 FUNCIÓN PARA SUBIR OBSERVACIONES DEL DÍA DE PRUEBA
+$(document).off('click', '.btnSubirObservacionesDiaPrueba').on('click', '.btnSubirObservacionesDiaPrueba', function(e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    
+    const idSolicitud = $(this).data('id');
+    const puesto = $(this).data('puesto');
+    const tienda = $(this).data('tienda');
+    const supervisor = $(this).data('supervisor');
+    
+    console.log("📋 Subir observaciones día de prueba - Solicitud:", idSolicitud);
+    
+    Swal.fire({
+        title: '<i class="fas fa-clipboard-list"></i> Observaciones del Día de Prueba',
+        html: `
+            <div style="text-align: left; max-width: 100%;">
+                <!-- Información de la solicitud con indicador de ciclo -->
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+                    <h5 style="margin: 0 0 15px 0; font-weight: 600;">
+                        <i class="fas fa-info-circle mr-2"></i>Información de la Solicitud
+                    </h5>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                        <div>
+                            <strong><i class="fas fa-hashtag mr-1"></i>ID Solicitud:</strong><br>
+                            <span style="opacity: 0.9;">#${idSolicitud}</span>
+                        </div>
+                        <div>
+                            <strong><i class="fas fa-store mr-1"></i>Tienda:</strong><br>
+                            <span style="opacity: 0.9;">Tienda ${tienda}</span>
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <strong><i class="fas fa-briefcase mr-1"></i>Puesto:</strong><br>
+                            <span style="opacity: 0.9;">${puesto}</span>
+                        </div>
+                    </div>
+                    <!-- 🆕 Indicador de nuevo ciclo -->
+                    <div style="background: rgba(255,255,255,0.2); border-radius: 8px; padding: 12px; margin-top: 15px; border-left: 4px solid #ffc107;">
+                        <div style="display: flex; align-items: center; font-size: 13px;">
+                            <i class="fas fa-recycle mr-2" style="color: #ffc107;"></i>
+                            <span style="opacity: 0.9;"><strong>Nuevo Ciclo de Evaluación:</strong> Puede enviar observaciones para este período de "Día de Prueba"</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Datos del candidato -->
+                <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <h5 style="margin: 0 0 15px 0; color: #495057; font-weight: 600;">
+                        <i class="fas fa-user mr-2"></i>Datos del Candidato
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label style="font-weight: 600; margin-bottom: 5px;">
+                                <i class="fas fa-user-circle mr-1"></i>Nombre del Candidato:
+                            </label>
+                            <input type="text" id="candidato_nombre" class="form-control" 
+                                   placeholder="Ingrese el nombre completo del candidato"
+                                   style="margin-bottom: 15px;">
+                        </div>
+                        <div class="col-md-6">
+                            <label style="font-weight: 600; margin-bottom: 5px;">
+                                <i class="fas fa-id-card mr-1"></i>Documento (Opcional):
+                            </label>
+                            <input type="text" id="candidato_documento" class="form-control" 
+                                   placeholder="DPI, Cédula, etc."
+                                   style="margin-bottom: 15px;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Datos del día de prueba -->
+                <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <h5 style="margin: 0 0 15px 0; color: #856404; font-weight: 600;">
+                        <i class="fas fa-calendar-day mr-2"></i>Datos del Día de Prueba
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label style="font-weight: 600; margin-bottom: 5px;">
+                                <i class="fas fa-calendar mr-1"></i>Fecha:
+                            </label>
+                            <input type="date" id="fecha_dia_prueba" class="form-control" 
+                                   value="${new Date().toISOString().split('T')[0]}"
+                                   style="margin-bottom: 15px;">
+                        </div>
+                        <div class="col-md-4">
+                            <label style="font-weight: 600; margin-bottom: 5px;">
+                                <i class="fas fa-clock mr-1"></i>Hora Inicio:
+                            </label>
+                            <input type="time" id="hora_inicio" class="form-control" 
+                                   style="margin-bottom: 15px;">
+                        </div>
+                        <div class="col-md-4">
+                            <label style="font-weight: 600; margin-bottom: 5px;">
+                                <i class="fas fa-clock mr-1"></i>Hora Fin:
+                            </label>
+                            <input type="time" id="hora_fin" class="form-control" 
+                                   style="margin-bottom: 15px;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evaluación del desempeño -->
+                <div style="background: #e3f2fd; border: 1px solid #bbdefb; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <h5 style="margin: 0 0 15px 0; color: #1976d2; font-weight: 600;">
+                        <i class="fas fa-chart-line mr-2"></i>Evaluación del Desempeño
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label style="font-weight: 600; margin-bottom: 5px;">
+                                <i class="fas fa-clock mr-1"></i>Puntualidad:
+                            </label>
+                            <select id="puntualidad" class="form-control" style="margin-bottom: 15px;">
+                                <option value="">Seleccionar...</option>
+                                <option value="EXCELENTE">Excelente</option>
+                                <option value="BUENO">Bueno</option>
+                                <option value="REGULAR">Regular</option>
+                                <option value="MALO">Malo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label style="font-weight: 600; margin-bottom: 5px;">
+                                <i class="fas fa-smile mr-1"></i>Actitud:
+                            </label>
+                            <select id="actitud" class="form-control" style="margin-bottom: 15px;">
+                                <option value="">Seleccionar...</option>
+                                <option value="EXCELENTE">Excelente</option>
+                                <option value="BUENA">Buena</option>
+                                <option value="REGULAR">Regular</option>
+                                <option value="MALA">Mala</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label style="font-weight: 600; margin-bottom: 5px;">
+                                <i class="fas fa-brain mr-1"></i>Conocimientos:
+                            </label>
+                            <select id="conocimientos" class="form-control" style="margin-bottom: 15px;">
+                                <option value="">Seleccionar...</option>
+                                <option value="EXCELENTE">Excelente</option>
+                                <option value="BUENO">Bueno</option>
+                                <option value="REGULAR">Regular</option>
+                                <option value="DEFICIENTE">Deficiente</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label style="font-weight: 600; margin-bottom: 5px;">
+                                <i class="fas fa-star mr-1"></i>Desempeño General:
+                            </label>
+                            <select id="desempeno_general" class="form-control" style="margin-bottom: 15px;">
+                                <option value="">Seleccionar...</option>
+                                <option value="EXCELENTE">Excelente</option>
+                                <option value="BUENO">Bueno</option>
+                                <option value="REGULAR">Regular</option>
+                                <option value="DEFICIENTE">Deficiente</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Observaciones detalladas -->
+                <div style="background: #f3e5f5; border: 1px solid #e1bee7; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <h5 style="margin: 0 0 15px 0; color: #7b1fa2; font-weight: 600;">
+                        <i class="fas fa-edit mr-2"></i>Observaciones Detalladas
+                    </h5>
+                    <textarea id="observaciones_detalladas" class="form-control" rows="6" 
+                              placeholder="Describa detalladamente el desempeño del candidato durante el día de prueba...&#10;&#10;Incluya:&#10;- Tareas específicas realizadas&#10;- Adaptación al equipo&#10;- Resolución de problemas&#10;- Interacción con clientes&#10;- Manejo de herramientas/sistemas&#10;- Observaciones adicionales"
+                              style="resize: vertical; font-size: 14px; line-height: 1.4;"></textarea>
+                </div>
+
+                <!-- Recomendación final -->
+                <div style="background: #e8f5e8; border: 1px solid #c8e6c9; border-radius: 12px; padding: 20px;">
+                    <h5 style="margin: 0 0 15px 0; color: #2e7d32; font-weight: 600;">
+                        <i class="fas fa-thumbs-up mr-2"></i>Recomendación Final
+                    </h5>
+                    <div style="display: flex; gap: 20px; align-items: center;">
+                        <label style="display: flex; align-items: center; font-weight: 600; cursor: pointer;">
+                            <input type="radio" name="recomendacion" value="RECOMENDADO" style="margin-right: 8px; transform: scale(1.2);">
+                            <i class="fas fa-check-circle mr-1" style="color: #28a745;"></i>
+                            <span style="color: #28a745;">RECOMENDADO para contratación</span>
+                        </label>
+                        <label style="display: flex; align-items: center; font-weight: 600; cursor: pointer;">
+                            <input type="radio" name="recomendacion" value="NO_RECOMENDADO" style="margin-right: 8px; transform: scale(1.2);">
+                            <i class="fas fa-times-circle mr-1" style="color: #dc3545;"></i>
+                            <span style="color: #dc3545;">NO RECOMENDADO</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        `,
+        width: '1000px',
+        showCancelButton: true,
+        confirmButtonText: '<i class="fas fa-save"></i> Enviar Observaciones',
+        cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        buttonsStyling: false,
+        customClass: {
+            popup: 'observaciones-modal-popup',
+            confirmButton: 'btn btn-success btn-lg px-4',
+            cancelButton: 'btn btn-secondary btn-lg px-4 mr-2'
+        },
+        preConfirm: () => {
+            // Validaciones
+            const candidatoNombre = $('#candidato_nombre').val().trim();
+            const fechaDiaPrueba = $('#fecha_dia_prueba').val();
+            const horaInicio = $('#hora_inicio').val();
+            const horaFin = $('#hora_fin').val();
+            const puntualidad = $('#puntualidad').val();
+            const actitud = $('#actitud').val();
+            const conocimientos = $('#conocimientos').val();
+            const desempenoGeneral = $('#desempeno_general').val();
+            const observacionesDetalladas = $('#observaciones_detalladas').val().trim();
+            const recomendacion = $('input[name="recomendacion"]:checked').val();
+
+            // Validación de campos obligatorios
+            if (!candidatoNombre) {
+                Swal.showValidationMessage('El nombre del candidato es obligatorio');
+                return false;
+            }
+            
+            if (!fechaDiaPrueba) {
+                Swal.showValidationMessage('La fecha del día de prueba es obligatoria');
+                return false;
+            }
+            
+            if (!horaInicio || !horaFin) {
+                Swal.showValidationMessage('Las horas de inicio y fin son obligatorias');
+                return false;
+            }
+            
+            if (horaInicio >= horaFin) {
+                Swal.showValidationMessage('La hora de fin debe ser posterior a la hora de inicio');
+                return false;
+            }
+            
+            if (!puntualidad || !actitud || !conocimientos || !desempenoGeneral) {
+                Swal.showValidationMessage('Todos los campos de evaluación son obligatorios');
+                return false;
+            }
+            
+            if (!observacionesDetalladas || observacionesDetalladas.length < 50) {
+                Swal.showValidationMessage('Las observaciones detalladas deben tener al menos 50 caracteres');
+                return false;
+            }
+            
+            if (!recomendacion) {
+                Swal.showValidationMessage('Debe seleccionar una recomendación final');
+                return false;
+            }
+
+            return {
+                id_solicitud: idSolicitud,
+                candidato_nombre: candidatoNombre,
+                candidato_documento: $('#candidato_documento').val().trim(),
+                fecha_dia_prueba: fechaDiaPrueba,
+                hora_inicio: horaInicio,
+                hora_fin: horaFin,
+                puesto_evaluado: puesto,
+                puntualidad: puntualidad,
+                actitud: actitud,
+                conocimientos: conocimientos,
+                desempeno_general: desempenoGeneral,
+                observaciones_detalladas: observacionesDetalladas,
+                recomendacion_supervisor: recomendacion,
+                supervisor_codigo: supervisor,
+                supervisor_nombre: supervisor
+            };
+        },
+        didOpen: () => {
+            // Agregar estilos personalizados
+            if (!document.getElementById('observaciones-styles')) {
+                const styles = document.createElement('style');
+                styles.id = 'observaciones-styles';
+                styles.textContent = `
+                    .observaciones-modal-popup {
+                        border-radius: 16px !important;
+                        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+                    }
+                    .observaciones-modal-popup .form-control:focus {
+                        border-color: #667eea !important;
+                        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+                    }
+                    .observaciones-modal-popup input[type="radio"]:checked {
+                        accent-color: #28a745 !important;
+                    }
+                `;
+                document.head.appendChild(styles);
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const datos = result.value;
+            
+            // Mostrar loading
+            Swal.fire({
+                title: '<i class="fas fa-spinner fa-spin"></i> Guardando observaciones...',
+                text: 'Por favor espera mientras se procesan los datos',
+                allowOutsideClick: false,
+                showConfirmButton: false
+            });
+            
+            // Enviar datos al servidor
+            $.ajax({
+                url: './supervision/crudsolicitudes.php?action=guardar_observaciones_dia_prueba',
+                type: 'POST',
+                dataType: 'json',
+                data: datos,
+                success: function(response) {
+                    console.log("✅ Respuesta del servidor:", response);
+                    
+                    if (response.success) {
+                        // 🔄 MENSAJE MEJORADO CON INFORMACIÓN DEL CICLO
+                        Swal.fire({
+                            icon: 'success',
+                            title: '<i class="fas fa-check-circle"></i> ¡Observaciones Guardadas!',
+                            html: `
+                                <div style="text-align: center; padding: 15px;">
+                                    <p style="margin-bottom: 15px; color: #333;">
+                                        Las observaciones del día de prueba han sido registradas correctamente para este ciclo.
+                                    </p>
+                                    <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+                                        <strong style="color: #155724;">
+                                            <i class="fas fa-user mr-1"></i> Candidato: ${datos.candidato_nombre}
+                                        </strong><br>
+                                        <span style="color: #155724;">
+                                            <i class="fas fa-${datos.recomendacion_supervisor === 'RECOMENDADO' ? 'thumbs-up' : 'thumbs-down'} mr-1"></i> 
+                                            ${datos.recomendacion_supervisor === 'RECOMENDADO' ? 'Recomendado para contratación' : 'No recomendado'}
+                                        </span><br>
+                                        <small style="color: #155724;">
+                                            <i class="fas fa-recycle mr-1"></i> 
+                                            Ciclo ID: ${response.data?.id_ciclo || 'N/A'}
+                                        </small>
+                                    </div>
+                                    <div style="background: #e3f2fd; padding: 12px; border-radius: 8px; margin-top: 15px;">
+                                        <small style="color: #1976d2;">
+                                            <i class="fas fa-lightbulb mr-1"></i>
+                                            <strong>Nota:</strong> Si RRHH vuelve a cambiar el estado a "Día de Prueba", podrás enviar nuevas observaciones para el nuevo ciclo.
+                                        </small>
+                                    </div>
+                                </div>
+                            `,
+                            confirmButtonText: '<i class="fas fa-check"></i> Entendido',
+                            confirmButtonColor: '#28a745',
+                            width: '600px'
+                        });
+                        
+                        // 🔄 RECARGAR LA TABLA PARA MOSTRAR EL CAMBIO DE BOTÓN
+                        cargarSolicitudes();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: '<i class="fas fa-exclamation-circle"></i> Error',
+                            text: response.error || 'No se pudieron guardar las observaciones',
+                            confirmButtonText: 'Entendido',
+                            confirmButtonColor: '#dc3545'
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('❌ Error guardando observaciones:', {
+                        status: xhr.status,
+                        responseText: xhr.responseText,
+                        error: error
+                    });
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: '<i class="fas fa-wifi"></i> Error de Conexión',
+                        text: 'No se pudo conectar al servidor para guardar las observaciones',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            });
+        }
+    });
+});
+
+
+
+$(document).off('click', '.btnVerObservacionesDiaPrueba').on('click', '.btnVerObservacionesDiaPrueba', function(e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    
+    const idSolicitud = $(this).data('id');
+    
+    console.log("👁️ Ver observaciones día de prueba - Solicitud:", idSolicitud);
+    
+    // Mostrar loading
+    Swal.fire({
+        title: '<i class="fas fa-spinner fa-spin"></i> Cargando observaciones...',
+        text: 'Obteniendo observaciones del día de prueba',
+        allowOutsideClick: false,
+        showConfirmButton: false
+    });
+    
+    // Obtener observaciones del servidor
+    $.ajax({
+        url: './supervision/crudsolicitudes.php?action=get_observaciones_dia_prueba',
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            id_solicitud: idSolicitud
+        },
+        success: function(response) {
+            console.log("✅ Observaciones recibidas:", response);
+            
+            if (response.success && response.observaciones) {
+                const obs = response.observaciones;
+                
+                // Construir modal de visualización
+                const modalHtml = `
+                    <div style="text-align: left; max-width: 100%;">
+                        <!-- Encabezado -->
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+                            <h5 style="margin: 0 0 10px 0; font-weight: 600;">
+                                <i class="fas fa-clipboard-check mr-2"></i>Observaciones del Día de Prueba
+                            </h5>
+                            <div style="font-size: 14px; opacity: 0.9;">
+                                Solicitud #${idSolicitud} - Ciclo ID: ${obs.ID_HIST_ASOCIADO || 'N/A'}
+                            </div>
+                        </div>
+
+                        <!-- Información del candidato -->
+                        <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                            <h6 style="margin: 0 0 15px 0; color: #495057; font-weight: 600;">
+                                <i class="fas fa-user mr-2"></i>Información del Candidato
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong><i class="fas fa-user-circle mr-1"></i>Nombre:</strong><br>
+                                    <span style="font-size: 16px; color: #333;">${obs.CANDIDATO_NOMBRE}</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong><i class="fas fa-id-card mr-1"></i>Documento:</strong><br>
+                                    <span style="font-size: 16px; color: #333;">${obs.CANDIDATO_DOCUMENTO || 'No especificado'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Datos del día de prueba -->
+                        <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                            <h6 style="margin: 0 0 15px 0; color: #856404; font-weight: 600;">
+                                <i class="fas fa-calendar-day mr-2"></i>Datos del Día de Prueba
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong><i class="fas fa-calendar mr-1"></i>Fecha:</strong><br>
+                                    <span style="font-size: 16px; color: #333;">${obs.FECHA_DIA_PRUEBA}</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong><i class="fas fa-clock mr-1"></i>Horario:</strong><br>
+                                    <span style="font-size: 16px; color: #333;">${obs.HORA_INICIO} - ${obs.HORA_FIN}</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong><i class="fas fa-briefcase mr-1"></i>Puesto:</strong><br>
+                                    <span style="font-size: 16px; color: #333;">${obs.PUESTO_EVALUADO}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Evaluación del desempeño -->
+                        <div style="background: #e3f2fd; border: 1px solid #bbdefb; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                            <h6 style="margin: 0 0 15px 0; color: #1976d2; font-weight: 600;">
+                                <i class="fas fa-chart-line mr-2"></i>Evaluación del Desempeño
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-3 text-center">
+                                    <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                                        <i class="fas fa-clock" style="font-size: 24px; color: #1976d2; margin-bottom: 8px;"></i>
+                                        <div style="font-weight: 600; color: #333;">Puntualidad</div>
+                                        <div style="font-size: 18px; font-weight: 700; color: #1976d2;">${obs.PUNTUALIDAD}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                                        <i class="fas fa-smile" style="font-size: 24px; color: #28a745; margin-bottom: 8px;"></i>
+                                        <div style="font-weight: 600; color: #333;">Actitud</div>
+                                        <div style="font-size: 18px; font-weight: 700; color: #28a745;">${obs.ACTITUD}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                                        <i class="fas fa-brain" style="font-size: 24px; color: #7b1fa2; margin-bottom: 8px;"></i>
+                                        <div style="font-weight: 600; color: #333;">Conocimientos</div>
+                                        <div style="font-size: 18px; font-weight: 700; color: #7b1fa2;">${obs.CONOCIMIENTOS}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                                        <i class="fas fa-star" style="font-size: 24px; color: #f57c00; margin-bottom: 8px;"></i>
+                                        <div style="font-weight: 600; color: #333;">Desempeño</div>
+                                        <div style="font-size: 18px; font-weight: 700; color: #f57c00;">${obs.DESEMPENO_GENERAL}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Observaciones detalladas -->
+                        <div style="background: #f3e5f5; border: 1px solid #e1bee7; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                            <h6 style="margin: 0 0 15px 0; color: #7b1fa2; font-weight: 600;">
+                                <i class="fas fa-edit mr-2"></i>Observaciones Detalladas
+                            </h6>
+                            <div style="background: white; border: 1px solid #e1bee7; border-radius: 8px; padding: 15px; max-height: 200px; overflow-y: auto;">
+                                <div style="font-size: 14px; color: #333; line-height: 1.6; white-space: pre-wrap;">${obs.OBSERVACIONES_DET || 'No se proporcionaron observaciones detalladas.'}</div>
+                            </div>
+                        </div>
+
+                        <!-- Recomendación final -->
+                        <div style="background: ${obs.RECOMENDACION_SUP === 'RECOMENDADO' ? '#e8f5e8' : '#ffebee'}; border: 1px solid ${obs.RECOMENDACION_SUP === 'RECOMENDADO' ? '#c8e6c9' : '#ffcdd2'}; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                            <h6 style="margin: 0 0 15px 0; color: ${obs.RECOMENDACION_SUP === 'RECOMENDADO' ? '#2e7d32' : '#d32f2f'}; font-weight: 600;">
+                                <i class="fas fa-${obs.RECOMENDACION_SUP === 'RECOMENDADO' ? 'thumbs-up' : 'thumbs-down'} mr-2"></i>Recomendación del Supervisor
+                            </h6>
+                            <div style="display: flex; align-items: center; justify-content: center;">
+                                <div style="background: ${obs.RECOMENDACION_SUP === 'RECOMENDADO' ? '#28a745' : '#dc3545'}; color: white; padding: 15px 30px; border-radius: 25px; font-size: 18px; font-weight: 700; text-align: center;">
+                                    <i class="fas fa-${obs.RECOMENDACION_SUP === 'RECOMENDADO' ? 'check-circle' : 'times-circle'} mr-2"></i>
+                                    ${obs.RECOMENDACION_SUP === 'RECOMENDADO' ? 'RECOMENDADO' : 'NO RECOMENDADO'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información adicional -->
+                        <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 12px; padding: 15px;">
+                            <div style="font-size: 12px; color: #6c757d; text-align: center;">
+                                <div><strong>Supervisor:</strong> ${obs.SUPERVISOR_NOMBRE} | <strong>Fecha de registro:</strong> ${obs.FECHA_CREACION}</div>
+                                <div style="margin-top: 5px;"><strong>Estado:</strong> ${obs.ESTADO} | <strong>Ciclo ID:</strong> ${obs.ID_HIST_ASOCIADO || 'N/A'}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Mostrar modal de visualización
+                Swal.fire({
+                    title: false,
+                    html: modalHtml,
+                    width: '900px',
+                    showCloseButton: true,
+                    showConfirmButton: true,
+                    confirmButtonText: '<i class="fas fa-check"></i> Cerrar',
+                    confirmButtonColor: '#6c757d',
+                    customClass: {
+                        popup: 'observaciones-view-modal'
+                    },
+                    didOpen: () => {
+                        // Agregar estilos para el modal de visualización
+                        if (!document.getElementById('observaciones-view-styles')) {
+                            const styles = document.createElement('style');
+                            styles.id = 'observaciones-view-styles';
+                            styles.textContent = `
+                                .observaciones-view-modal {
+                                    border-radius: 16px !important;
+                                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+                                }
+                                .observaciones-view-modal .swal2-html-container {
+                                    max-height: 70vh !important;
+                                    overflow-y: auto !important;
+                                }
+                            `;
+                            document.head.appendChild(styles);
+                        }
+                    }
+                });
+                
+            } else {
+                Swal.fire({
+                    icon: 'info',
+                    title: '<i class="fas fa-info-circle"></i> Sin Observaciones',
+                    text: 'No se encontraron observaciones para este ciclo del día de prueba',
+                    confirmButtonText: 'Entendido'
+                });
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('❌ Error obteniendo observaciones:', {
+                status: xhr.status,
+                responseText: xhr.responseText,
+                error: error
+            });
+            
+            Swal.fire({
+                icon: 'error',
+                title: '<i class="fas fa-exclamation-triangle"></i> Error',
+                text: 'No se pudieron cargar las observaciones del día de prueba',
+                confirmButtonText: 'Entendido'
+            });
+        }
+    });
+});
+
+
+// BOTON PARA VER EL RESULTADO DEL AVAL
+$(document).on('click', '.btnVerResultadoAval', function() {
+  const idSolicitud = $(this).data('id');
+  const tienda = $(this).data('tienda');
+  const puesto = $(this).data('puesto');
+  const supervisor = $(this).data('supervisor');
+  const razon = $(this).data('razon');
+  
+  cargarResultadoAvalSupervisor(idSolicitud, tienda, puesto, supervisor, razon);
+});
+
+
 
 
 

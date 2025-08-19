@@ -42,10 +42,14 @@ if (!$conn) {
     exit;
 }
 
+$action = $_GET['action'] ?? $_POST['action'] ?? null;
+
 if (isset($_GET['action'])) {
     switch ($_GET['action']) {
 
         // MEJORADO: GET SOLICITUDES PARA SUPERVISORES
+// 🚨 SOLUCIÓN DEFINITIVA - REEMPLAZA EL CASE 'get_solicitudes':
+
 case 'get_solicitudes':
     try {
         if (ob_get_level()) ob_clean();
@@ -59,12 +63,10 @@ case 'get_solicitudes':
         }
 
         // Lista de códigos de supervisores
-        $codigos_supervisores = ['5378','5333','5379','6250','6006','5376','5287','5400','5226'];
-
-        // Determina si es supervisor
+        $codigos_supervisores = ['5378','5379','6250','6006','5376','5287','5400','5226'];
         $es_supervisor = in_array($usuario_logueado, $codigos_supervisores);
 
-        // Base del query
+        // ✅ QUERY CON ALIASES MÁS CORTOS
         $baseQuery = "
             SELECT
                 s.ID_SOLICITUD,
@@ -73,12 +75,12 @@ case 'get_solicitudes':
                 s.ESTADO_SOLICITUD,
                 s.ESTADO_APROBACION,
                 s.DIRIGIDO_RH,
-                TO_CHAR(s.FECHA_SOLICITUD, 'DD-MM-YYYY') AS FECHA_SOLICITUD,
+                TO_CHAR(s.FECHA_SOLICITUD, 'DD-MM-YYYY') AS FECHA_SOL,
                 CASE 
                     WHEN s.FECHA_MODIFICACION != s.FECHA_SOLICITUD 
                     THEN TO_CHAR(s.FECHA_MODIFICACION, 'DD-MM-YYYY HH24:MI:SS')
                     ELSE NULL
-                END AS FECHA_MODIFICACION,
+                END AS FECHA_MOD,
                 s.SOLICITADO_POR,
                 s.RAZON,
                 s.DIRIGIDO_A,
@@ -100,7 +102,7 @@ case 'get_solicitudes':
                 CASE 
                     WHEN s.ESTADO_SOLICITUD = 'Con CVs Disponibles' THEN 1
                     ELSE 0
-                END AS CVS_DISPONIBLES,
+                END AS CVS_DISP,
                 (
                     SELECT CASE
                         WHEN COUNT(*) > 0 THEN 1 ELSE 0
@@ -114,7 +116,21 @@ case 'get_solicitudes':
                     ) h_cvs ON sc.ID_HISTORICO_CV_ENVIO = h_cvs.ID_HISTORICO
                     WHERE sc.ID_SOLICITUD = s.ID_SOLICITUD
                     AND sc.ES_ACTIVA = 'Y'
-                ) AS TIENE_SELECCION,
+                ) AS TIENE_SEL,
+                 (
+                    SELECT CASE
+                        WHEN COUNT(*) > 0 THEN 1 ELSE 0
+                    END
+                    FROM ROY_OBSERVACIONES_DIA_PRUEBA obs
+                    WHERE obs.ID_SOLICITUD = s.ID_SOLICITUD
+                    AND obs.ID_HIST_ASOCIADO = (
+                        SELECT MAX(h2.ID_HISTORICO)
+                        FROM ROY_HISTORICO_SOLICITUD h2
+                        WHERE h2.ID_SOLICITUD = s.ID_SOLICITUD
+                        AND (LOWER(h2.ESTADO_NUEVO) LIKE '%día de prueba%' 
+                             OR LOWER(h2.ESTADO_NUEVO) LIKE '%dia de prueba%')
+                    )
+                ) AS TIENE_OBS,
                 h.ID_HISTORICO,
                 h.COMENTARIO_NUEVO,
                 h.COMENTARIO_ANTERIOR,
@@ -122,7 +138,7 @@ case 'get_solicitudes':
                     SELECT COUNT(*) 
                     FROM ROY_CHAT_HISTORICO ch 
                     WHERE ch.ID_HISTORICO = h.ID_HISTORICO
-                ) AS TOTAL_MENSAJES,
+                ) AS TOTAL_MSG,
                 (
                     SELECT COUNT(*)
                     FROM ROY_CHAT_HISTORICO ch
@@ -142,7 +158,6 @@ case 'get_solicitudes':
         ";
 
         if ($es_supervisor) {
-            // Supervisores ven solo sus solicitudes
             $query = "SELECT * FROM ($baseQuery) A
                       INNER JOIN (
                         SELECT store_no, udf1_string, udf2_string 
@@ -150,9 +165,8 @@ case 'get_solicitudes':
                         WHERE sbs_sid = '680861302000159257' 
                       ) sp ON A.SOLICITADO_POR = sp.udf2_string AND A.NUM_TIENDA = sp.store_no
                       WHERE sp.udf1_string = :usuario_logueado
-                      ORDER BY FECHA_SOLICITUD DESC";
+                      ORDER BY FECHA_SOL DESC";
         } else {
-            // RRHH u otros usuarios ven todas las solicitudes
             $query = "$baseQuery ORDER BY s.FECHA_SOLICITUD DESC";
         }
 
@@ -176,17 +190,18 @@ case 'get_solicitudes':
                 'PUESTO_SOLICITADO' => $row['PUESTO_SOLICITADO'],
                 'ESTADO_SOLICITUD' => $row['ESTADO_SOLICITUD'],
                 'ESTADO_APROBACION' => $row['ESTADO_APROBACION'] ?: 'Por Aprobar',
-                'DIRIGIDO_RH' => $row['DIRIGIDO_RH'], // NUEVO CAMPO
-                'FECHA_SOLICITUD' => $row['FECHA_SOLICITUD'],
-                'FECHA_MODIFICACION' => $row['FECHA_MODIFICACION'],
+                'DIRIGIDO_RH' => $row['DIRIGIDO_RH'],
+                'FECHA_SOLICITUD' => $row['FECHA_SOL'],
+                'FECHA_MODIFICACION' => $row['FECHA_MOD'],
                 'SOLICITADO_POR' => $row['SOLICITADO_POR'],
                 'RAZON' => $row['RAZON'],
                 'DIRIGIDO_A' => $row['DIRIGIDO_A'],
                 'TIENE_ARCHIVOS' => $row['TIENE_ARCHIVOS'],
-                'CVS_DISPONIBLES' => $row['CVS_DISPONIBLES'],
+                'CVS_DISPONIBLES' => $row['CVS_DISP'],
                 'ID_HISTORICO' => $row['ID_HISTORICO'],
                 'COMENTARIO_NUEVO' => $row['COMENTARIO_NUEVO'],
-                'TIENE_SELECCION' => $row['TIENE_SELECCION'],
+                'TIENE_SELECCION' => $row['TIENE_SEL'],
+                'TIENE_OBSERVACIONES_DIA_PRUEBA' => $row['TIENE_OBS'],
                 'NO_LEIDOS' => $row['NO_LEIDOS']
             ];
         }
@@ -202,7 +217,6 @@ case 'get_solicitudes':
         echo json_encode(['success' => false, 'error' => $e->getMessage()]);
     }
     break;
-
 
         // BUSCAR EMPLEADO POR CÓDIGO CON VALIDACIÓN DE SUPERVISOR
         case 'search_employee':
@@ -1175,6 +1189,512 @@ case 'ver_pruebas_adjuntas':
     }
     break;
 
+
+    //ver comentario de aprobacion
+case 'get_resultado_aprobacion':
+    try {
+        $id_solicitud = $_POST['id_solicitud'] ?? null;
+        
+        if (!$id_solicitud) {
+            throw new Exception('ID de solicitud no proporcionado');
+        }
+        
+        // 📋 CONSULTA ORACLE CON NOMBRES CORRECTOS DE COLUMNAS
+        $sql = "SELECT 
+                    s.ID_SOLICITUD,
+                    s.NUM_TIENDA,
+                    s.PUESTO_SOLICITADO,
+                    TO_CHAR(s.FECHA_SOLICITUD, 'DD/MM/YYYY') as FECHA_SOLICITUD,
+                    s.RAZON,
+                    s.ESTADO_APROBACION,
+                    s.SOLICITADO_POR,
+                    s.DIRIGIDO_A,
+                    TO_CHAR(s.FECHA_MODIFICACION, 'DD/MM/YYYY HH24:MI') as FECHA_MODIFICACION,
+                    
+                    -- Información de aprobación/rechazo con nombres correctos
+                    a.COMENTARIO_GERENTE as COMENTARIO_RECHAZO,
+                    a.GERENTE as GERENTE_DECISION,
+                    a.CODIGO_GERENTE,
+                    TO_CHAR(a.FECHA_DECISION, 'DD/MM/YYYY HH24:MI') as FECHA_RECHAZO
+                    
+                FROM ROY_SOLICITUD_PERSONAL s
+                LEFT JOIN ROY_APROBACIONES_GERENCIA a ON s.ID_SOLICITUD = a.ID_SOLICITUD
+                WHERE s.ID_SOLICITUD = :id_solicitud";
+        
+        $stmt = oci_parse($conn, $sql);
+        if (!$stmt) {
+            $error = oci_error($conn);
+            throw new Exception('Error preparando consulta: ' . $error['message']);
+        }
+        
+        oci_bind_by_name($stmt, ':id_solicitud', $id_solicitud);
+        
+        if (!oci_execute($stmt)) {
+            $error = oci_error($stmt);
+            throw new Exception('Error ejecutando consulta: ' . $error['message']);
+        }
+        
+        $datos = oci_fetch_assoc($stmt);
+        
+        if (!$datos) {
+            throw new Exception('No se encontró la solicitud especificada');
+        }
+        
+        // 🔄 PROCESAR CLOB SI ES NECESARIO
+        if (isset($datos['COMENTARIO_RECHAZO']) && is_object($datos['COMENTARIO_RECHAZO'])) {
+            $datos['COMENTARIO_RECHAZO'] = $datos['COMENTARIO_RECHAZO']->load();
+        }
+        
+        // ✅ RESPUESTA EXITOSA
+        echo json_encode([
+            'success' => true,
+            'data' => $datos,
+            'message' => 'Información obtenida correctamente'
+        ]);
+        
+        oci_free_statement($stmt);
+        
+    } catch (Exception $e) {
+        // ❌ ERROR EN LA CONSULTA
+        echo json_encode([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'debug_info' => [
+                'id_solicitud' => $id_solicitud ?? 'No proporcionado',
+                'timestamp' => date('Y-m-d H:i:s')
+            ]
+        ]);
+    }
+    break;
+
+
+    // 🆕 CASE PARA GUARDAR OBSERVACIONES DEL DÍA DE PRUEBA
+                        case 'get_observaciones_dia_prueba':
+                            try {
+                                $id_solicitud = $_POST['id_solicitud'] ?? null;
+                                
+                                if (!$id_solicitud) {
+                                    throw new Exception('ID de solicitud no proporcionado');
+                                }
+                                
+                                // ✅ CONSULTA SIMPLIFICADA: Obtener las observaciones más recientes sin filtro de historial
+                                $queryObservaciones = "SELECT 
+                                                        ID_OBSERVACION,
+                                                        ID_SOLICITUD,
+                                                        SUPERVISOR_CODIGO,
+                                                        SUPERVISOR_NOMBRE,
+                                                        CANDIDATO_NOMBRE,
+                                                        CANDIDATO_DOCUMENTO,
+                                                        TO_CHAR(FECHA_DIA_PRUEBA, 'DD/MM/YYYY') as FECHA_DIA_PRUEBA,
+                                                        HORA_INICIO,
+                                                        HORA_FIN,
+                                                        PUESTO_EVALUADO,
+                                                        OBSERVACIONES_DET,
+                                                        DESEMPENO_GENERAL,
+                                                        PUNTUALIDAD,
+                                                        ACTITUD,
+                                                        CONOCIMIENTOS,
+                                                        RECOMENDACION_SUP,
+                                                        TO_CHAR(FECHA_CREACION, 'DD/MM/YYYY HH24:MI') as FECHA_CREACION,
+                                                        ESTADO,
+                                                        ID_HIST_ASOCIADO
+                                                    FROM ROY_OBSERVACIONES_DIA_PRUEBA 
+                                                    WHERE ID_SOLICITUD = :id_solicitud 
+                                                    ORDER BY FECHA_CREACION DESC
+                                                    FETCH FIRST 1 ROWS ONLY";
+                                
+                                $stmtObservaciones = oci_parse($conn, $queryObservaciones);
+                                oci_bind_by_name($stmtObservaciones, ':id_solicitud', $id_solicitud);
+                                
+                                if (!oci_execute($stmtObservaciones)) {
+                                    $error = oci_error($stmtObservaciones);
+                                    throw new Exception('Error al ejecutar consulta: ' . $error['message']);
+                                }
+                                
+                                $observaciones = oci_fetch_assoc($stmtObservaciones);
+                                oci_free_statement($stmtObservaciones);
+                                
+                                if (!$observaciones) {
+                                    throw new Exception('No se encontraron observaciones para esta solicitud');
+                                }
+                                
+                                // 🔄 PROCESAR CLOB SI ES NECESARIO
+                                if (isset($observaciones['OBSERVACIONES_DET']) && is_object($observaciones['OBSERVACIONES_DET'])) {
+                                    $observaciones['OBSERVACIONES_DET'] = $observaciones['OBSERVACIONES_DET']->load();
+                                }
+                                
+                                // ✅ RESPUESTA EXITOSA
+                                echo json_encode([
+                                    'success' => true,
+                                    'observaciones' => $observaciones,
+                                    'id_ciclo' => $observaciones['ID_HIST_ASOCIADO'],
+                                    'message' => 'Observaciones obtenidas correctamente'
+                                ]);
+                                
+                            } catch (Exception $e) {
+                                // ❌ ERROR
+                                echo json_encode([
+                                    'success' => false,
+                                    'error' => $e->getMessage(),
+                                    'debug_info' => [
+                                        'id_solicitud' => $id_solicitud ?? 'No proporcionado',
+                                        'timestamp' => date('Y-m-d H:i:s')
+                                    ]
+                                ]);
+                            }
+                            break;
+
+                    // CASE PARA GUARDAR OBSERVACIONES DEL DÍA DE PRUEBA
+                    case 'guardar_observaciones_dia_prueba':
+                                try {
+                                    // Validar datos de entrada
+                                    $id_solicitud = $_POST['id_solicitud'] ?? null;
+                                    $candidato_nombre = $_POST['candidato_nombre'] ?? null;
+                                    $candidato_documento = $_POST['candidato_documento'] ?? '';
+                                    $fecha_dia_prueba = $_POST['fecha_dia_prueba'] ?? null;
+                                    $hora_inicio = $_POST['hora_inicio'] ?? null;
+                                    $hora_fin = $_POST['hora_fin'] ?? null;
+                                    $puesto_evaluado = $_POST['puesto_evaluado'] ?? null;
+                                    $puntualidad = $_POST['puntualidad'] ?? null;
+                                    $actitud = $_POST['actitud'] ?? null;
+                                    $conocimientos = $_POST['conocimientos'] ?? null;
+                                    $desempeno_general = $_POST['desempeno_general'] ?? null;
+                                    $observaciones_detalladas = $_POST['observaciones_detalladas'] ?? null;
+                                    $recomendacion_supervisor = $_POST['recomendacion_supervisor'] ?? null;
+                                    $supervisor_codigo = $_POST['supervisor_codigo'] ?? null;
+                                    $supervisor_nombre = $_POST['supervisor_nombre'] ?? null;
+                                    
+                                    // Validaciones básicas
+                                    if (!$id_solicitud || !$candidato_nombre || !$fecha_dia_prueba || 
+                                        !$hora_inicio || !$hora_fin || !$observaciones_detalladas || 
+                                        !$recomendacion_supervisor) {
+                                        throw new Exception('Faltan datos obligatorios para guardar las observaciones');
+                                    }
+                                    
+                                    // ✅ OBTENER ESTADO ACTUAL DE LA SOLICITUD
+                                    $queryVerificar = "SELECT ID_SOLICITUD, ESTADO_SOLICITUD FROM ROY_SOLICITUD_PERSONAL WHERE ID_SOLICITUD = :id_solicitud";
+                                    $stmtVerificar = oci_parse($conn, $queryVerificar);
+                                    oci_bind_by_name($stmtVerificar, ':id_solicitud', $id_solicitud);
+                                    oci_execute($stmtVerificar);
+                                    
+                                    $solicitudData = oci_fetch_assoc($stmtVerificar);
+                                    if (!$solicitudData) {
+                                        throw new Exception('La solicitud especificada no existe');
+                                    }
+                                    
+                                    $estadoActual = $solicitudData['ESTADO_SOLICITUD'] ?? 'Día de Prueba';
+                                    oci_free_statement($stmtVerificar);
+                                    
+                                    // ✅ OBTENER EL ID DEL ÚLTIMO CAMBIO A "DÍA DE PRUEBA"
+                                    $queryUltimoHistorial = "SELECT MAX(ID_HISTORICO) AS ID_HISTORICO
+                                                            FROM ROY_HISTORICO_SOLICITUD 
+                                                            WHERE ID_SOLICITUD = :id_solicitud 
+                                                            AND (LOWER(ESTADO_NUEVO) LIKE '%día de prueba%' 
+                                                                OR LOWER(ESTADO_NUEVO) LIKE '%dia de prueba%')";
+
+                                    $stmtUltimoHistorial = oci_parse($conn, $queryUltimoHistorial);
+                                    oci_bind_by_name($stmtUltimoHistorial, ':id_solicitud', $id_solicitud);
+                                    oci_execute($stmtUltimoHistorial);
+
+                                    $rowHistorial = oci_fetch_assoc($stmtUltimoHistorial);
+                                    $idHistoricoAsociado = $rowHistorial['ID_HISTORICO'] ?? null;
+                                    oci_free_statement($stmtUltimoHistorial);
+
+                                    if (!$idHistoricoAsociado) {
+                                        throw new Exception('No se encontró el historial asociado al estado "Día de Prueba"');
+                                    }
+
+                                    // 🔄 VALIDACIÓN POR CICLO: Verificar si ya existen observaciones para ESTE CICLO ESPECÍFICO
+                                    $queryExisteCiclo = "SELECT ID_OBSERVACION 
+                                                    FROM ROY_OBSERVACIONES_DIA_PRUEBA 
+                                                    WHERE ID_SOLICITUD = :id_solicitud 
+                                                    AND ID_HIST_ASOCIADO = :id_historico";
+                                    
+                                    $stmtExisteCiclo = oci_parse($conn, $queryExisteCiclo);
+                                    oci_bind_by_name($stmtExisteCiclo, ':id_solicitud', $id_solicitud);
+                                    oci_bind_by_name($stmtExisteCiclo, ':id_historico', $idHistoricoAsociado);
+                                    oci_execute($stmtExisteCiclo);
+                                    
+                                    if (oci_fetch($stmtExisteCiclo)) {
+                                        oci_free_statement($stmtExisteCiclo);
+                                        throw new Exception('Ya existen observaciones registradas para este ciclo de "Día de Prueba". Si necesita enviar nuevas observaciones, contacte a RRHH para que inicie un nuevo ciclo.');
+                                    }
+                                    oci_free_statement($stmtExisteCiclo);
+
+                                    // ✅ INSERTAR CON LOS NOMBRES EXACTOS DE TU TABLA
+                                    $queryInsert = "INSERT INTO ROY_OBSERVACIONES_DIA_PRUEBA (
+                                        ID_OBSERVACION,
+                                        ID_SOLICITUD,
+                                        SUPERVISOR_CODIGO,
+                                        SUPERVISOR_NOMBRE,
+                                        CANDIDATO_NOMBRE,
+                                        CANDIDATO_DOCUMENTO,
+                                        FECHA_DIA_PRUEBA,
+                                        HORA_INICIO,
+                                        HORA_FIN,
+                                        PUESTO_EVALUADO,
+                                        OBSERVACIONES_DET,
+                                        DESEMPENO_GENERAL,
+                                        PUNTUALIDAD,
+                                        ACTITUD,
+                                        CONOCIMIENTOS,
+                                        RECOMENDACION_SUP,
+                                        FECHA_CREACION,
+                                        ESTADO,
+                                        ID_HIST_ASOCIADO
+                                    ) VALUES (
+                                        SEQ_ROY_OBSERVACIONES.NEXTVAL,
+                                        :id_solicitud,
+                                        :supervisor_codigo,
+                                        :supervisor_nombre,
+                                        :candidato_nombre,
+                                        :candidato_documento,
+                                        TO_DATE(:fecha_dia_prueba, 'YYYY-MM-DD'),
+                                        :hora_inicio,
+                                        :hora_fin,
+                                        :puesto_evaluado,
+                                        :observaciones_det,
+                                        :desempeno_general,
+                                        :puntualidad,
+                                        :actitud,
+                                        :conocimientos,
+                                        :recomendacion_sup,
+                                        SYSDATE,
+                                        'ENVIADO',
+                                        :id_hist_asociado
+                                    )";
+
+                                    $stmtInsert = oci_parse($conn, $queryInsert);
+                                    if (!$stmtInsert) {
+                                        $error = oci_error($conn);
+                                        throw new Exception('Error preparando consulta de inserción: ' . $error['message']);
+                                    }
+
+                                    // ✅ BIND DE PARÁMETROS CON NOMBRES CORRECTOS
+                                    oci_bind_by_name($stmtInsert, ':id_solicitud', $id_solicitud);
+                                    oci_bind_by_name($stmtInsert, ':supervisor_codigo', $supervisor_codigo);
+                                    oci_bind_by_name($stmtInsert, ':supervisor_nombre', $supervisor_nombre);
+                                    oci_bind_by_name($stmtInsert, ':candidato_nombre', $candidato_nombre);
+                                    oci_bind_by_name($stmtInsert, ':candidato_documento', $candidato_documento);
+                                    oci_bind_by_name($stmtInsert, ':fecha_dia_prueba', $fecha_dia_prueba);
+                                    oci_bind_by_name($stmtInsert, ':hora_inicio', $hora_inicio);
+                                    oci_bind_by_name($stmtInsert, ':hora_fin', $hora_fin);
+                                    oci_bind_by_name($stmtInsert, ':puesto_evaluado', $puesto_evaluado);
+                                    oci_bind_by_name($stmtInsert, ':observaciones_det', $observaciones_detalladas);
+                                    oci_bind_by_name($stmtInsert, ':desempeno_general', $desempeno_general);
+                                    oci_bind_by_name($stmtInsert, ':puntualidad', $puntualidad);
+                                    oci_bind_by_name($stmtInsert, ':actitud', $actitud);
+                                    oci_bind_by_name($stmtInsert, ':conocimientos', $conocimientos);
+                                    oci_bind_by_name($stmtInsert, ':recomendacion_sup', $recomendacion_supervisor);
+                                    oci_bind_by_name($stmtInsert, ':id_hist_asociado', $idHistoricoAsociado);
+
+                                    if (!oci_execute($stmtInsert)) {
+                                        $error = oci_error($stmtInsert);
+                                        throw new Exception('Error ejecutando inserción: ' . $error['message']);
+                                    }
+
+                                    oci_free_statement($stmtInsert);
+                                    
+                                    // NUEVA SECCIÓN: TRANSICIÓN DE ESTADO CON CAMPOS ESPECÍFICOS
+                                    try {
+                                        // Crear la transición de estado
+                                        $estadoAnterior = $estadoActual;  // El que tiene ahora
+                                        $estadoNuevo = $estadoActual . " - Enviado";  // El mismo + "Enviado"
+                                        
+                                        // Crear comentario mejorado
+                                        $comentarioHistorial = "OBSERVACIONES DEL DÍA DE PRUEBA ENVIADAS - CICLO " . $idHistoricoAsociado . "\n";
+                                        $comentarioHistorial .= "═══════════════════════════════════════\n";
+                                        $comentarioHistorial .= "Candidato: " . $candidato_nombre . "\n";
+                                        $comentarioHistorial .= "Fecha evaluación: " . $fecha_dia_prueba . "\n";
+                                        $comentarioHistorial .= "Horario: " . $hora_inicio . " - " . $hora_fin . "\n";
+                                        $comentarioHistorial .= "Recomendación: " . $recomendacion_supervisor . "\n";
+                                        $comentarioHistorial .= "Supervisor: " . $supervisor_nombre . "\n";
+                                        $comentarioHistorial .= "EVALUACIÓN: Puntualidad:" . $puntualidad . " | Actitud:" . $actitud . " | Conocimientos:" . $conocimientos;
+                                        
+                                        // Insertar en historial con transición completa y campos específicos
+                                        $queryHistorialCompleto = "INSERT INTO ROY_HISTORICO_SOLICITUD (
+                                            ID_SOLICITUD,
+                                            ESTADO_ANTERIOR,
+                                            ESTADO_NUEVO,
+                                            COMENTARIO_NUEVO,
+                                            FECHA_CAMBIO,
+                                            OBSERVACIONES_ENVIADAS,
+                                            TIPO_EVENTO
+                                        ) VALUES (
+                                            :id_solicitud,
+                                            :estado_anterior,
+                                            :estado_nuevo,
+                                            :comentario,
+                                            SYSDATE,
+                                            'Y',
+                                            'OBSERVACIONES_ENVIADAS'
+                                        )";
+                                        
+                                        $stmtHistorialCompleto = oci_parse($conn, $queryHistorialCompleto);
+                                        oci_bind_by_name($stmtHistorialCompleto, ':id_solicitud', $id_solicitud);
+                                        oci_bind_by_name($stmtHistorialCompleto, ':estado_anterior', $estadoAnterior);
+                                        oci_bind_by_name($stmtHistorialCompleto, ':estado_nuevo', $estadoNuevo);
+                                        oci_bind_by_name($stmtHistorialCompleto, ':comentario', $comentarioHistorial);
+                                        
+                                        if (oci_execute($stmtHistorialCompleto)) {
+                                            error_log("✅ Transición de estado registrada: '$estadoAnterior' → '$estadoNuevo' para solicitud $id_solicitud");
+                                            
+                                            // Actualizar el estado en la solicitud principal
+                                            $queryUpdateSolicitud = "UPDATE ROY_SOLICITUD_PERSONAL 
+                                                                    SET ESTADO_SOLICITUD = :estado_nuevo,
+                                                                        FECHA_MODIFICACION = SYSDATE
+                                                                    WHERE ID_SOLICITUD = :id_solicitud";
+                                            
+                                            $stmtUpdateSolicitud = oci_parse($conn, $queryUpdateSolicitud);
+                                            oci_bind_by_name($stmtUpdateSolicitud, ':estado_nuevo', $estadoNuevo);
+                                            oci_bind_by_name($stmtUpdateSolicitud, ':id_solicitud', $id_solicitud);
+                                            
+                                            if (oci_execute($stmtUpdateSolicitud)) {
+                                                error_log("✅ Estado de solicitud actualizado a: '$estadoNuevo'");
+                                            } else {
+                                                $error = oci_error($stmtUpdateSolicitud);
+                                                error_log("⚠️ Error actualizando estado de solicitud: " . $error['message']);
+                                            }
+                                            
+                                            oci_free_statement($stmtUpdateSolicitud);
+                                            
+                                        } else {
+                                            $error = oci_error($stmtHistorialCompleto);
+                                            error_log('⚠️ Error registrando transición en historial: ' . $error['message']);
+                                        }
+                                        
+                                        oci_free_statement($stmtHistorialCompleto);
+                                        
+                                    } catch (Exception $e) {
+                                        error_log('⚠️ Error en transición de estado: ' . $e->getMessage());
+                                        // No afectar el flujo principal de observaciones
+                                    }
+                                    
+                                    // Confirmar transacción
+                                    oci_commit($conn);
+                                    
+                                    // ✅ RESPUESTA EXITOSA MEJORADA
+                                    echo json_encode([
+                                        'success' => true,
+                                        'message' => 'Observaciones guardadas y registradas en historial correctamente',
+                                        'data' => [
+                                            'id_solicitud' => $id_solicitud,
+                                            'id_ciclo' => $idHistoricoAsociado,
+                                            'candidato' => $candidato_nombre,
+                                            'recomendacion' => $recomendacion_supervisor,
+                                            'estado_anterior' => $estadoAnterior ?? $estadoActual,
+                                            'estado_nuevo' => $estadoNuevo ?? ($estadoActual . " - Enviado"),
+                                            'fecha_registro' => date('Y-m-d H:i:s'),
+                                            'historial_registrado' => true,
+                                            'observaciones_enviadas' => 'Y',
+                                            'tipo_evento' => 'OBSERVACIONES_ENVIADAS'
+                                        ]
+                                    ]);
+                                    
+                                } catch (Exception $e) {
+                                    // Rollback en caso de error
+                                    oci_rollback($conn);
+                                    
+                                    error_log('❌ Error guardando observaciones día de prueba: ' . $e->getMessage());
+                                    
+                                    echo json_encode([
+                                        'success' => false,
+                                        'error' => $e->getMessage(),
+                                        'debug_info' => [
+                                            'id_solicitud' => $id_solicitud ?? 'No proporcionado',
+                                            'timestamp' => date('Y-m-d H:i:s')
+                                        ]
+                                    ]);
+                                }
+                                break;
+
+                                 // CASE PARA OBTENER RESULTADO DEL AVAL
+                            case 'obtener_resultado_aval_supervisor':
+                                    try {
+                                        if (ob_get_level()) ob_clean();
+                                        header('Content-Type: application/json; charset=utf-8');
+                                        
+                                        $id_solicitud = $_GET['id_solicitud'] ?? '';
+                                        if (empty($id_solicitud)) {
+                                            echo json_encode(['success' => false, 'error' => 'ID requerido']);
+                                            exit;
+                                        }
+                                        
+                                        // ✅ OBTENER INFORMACIÓN DE LA SOLICITUD
+                                        $querySolicitud = "SELECT 
+                                                            NUM_TIENDA,
+                                                            PUESTO_SOLICITADO,
+                                                            SOLICITADO_POR,
+                                                            RAZON,
+                                                            TO_CHAR(FECHA_SOLICITUD, 'DD-MM-YYYY') AS FECHA_SOLICITUD
+                                                        FROM ROY_SOLICITUD_PERSONAL
+                                                        WHERE ID_SOLICITUD = :id";
+                                        
+                                        $stmtSolicitud = oci_parse($conn, $querySolicitud);
+                                        oci_bind_by_name($stmtSolicitud, ':id', $id_solicitud);
+                                        oci_execute($stmtSolicitud);
+                                        $solicitud = oci_fetch_assoc($stmtSolicitud);
+                                        oci_free_statement($stmtSolicitud);
+                                        
+                                        // ✅ OBTENER RESULTADO DEL AVAL (ÚLTIMO PROCESADO)
+                                        $queryAval = "SELECT 
+                                                        a.DECISION_GERENTE,
+                                                        a.ESTADO_AVAL,
+                                                        a.GERENTE_NOMBRE,
+                                                        TO_CHAR(a.FECHA_RESPUESTA, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_DECISION,
+                                                        a.COMENTARIO_GERENTE
+                                                    FROM ROY_AVALES_GERENCIA a
+                                                    WHERE a.ID_SOLICITUD = :id 
+                                                    AND a.DECISION_GERENTE IS NOT NULL
+                                                    ORDER BY a.FECHA_RESPUESTA DESC
+                                                    FETCH FIRST 1 ROWS ONLY";
+                                        
+                                        $stmtAval = oci_parse($conn, $queryAval);
+                                        oci_bind_by_name($stmtAval, ':id', $id_solicitud);
+                                        oci_execute($stmtAval);
+                                        $aval = oci_fetch_assoc($stmtAval);
+                                        oci_free_statement($stmtAval);
+                                        
+                                        if (!$aval) {
+                                            echo json_encode(['success' => false, 'error' => 'No se encontró decisión del aval']);
+                                            exit;
+                                        }
+                                        
+                                        // ✅ PROCESAR CLOB SI ES NECESARIO
+                                        if (isset($aval['COMENTARIO_GERENTE']) && is_object($aval['COMENTARIO_GERENTE'])) {
+                                            $aval['COMENTARIO_GERENTE'] = $aval['COMENTARIO_GERENTE']->load();
+                                        }
+                                        
+                                        // ✅ RESPUESTA
+                                        $respuesta = [
+                                            'success' => true,
+                                            'data' => [
+                                                'solicitud' => [
+                                                    'id' => $id_solicitud,
+                                                    'tienda' => $solicitud['NUM_TIENDA'] ?? 'N/A',
+                                                    'puesto' => $solicitud['PUESTO_SOLICITADO'] ?? 'N/A',
+                                                    'supervisor' => $solicitud['SOLICITADO_POR'] ?? 'N/A',
+                                                    'razon' => $solicitud['RAZON'] ?? 'N/A',
+                                                    'fecha_solicitud' => $solicitud['FECHA_SOLICITUD'] ?? 'N/A'
+                                                ],
+                                                'aval' => [
+                                                    'decision' => $aval['DECISION_GERENTE'] ?? 'N/A',
+                                                    'estado' => $aval['ESTADO_AVAL'] ?? 'N/A',
+                                                    'gerente' => $aval['GERENTE_NOMBRE'] ?? 'N/A',
+                                                    'fecha_decision' => $aval['FECHA_DECISION'] ?? 'N/A',
+                                                    'comentario' => $aval['COMENTARIO_GERENTE'] ?? 'Sin comentarios'
+                                                ]
+                                            ]
+                                        ];
+                                        
+                                        echo json_encode($respuesta);
+                                        exit;
+                                        
+                                    } catch (Exception $e) {
+                                        echo json_encode(['success' => false, 'error' => 'Error: ' . $e->getMessage()]);
+                                        exit;
+                                    }
+                                    break;
 
 
     }
