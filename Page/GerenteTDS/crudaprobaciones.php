@@ -1520,9 +1520,10 @@ try {
         // ===================================================================
         
                     case 'procesar_aprobacion_gerente':
-                        error_log("Procesando cambio de aprobacion con tabla simplificada...");
+                        error_log("Procesando cambio de aprobacion con comentarios obligatorios...");
                         error_log("POST data: " . print_r($_POST, true));
                         
+                        // 🆕 VALIDACIONES MEJORADAS
                         if (empty($_POST['id_solicitud']) || empty($_POST['nueva_aprobacion'])) {
                             error_log("Faltan datos obligatorios");
                             echo json_encode(['success' => false, 'error' => 'Faltan datos obligatorios: ID solicitud y nueva aprobación']);
@@ -1533,6 +1534,24 @@ try {
                         $nueva_aprobacion = $_POST['nueva_aprobacion'];
                         $comentario = $_POST['comentario'] ?? '';
                         $dirigido_rh = $_POST['dirigido_rh'] ?? null;
+                        $tipo_comentario = $_POST['tipo_comentario'] ?? 'general';
+                        
+                        // 🆕 VALIDACIÓN DE COMENTARIOS OBLIGATORIOS
+                        if ($nueva_aprobacion === 'Aprobado') {
+                            if (empty($dirigido_rh)) {
+                                echo json_encode(['success' => false, 'error' => 'Para aprobar una solicitud debe seleccionar una persona de RRHH']);
+                                break;
+                            }
+                            if (empty($comentario) || strlen(trim($comentario)) < 10) {
+                                echo json_encode(['success' => false, 'error' => 'Para aprobar una solicitud debe proporcionar un comentario explicativo de al menos 10 caracteres']);
+                                break;
+                            }
+                        } elseif ($nueva_aprobacion === 'No Aprobado') {
+                            if (empty($comentario) || strlen(trim($comentario)) < 10) {
+                                echo json_encode(['success' => false, 'error' => 'Para rechazar una solicitud debe proporcionar un motivo de al menos 10 caracteres']);
+                                break;
+                            }
+                        }
                         
                         // 🆕 OBTENER INFORMACIÓN DEL GERENTE CORRECTAMENTE
                         $codigo_gerente = $_SESSION['user'][12] ?? null;
@@ -1553,7 +1572,7 @@ try {
                             error_log("⚠️ Gerente no identificado, usando fallback: $nombre_gerente");
                         }
 
-                        error_log("Datos: ID=$id, Nueva Aprobación=$nueva_aprobacion, Dirigido RH=$dirigido_rh, Gerente=$nombre_gerente");
+                        error_log("Datos: ID=$id, Nueva Aprobación=$nueva_aprobacion, Dirigido RH=$dirigido_rh, Gerente=$nombre_gerente, Tipo Comentario=$tipo_comentario");
 
                         try {
                             // ✅ INICIAR TRANSACCIÓN
@@ -1611,27 +1630,85 @@ try {
                                 default: $decision = 'PENDIENTE'; break;
                             }
                             
-                            $queryAprobacion = "INSERT INTO ROY_APROBACIONES_GERENCIA (
-                                ID_SOLICITUD, 
-                                DECISION,
-                                COMENTARIO_GERENTE,
-                                GERENTE,
-                                CODIGO_GERENTE,
-                                FECHA_DECISION
-                            ) VALUES (
-                                :id_solicitud,
-                                :decision,
-                                EMPTY_CLOB(),
-                                :gerente,
-                                :codigo_gerente,
-                                SYSDATE
-                            ) RETURNING COMENTARIO_GERENTE INTO :comentario_clob";
+                            // 🆕 CONSTRUIR COMENTARIO ESTRUCTURADO
+                            $comentario_estructurado = '';
+                            if ($nueva_aprobacion === 'Aprobado') {
+                                $comentario_estructurado = "APROBACIÓN GERENCIAL\n";
+                                $comentario_estructurado .= "Procesado por: $nombre_gerente\n";
+                                $comentario_estructurado .= "Asignado a RRHH: $dirigido_rh\n";
+                                $comentario_estructurado .= "Comentario de aprobación: $comentario\n";
+                                $comentario_estructurado .= "Fecha de procesamiento: " . date('Y-m-d H:i:s');
+                            } elseif ($nueva_aprobacion === 'No Aprobado') {
+                                $comentario_estructurado = "RECHAZO GERENCIAL\n";
+                                $comentario_estructurado .= "Procesado por: $nombre_gerente\n";
+                                $comentario_estructurado .= "Motivo del rechazo: $comentario\n";
+                                $comentario_estructurado .= "Fecha de procesamiento: " . date('Y-m-d H:i:s');
+                            } else {
+                                $comentario_estructurado = "CAMBIO DE ESTADO\n";
+                                $comentario_estructurado .= "Procesado por: $nombre_gerente\n";
+                                $comentario_estructurado .= "Nuevo estado: $nueva_aprobacion\n";
+                                if (!empty($comentario)) {
+                                    $comentario_estructurado .= "Comentario: $comentario\n";
+                                }
+                                $comentario_estructurado .= "Fecha de procesamiento: " . date('Y-m-d H:i:s');
+                            }
                             
-                            $stmtAprobacion = oci_parse($conn, $queryAprobacion);
-                            oci_bind_by_name($stmtAprobacion, ':id_solicitud', $id);
-                            oci_bind_by_name($stmtAprobacion, ':decision', $decision);
-                            oci_bind_by_name($stmtAprobacion, ':gerente', $nombre_gerente);
-                            oci_bind_by_name($stmtAprobacion, ':codigo_gerente', $codigo_gerente);
+                            // 🆕 VERIFICAR SI YA EXISTE UNA ENTRADA PARA ESTA SOLICITUD
+                            $queryExiste = "SELECT COUNT(*) as CUENTA FROM ROY_APROBACIONES_GERENCIA WHERE ID_SOLICITUD = :id_solicitud";
+                            $stmtExiste = oci_parse($conn, $queryExiste);
+                            oci_bind_by_name($stmtExiste, ':id_solicitud', $id);
+                            
+                            if (!oci_execute($stmtExiste)) {
+                                $error = oci_error($stmtExiste);
+                                throw new Exception("Error verificando existencia: " . $error['message']);
+                            }
+                            
+                            $existe = false;
+                            if ($row = oci_fetch_assoc($stmtExiste)) {
+                                $existe = ($row['CUENTA'] > 0);
+                            }
+                            oci_free_statement($stmtExiste);
+                            
+                            if ($existe) {
+                                // 🆕 ACTUALIZAR REGISTRO EXISTENTE
+                                $queryAprobacion = "UPDATE ROY_APROBACIONES_GERENCIA SET 
+                                                    DECISION = :decision,
+                                                    COMENTARIO_GERENTE = EMPTY_CLOB(),
+                                                    GERENTE = :gerente,
+                                                    CODIGO_GERENTE = :codigo_gerente,
+                                                    FECHA_DECISION = SYSDATE
+                                                    WHERE ID_SOLICITUD = :id_solicitud 
+                                                    RETURNING COMENTARIO_GERENTE INTO :comentario_clob";
+                                
+                                $stmtAprobacion = oci_parse($conn, $queryAprobacion);
+                                oci_bind_by_name($stmtAprobacion, ':id_solicitud', $id);
+                                oci_bind_by_name($stmtAprobacion, ':decision', $decision);
+                                oci_bind_by_name($stmtAprobacion, ':gerente', $nombre_gerente);
+                                oci_bind_by_name($stmtAprobacion, ':codigo_gerente', $codigo_gerente);
+                            } else {
+                                // 🆕 INSERTAR NUEVO REGISTRO
+                                $queryAprobacion = "INSERT INTO ROY_APROBACIONES_GERENCIA (
+                                    ID_SOLICITUD, 
+                                    DECISION,
+                                    COMENTARIO_GERENTE,
+                                    GERENTE,
+                                    CODIGO_GERENTE,
+                                    FECHA_DECISION
+                                ) VALUES (
+                                    :id_solicitud,
+                                    :decision,
+                                    EMPTY_CLOB(),
+                                    :gerente,
+                                    :codigo_gerente,
+                                    SYSDATE
+                                ) RETURNING COMENTARIO_GERENTE INTO :comentario_clob";
+                                
+                                $stmtAprobacion = oci_parse($conn, $queryAprobacion);
+                                oci_bind_by_name($stmtAprobacion, ':id_solicitud', $id);
+                                oci_bind_by_name($stmtAprobacion, ':decision', $decision);
+                                oci_bind_by_name($stmtAprobacion, ':gerente', $nombre_gerente);
+                                oci_bind_by_name($stmtAprobacion, ':codigo_gerente', $codigo_gerente);
+                            }
                             
                             // 🆕 CREAR DESCRIPTOR CLOB PARA EL COMENTARIO
                             $comentario_clob = oci_new_descriptor($conn, OCI_D_LOB);
@@ -1639,17 +1716,16 @@ try {
                             
                             if (!oci_execute($stmtAprobacion, OCI_NO_AUTO_COMMIT)) {
                                 $error = oci_error($stmtAprobacion);
-                                throw new Exception("Error insertando aprobación: " . $error['message']);
+                                throw new Exception("Error procesando aprobación: " . $error['message']);
                             }
                             
-                            // 🆕 GUARDAR COMENTARIO EN CLOB (especialmente importante para rechazos)
-                            if (!empty($comentario)) {
-                                if (!$comentario_clob->save($comentario)) {
-                                    throw new Exception("Error guardando comentario del gerente");
-                                }
+                            // 🆕 GUARDAR COMENTARIO ESTRUCTURADO EN CLOB
+                            if (!$comentario_clob->save($comentario_estructurado)) {
+                                throw new Exception("Error guardando comentario del gerente");
                             }
                             
                             // ✅ MANTENER HISTORIAL TRADICIONAL PARA COMPATIBILIDAD
+                            $comentario_historial = $comentario; // Solo el comentario simple para el historial
                             $queryHistorial = "INSERT INTO ROY_HISTORICO_SOLICITUD 
                                 (ID_SOLICITUD, APROBACION_ANTERIOR, APROBACION_NUEVA, COMENTARIO_NUEVO, FECHA_CAMBIO)
                                 VALUES (:id_solicitud, :aprobacion_anterior, :aprobacion_nueva, :comentario, SYSDATE)";
@@ -1657,7 +1733,7 @@ try {
                             oci_bind_by_name($stmtHist, ':id_solicitud', $id);
                             oci_bind_by_name($stmtHist, ':aprobacion_anterior', $aprobacion_anterior);
                             oci_bind_by_name($stmtHist, ':aprobacion_nueva', $nueva_aprobacion);
-                            oci_bind_by_name($stmtHist, ':comentario', $comentario);
+                            oci_bind_by_name($stmtHist, ':comentario', $comentario_historial);
                             
                             if (!oci_execute($stmtHist, OCI_NO_AUTO_COMMIT)) {
                                 $error = oci_error($stmtHist);
@@ -1674,16 +1750,15 @@ try {
                             $comentario_clob->free();
                             oci_free_statement($stmtAprobacion);
 
-                            error_log("✅ Aprobación registrada exitosamente en tabla simplificada");
+                            error_log("✅ Aprobación registrada exitosamente con comentario obligatorio");
 
-                            // 🆕 MENSAJE DE RESPUESTA
+                            // 🆕 MENSAJE DE RESPUESTA MEJORADO
                             $mensaje = "Estado de aprobación actualizado correctamente de \"$aprobacion_anterior\" a \"$nueva_aprobacion\"";
                             
-                            if ($dirigido_rh) {
+                            if ($nueva_aprobacion === 'Aprobado') {
                                 $mensaje .= " y asignado a: $dirigido_rh";
-                            }
-                            
-                            if ($decision === 'NO_APROBADO') {
+                                $mensaje .= ". El comentario de aprobación ha sido registrado correctamente.";
+                            } elseif ($nueva_aprobacion === 'No Aprobado') {
                                 $mensaje .= ". El motivo del rechazo ha sido registrado y será visible para el supervisor.";
                             }
 
@@ -1691,7 +1766,14 @@ try {
                                 'success' => true,
                                 'mensaje' => $mensaje,
                                 'decision_registrada' => $decision,
-                                'tabla_utilizada' => 'ROY_APROBACIONES_GERENCIA (Simplificada)'
+                                'comentario_guardado' => !empty($comentario),
+                                'tipo_comentario' => $tipo_comentario,
+                                'tabla_utilizada' => 'ROY_APROBACIONES_GERENCIA (Con comentarios obligatorios)',
+                                'datos' => [
+                                    'gerente' => $nombre_gerente,
+                                    'dirigido_rh' => $dirigido_rh,
+                                    'tiene_comentario' => !empty($comentario)
+                                ]
                             ]);
 
                         } catch (Exception $e) {
@@ -1702,7 +1784,6 @@ try {
                         
                         oci_close($conn);
                         break;
-
         // ✅ OBTENER LISTAS PARA DROPDOWNS
         case 'get_listas_gerentes':
             try {
@@ -1724,6 +1805,158 @@ try {
             }
             break;
 
+
+case 'obtener_resumen_aprobacion_gerente':
+    $id_solicitud = $_GET['id_solicitud'] ?? $_POST['id_solicitud'];
+    
+    try {
+        // Usar los nombres correctos de las columnas según tu tabla
+        $query = "SELECT 
+                    s.ID_SOLICITUD,
+                    s.NUM_TIENDA,
+                    s.PUESTO_SOLICITADO,
+                    s.SOLICITADO_POR,
+                    s.ESTADO_APROBACION,
+                    s.DIRIGIDO_RH,
+                    s.FECHA_SOLICITUD,
+                    ag.COMENTARIO_GERENTE,
+                    ag.GERENTE,
+                    ag.CODIGO_GERENTE,
+                    TO_CHAR(ag.FECHA_DECISION, 'DD/MM/YYYY HH24:MI:SS') as FECHA_DECISION_FORMATO
+                  FROM ROY_SOLICITUD_PERSONAL s
+                  LEFT JOIN ROY_APROBACIONES_GERENCIA ag ON s.ID_SOLICITUD = ag.ID_SOLICITUD
+                  WHERE s.ID_SOLICITUD = :id_solicitud";
+        
+        $stmt = oci_parse($conn, $query);
+        oci_bind_by_name($stmt, ':id_solicitud', $id_solicitud);
+        
+        if (!oci_execute($stmt)) {
+            $error = oci_error($stmt);
+            throw new Exception("Error en consulta: " . $error['message']);
+        }
+        
+        if ($row = oci_fetch_assoc($stmt)) {
+            // Leer comentario CLOB
+            $comentario_completo = '';
+            if ($row['COMENTARIO_GERENTE']) {
+                $comentario_completo = $row['COMENTARIO_GERENTE']->read($row['COMENTARIO_GERENTE']->size());
+                $row['COMENTARIO_GERENTE']->free();
+                
+            // 🆕 OBTENER NOMBRE COMPLETO DEL GERENTE
+            $nombre_gerente = 'No disponible';
+            if (!empty($row['GERENTE'])) {
+                $nombre_gerente = $row['GERENTE'];
+            } elseif (!empty($row['CODIGO_GERENTE'])) {
+                // Mapeo de códigos a nombres si el nombre no viene en GERENTE
+                $gerente_nombres = [
+                    '5333' => 'Christian Quan', 
+                    '5210' => 'Giovanni Cardoza'
+                ];
+                $nombre_gerente = $gerente_nombres[$row['CODIGO_GERENTE']] ?? 'Gerente código ' . $row['CODIGO_GERENTE'];
+            }
+            }
+            
+            // Extraer solo el comentario limpio
+            $comentario_limpio = 'Sin comentario adicional';
+            if ($comentario_completo) {
+                // Debug para ver qué contiene
+                error_log("COMENTARIO COMPLETO DEBUG: " . $comentario_completo);
+                
+                // 🆕 MÉTODO MÁS DIRECTO: buscar y extraer solo después de los dos puntos
+                if (strpos($comentario_completo, 'Comentario de aprobacion:') !== false) {
+                    $comentario_limpio = substr($comentario_completo, strpos($comentario_completo, 'Comentario de aprobacion:') + strlen('Comentario de aprobacion:'));
+                    $comentario_limpio = trim($comentario_limpio);
+                    // Quitar todo lo que viene después incluyendo saltos de línea
+                    $comentario_limpio = explode("\n", $comentario_limpio)[0];
+                    $comentario_limpio = trim($comentario_limpio);
+                } elseif (strpos($comentario_completo, 'Motivo del rechazo:') !== false) {
+                    $comentario_limpio = substr($comentario_completo, strpos($comentario_completo, 'Motivo del rechazo:') + strlen('Motivo del rechazo:'));
+                    $comentario_limpio = trim($comentario_limpio);
+                    $comentario_limpio = explode("\n", $comentario_limpio)[0];
+                    $comentario_limpio = trim($comentario_limpio);
+                } else {
+                    // Si no encuentra el patrón, tomar la línea más útil
+                    $lineas = explode("\n", $comentario_completo);
+                    foreach ($lineas as $linea) {
+                        $linea = trim($linea);
+                        if (!empty($linea) && 
+                            stripos($linea, 'GERENCIAL') === false && 
+                            stripos($linea, 'Procesado por') === false && 
+                            stripos($linea, 'Asignado a RRHH') === false && 
+                            stripos($linea, 'Fecha de procesamiento') === false &&
+                            !preg_match('/^\d{4}-\d{2}-\d{2}/', $linea) &&
+                            strlen($linea) > 3) {
+                            
+                            // Si la línea contiene dos puntos, tomar solo lo que está después
+                            if (strpos($linea, ':') !== false) {
+                                $partes = explode(':', $linea);
+                                $comentario_limpio = trim(end($partes));
+                            } else {
+                                $comentario_limpio = $linea;
+                            }
+                            break;
+                        }
+                    }
+                }
+                
+                // 🆕 ÚLTIMA LIMPIEZA: quitar caracteres extraños y fechas
+                $comentario_limpio = str_replace(['?', '??'], '', $comentario_limpio);
+                $comentario_limpio = preg_replace('/\s*Fecha de procesamiento:.*$/', '', $comentario_limpio);
+                $comentario_limpio = trim($comentario_limpio);
+                
+                // Si después de todo sigue vacío, poner mensaje por defecto
+                if (empty($comentario_limpio) || strlen($comentario_limpio) < 3) {
+                    $comentario_limpio = 'Aprobacion procesada';
+                }
+                
+                error_log("COMENTARIO LIMPIO EXTRAIDO: " . $comentario_limpio);
+            }
+            
+            // Formatear fecha de solicitud
+            $fecha_solicitud_formato = '';
+            if ($row['FECHA_SOLICITUD']) {
+                if (is_object($row['FECHA_SOLICITUD'])) {
+                    $fecha_solicitud_formato = $row['FECHA_SOLICITUD']->format('d/m/Y');
+                } else {
+                    $fecha_obj = DateTime::createFromFormat('d/M/y', $row['FECHA_SOLICITUD']);
+                    if ($fecha_obj) {
+                        $fecha_solicitud_formato = $fecha_obj->format('d/m/Y');
+                    } else {
+                        $fecha_solicitud_formato = $row['FECHA_SOLICITUD'];
+                    }
+                }
+            }
+            
+            echo json_encode([
+                'success' => true,
+                'solicitud' => [
+                    'id' => $row['ID_SOLICITUD'],
+                    'tienda' => $row['NUM_TIENDA'],
+                    'puesto_solicitado' => $row['PUESTO_SOLICITADO'],
+                    'supervisor' => $row['SOLICITADO_POR'],
+                    'estado_aprobacion' => $row['ESTADO_APROBACION'],
+                    'dirigido_rh' => $row['DIRIGIDO_RH'],
+                    'fecha_solicitud' => $fecha_solicitud_formato
+                ],
+                'resumen_aprobacion' => [
+                    'procesado_por' => $nombre_gerente,
+                    'asignado_a' => $row['DIRIGIDO_RH'],
+                    'comentario_aprobacion' => $comentario_limpio,
+                    'fecha_procesamiento' => $row['FECHA_DECISION_FORMATO']
+                ]
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Solicitud no encontrada']);
+        }
+        
+        oci_free_statement($stmt);
+        
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+    
+    oci_close($conn);
+    break;
         // ===================================================================
         // RESTO DE CASES DEL SEGUNDO CÓDIGO (TODOS LOS DEMÁS CASES)
         // ===================================================================

@@ -1195,7 +1195,7 @@ function cargarResultadoAvalRH(idSolicitud, tienda, puesto, supervisor, razon) {
       Swal.close(); // Cerrar loading
       
       if (response.success) {
-        mostrarModalResultadoAval(response.data, idSolicitud, tienda, puesto, supervisor, razon);
+        mostrarModalResultadoAvalRH(response.data, idSolicitud, tienda, puesto, supervisor, razon);
       } else {
         Swal.fire({
           icon: 'error',
@@ -1486,6 +1486,44 @@ function agregarBotonResultadoAval(idSolicitud, tienda, puesto, supervisor, razo
   `;
 }
 
+// 🆕 FUNCIONES AUXILIARES PARA LAS ACCIONES DE RRHH
+function iniciarProcesamiento(solicitudId) {
+    Swal.fire({
+        title: '¿Iniciar procesamiento?',
+        text: 'Esto marcará la solicitud como "En Proceso" por RRHH',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, iniciar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Aquí iría la lógica para marcar como "En Proceso"
+            console.log("Iniciando procesamiento para solicitud:", solicitudId);
+        }
+    });
+}
+
+function verHistorialCompleto(solicitudId) {
+    // Aquí iría la lógica para mostrar el historial completo
+    console.log("Mostrando historial para solicitud:", solicitudId);
+    Swal.fire({
+        title: 'Historial Completo',
+        text: 'Aquí se mostraría el historial completo de la solicitud',
+        icon: 'info'
+    });
+}
+
+function descargarResumen(solicitudId) {
+    // Aquí iría la lógica para generar y descargar un PDF o documento
+    console.log("Descargando resumen para solicitud:", solicitudId);
+    Swal.fire({
+        title: 'Generando documento...',
+        text: 'Se está preparando el resumen para descarga',
+        icon: 'info',
+        timer: 2000,
+        showConfirmButton: false
+    });
+}
 
 
 
@@ -1695,49 +1733,41 @@ function agregarBotonResultadoAval(idSolicitud, tienda, puesto, supervisor, razo
                             title="Cambiar Estado">
                             <i class="fas fa-exchange-alt"></i> Cambiar Estado
                           </button>
-                            ${(() => {
-                              const estado = (item.ESTADO_SOLICITUD || '').toLowerCase();
-                              const tieneObs  = Number(item.TIENE_OBSERVACIONES_DIA_PRUEBA) === 1;
-                              const tieneSel  = Number(item.TIENE_SELECCION) === 1;
-                              const tieneArch = Number(item.TIENE_ARCHIVOS) === 1;
+                              ${(() => {
+                                const estado = (item.ESTADO_SOLICITUD || '').toLowerCase();
+                                const tieneObs  = Number(item.TIENE_OBSERVACIONES_DIA_PRUEBA) === 1;
+                                const tieneSel  = Number(item.TIENE_SELECCION) === 1;
+                                const tieneArch = Number(item.TIENE_ARCHIVOS) === 1;
 
-                              // ✅ NUEVA CONDICIÓN: Verificar si tiene resultado de aval
-                              if (estado.includes('aval enviado')) {
-                                return `
-                                  <button class="btn btn-sm btn-success btnVerResultadoAval"
-                                          data-id="${item.ID_SOLICITUD}"
-                                          data-tienda="${item.NUM_TIENDA}"
-                                          data-puesto="${item.PUESTO_SOLICITADO}"
-                                          data-supervisor="${item.SOLICITADO_POR}"
-                                          data-razon="${item.RAZON || ''}"
-                                          title="Ver resultado del aval gerencial">
-                                    <i class="fas fa-clipboard-check"></i> Ver Resultado Aval
-                                  </button>
-                                `;
-                              }
+                                // 🆕 CONDICIÓN ESPECÍFICA: Solo mostrar el botón de aval si está en "Pendiente Aval Gerencia"
+                                if (estado.includes('pendiente aval gerencia')) {
+                                  return `
+                                    <button class="btn btn-sm btn-warning btnVerResultadoAval"
+                                            data-id="${item.ID_SOLICITUD}"
+                                            data-tienda="${item.NUM_TIENDA}"
+                                            data-puesto="${item.PUESTO_SOLICITADO}"
+                                            data-supervisor="${item.SOLICITADO_POR}"
+                                            data-razon="${item.RAZON || ''}"
+                                            title="Ver y procesar resultado del aval gerencial">
+                                      <i class="fas fa-clock"></i> Procesar Aval
+                                    </button>
+                                  `;
+                                }
 
-                              // 1) Observaciones del Día de Prueba (tiene prioridad absoluta)
-                              if (estado.includes('aval enviado')) {
-                                return `
-                                  <button class="btn btn-sm btn-success btnVerResultadoAval"
-                                          data-id="${item.ID_SOLICITUD}"
-                                          data-tienda="${item.NUM_TIENDA}"
-                                          data-puesto="${item.PUESTO_SOLICITADO}"
-                                          data-supervisor="${item.SOLICITADO_POR}"
-                                          data-razon="${item.RAZON || ''}"
-                                          title="Ver resultado del aval gerencial">
-                                    <i class="fas fa-clipboard-check"></i> Ver Resultado Aval
-                                  </button>
-                                `;
-                              }
+                                // 🆕 CONDICIÓN: Si ya pasó del estado pendiente y tiene el aval procesado, mostrar resumen
+                                if (estado.includes('aval procesado') || estado.includes('aval confirmado')) {
+                                  return `
+                                    <button class="btn btn-sm btn-success btnVerResumenAprobacion"
+                                            data-id="${item.ID_SOLICITUD}"
+                                            data-solicitud-id="${item.ID_SOLICITUD}"
+                                            title="Ver resumen completo de la aprobación procesada">
+                                      <i class="fas fa-clipboard-check"></i> Ver Resumen Aval
+                                    </button>
+                                  `;
+                                }
 
-                              // 1) Observaciones del Día de Prueba (SOLO para estados específicos)
-                              if (tieneObs && (estado.includes('día de prueba') || estado.includes('dia de prueba') || estado.includes('observaciones'))) {
-                                // VERIFICAR EL ESTADO DE LA SOLICITUD (no el de aprobación)
-                                const estadoSolicitud = (item.ESTADO_SOLICITUD || '').toLowerCase();
-                                const esPendienteAval = estadoSolicitud.includes('pendiente aval gerencia');
-                                
-                                if (!esPendienteAval) {
+                                // 1) Observaciones del Día de Prueba (tiene prioridad)
+                                if (tieneObs && (estado.includes('día de prueba') || estado.includes('dia de prueba') || estado.includes('observaciones'))) {
                                   const idObsReciente = item.ID_OBSERVACION_RECIENTE || '';
                                   return `
                                     <button class="btn btn-sm btn-primary btnVerObservacionesCompletasRRHH"
@@ -1750,17 +1780,9 @@ function agregarBotonResultadoAval(idSolicitud, tienda, puesto, supervisor, razo
                                       <i class="fas fa-clipboard-list"></i> Ver Resultados
                                     </button>
                                   `;
-                                } else {
-                                  // Si el ESTADO es "Pendiente Aval Gerencia", mostrar mensaje de espera
-                                  return `
-                                    <span style="background: #ff6b6b; color: white; padding: 6px 12px; border-radius: 15px; font-size: 11px; font-weight: 600; display: inline-block;">
-                                      <i class="fas fa-clock"></i> Esperando confirmacion Aval
-                                    </span>
-                                  `;
                                 }
-                              }
 
-                              // 2) Selección de CVs (solo si NO hay observaciones)
+                                // 2) Selección de CVs (solo si NO hay observaciones)
                                 if (tieneSel && (estado.includes('cvs') || estado.includes('cv'))) {
                                   return `
                                     <button class="btn btn-sm btn-success btnVerResumen" data-id="${item.ID_SOLICITUD}">
@@ -1769,33 +1791,45 @@ function agregarBotonResultadoAval(idSolicitud, tienda, puesto, supervisor, razo
                                   `;
                                 }
 
-                              // 3) Archivos (solo si NO hay observaciones ni selección)
-                              if (tieneArch) {
-                                if (estado.includes('cvs')) {
+                                // 3) Archivos (solo si NO hay observaciones ni selección)
+                                if (tieneArch) {
+                                  if (estado.includes('cvs')) {
+                                    return `
+                                      <button class="btn btn-sm btn-info btnVerArchivosRRHH" data-id="${item.ID_SOLICITUD}">
+                                        <i class="fas fa-folder-open"></i> Archivos
+                                      </button>
+                                    `;
+                                  } else if (estado.includes('psico')) {
+                                    return `
+                                      <button class="btn btn-sm btn-warning btnVerArchivosTipo" data-id="${item.ID_SOLICITUD}" data-tipo="PSICOMETRICA">
+                                        <i class="fas fa-brain"></i> Psicométricas
+                                      </button>
+                                    `;
+                                  } else if (estado.includes('poligrafo')) {
+                                    return `
+                                      <button class="btn btn-sm btn-secondary btnVerArchivosTipo" data-id="${item.ID_SOLICITUD}" data-tipo="POLIGRAFO">
+                                        <i class="fas fa-shield-alt"></i> Polígrafo
+                                      </button>
+                                    `;
+                                  }
+                                }
+
+                                // 🆕 PARA SOLICITUDES APROBADAS SIN ESTADO ESPECÍFICO: Mostrar resumen general
+                                const aprobacion = (item.ESTADO_APROBACION || '').toLowerCase();
+                                if (aprobacion === 'aprobado' || aprobacion.includes('aprobado')) {
                                   return `
-                                    <button class="btn btn-sm btn-info btnVerArchivosRRHH" data-id="${item.ID_SOLICITUD}">
-                                      <i class="fas fa-folder-open"></i> Archivos
-                                    </button>
-                                  `;
-                                } else if (estado.includes('psico')) {
-                                  return `
-                                    <button class="btn btn-sm btn-warning btnVerArchivosTipo" data-id="${item.ID_SOLICITUD}" data-tipo="PSICOMETRICA">
-                                      <i class="fas fa-brain"></i> Psicométricas
-                                    </button>
-                                  `;
-                                } else if (estado.includes('poligrafo')) {
-                                  return `
-                                    <button class="btn btn-sm btn-secondary btnVerArchivosTipo" data-id="${item.ID_SOLICITUD}" data-tipo="POLIGRAFO">
-                                      <i class="fas fa-shield-alt"></i> Polígrafo
+                                    <button class="btn btn-sm btn-outline-info btnVerResumenProcesamiento"
+                                            data-id="${item.ID_SOLICITUD}"
+                                            data-solicitud-id="${item.ID_SOLICITUD}"
+                                            title="Ver resumen completo de la aprobación">
+                                      <i class="fas fa-file-alt"></i> Ver Resumen
                                     </button>
                                   `;
                                 }
-                              }
 
-                              // Nada que mostrar
-                              return '';
-                            })()}
-
+                                // Nada que mostrar
+                                return '';
+                              })()}
                       </div>
                     </td>
                   </tr>
@@ -4213,6 +4247,197 @@ function agregarBotonResultadoAval(idSolicitud, tienda, puesto, supervisor, razo
                     cargarResultadoAvalRH(idSolicitud, tienda, puesto, supervisor, razon);
                   });
 
+                  $(document).on('click', '.btnVerResumenProcesamiento', function() {
+    const id = $(this).data('id');
+    const solicitudId = $(this).data('solicitud-id') || id;
+    
+    // 🆕 OBTENER NOMBRE DEL GERENTE DESDE LA INTERFAZ (RRHH)
+    const filaActual = $(this).closest('tr');
+    const nombreGerente = filaActual.find('td:nth-child(5)').text().trim() || 'Gerente'; // Ajustar columna según tu tabla
+    
+    console.log("📋 RRHH cargando resumen de aprobacion para solicitud:", solicitudId);
+    console.log("👤 Nombre del gerente obtenido desde tabla:", nombreGerente);
+    
+    // Mostrar loading
+    Swal.fire({
+        title: '<i class="fas fa-spinner fa-spin"></i> Cargando informacion...',
+        html: 'Obteniendo detalles de la aprobacion...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+    
+    // 🆕 USAR EL MISMO ENDPOINT QUE FUNCIONA PARA GERENTES
+    $.ajax({
+        url: './GerenteTDS/crudaprobaciones.php?action=obtener_resumen_aprobacion_gerente',
+        type: 'GET',
+        dataType: 'json',
+        data: { id_solicitud: solicitudId },
+        success: function(response) {
+            console.log("✅ Resumen obtenido:", response);
+            
+            if (response.success) {
+                const solicitud = response.solicitud;
+                const resumen = response.resumen_aprobacion;
+                
+                // 🆕 USAR FECHA YA FORMATEADA DEL SERVIDOR
+                const fechaProceso = resumen.fecha_procesamiento || 'No disponible';
+                
+                // 🆕 USAR NOMBRE DEL GERENTE OBTENIDO DE LA INTERFAZ
+                const nombreGerenteCompleto = nombreGerente !== 'Gerente' ? nombreGerente : (resumen.procesado_por || 'No disponible');
+                
+                Swal.fire({
+                    title: '<i class="fas fa-clipboard-check"></i> Resumen de Aprobacion',
+                    html: `
+                        <div style="text-align: left; max-width: 100%;">
+                            <!-- INFORMACION BASICA DE LA SOLICITUD -->
+                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+                                <h5 style="margin: 0 0 15px 0; font-weight: 700; display: flex; align-items: center;">
+                                    <i class="fas fa-file-alt" style="margin-right: 10px; font-size: 20px;"></i>
+                                    Informacion de la Solicitud
+                                </h5>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                                    <div><strong>ID:</strong> #${solicitud.id}</div>
+                                    <div><strong>Tienda:</strong> ${solicitud.tienda || 'N/A'}</div>
+                                    <div><strong>Puesto:</strong> ${solicitud.puesto_solicitado || 'N/A'}</div>
+                                    <div><strong>Supervisor:</strong> ${solicitud.supervisor || 'N/A'}</div>
+                                    <div style="grid-column: 1 / -1;"><strong>Fecha de Solicitud:</strong> ${solicitud.fecha_solicitud || 'N/A'}</div>
+                                </div>
+                            </div>
+
+                            <!-- RESUMEN DE LA APROBACION -->
+                            <div style="background: #d4edda; border: 2px solid #28a745; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <h6 style="margin: 0 0 15px 0; font-weight: 700; color: #155724; display: flex; align-items: center;">
+                                    <i class="fas fa-check-circle" style="margin-right: 10px; font-size: 18px; color: #28a745;"></i>
+                                    Estado: APROBADA
+                                </h6>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                    <div>
+                                        <strong style="color: #155724;">
+                                            <i class="fas fa-user-check"></i> Procesado por:
+                                        </strong><br>
+                                        <span style="background: #c3e6cb; padding: 4px 8px; border-radius: 6px; font-size: 13px;">
+                                            ${nombreGerenteCompleto}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <strong style="color: #155724;">
+                                            <i class="fas fa-calendar-check"></i> Fecha de Procesamiento:
+                                        </strong><br>
+                                        <span style="background: #c3e6cb; padding: 4px 8px; border-radius: 6px; font-size: 13px;">
+                                            ${fechaProceso}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ASIGNACION A RRHH -->
+                            <div style="background: #cce5ff; border: 2px solid #007bff; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <h6 style="margin: 0 0 15px 0; font-weight: 700; color: #004085; display: flex; align-items: center;">
+                                    <i class="fas fa-user-plus" style="margin-right: 10px; font-size: 18px; color: #007bff;"></i>
+                                    Asignacion de RRHH
+                                </h6>
+                                <div style="text-align: center;">
+                                    <div style="background: #b3d9ff; border-radius: 8px; padding: 15px; display: inline-block;">
+                                        <i class="fas fa-user-tie" style="font-size: 24px; color: #0056b3; margin-bottom: 8px;"></i><br>
+                                        <strong style="font-size: 16px; color: #004085;">
+                                            ${solicitud.dirigido_rh || resumen.asignado_a || 'No asignado'}
+                                        </strong><br>
+                                        <small style="color: #6c757d;">Responsable de RRHH</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- COMENTARIO DE APROBACION -->
+                            <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 12px; padding: 20px;">
+                                <h6 style="margin: 0 0 15px 0; font-weight: 700; color: #856404; display: flex; align-items: center;">
+                                    <i class="fas fa-comment-alt" style="margin-right: 10px; font-size: 18px; color: #ffc107;"></i>
+                                    Comentario de Aprobacion del Gerente
+                                </h6>
+                                <div style="background: white; border-radius: 8px; padding: 15px; border: 1px solid #ffeaa7;">
+                                    <p style="margin: 0; line-height: 1.6; color: #333;">
+                                        ${resumen.comentario_aprobacion || 'Sin comentario adicional'}
+                                    </p>
+                                </div>
+                                <small style="color: #856404; margin-top: 10px; display: block;">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Fecha del comentario: ${fechaProceso}
+                                </small>
+                            </div>
+
+                            <!-- ACCIONES DISPONIBLES -->
+                            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-top: 25px; text-align: center;">
+                                <h6 style="color: #495057; margin-bottom: 15px;">
+                                    <i class="fas fa-tools"></i> La solicitud ya fue aprobada, favor seguir con el proceso de reclutamiento
+                                </h6>
+
+                    `,
+                    width: '800px',
+                    showCancelButton: false,
+                    confirmButtonText: '<i class="fas fa-times"></i> Cerrar',
+                    confirmButtonColor: '#6c757d',
+                    buttonsStyling: false,
+                    customClass: {
+                        popup: 'resumen-aprobacion-modal',
+                        confirmButton: 'btn btn-secondary btn-lg px-4'
+                    },
+                    didOpen: () => {
+                        // Agregar estilos especificos para este modal
+                        if (!document.getElementById('resumen-aprobacion-styles')) {
+                            const styles = document.createElement('style');
+                            styles.id = 'resumen-aprobacion-styles';
+                            styles.textContent = `
+                                .resumen-aprobacion-modal {
+                                    border-radius: 16px !important;
+                                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+                                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+                                }
+                                .resumen-aprobacion-modal .swal2-title {
+                                    font-size: 24px !important;
+                                    font-weight: 700 !important;
+                                    color: #333 !important;
+                                    margin-bottom: 20px !important;
+                                }
+                                .resumen-aprobacion-modal .btn {
+                                    font-weight: 600 !important;
+                                    border-radius: 8px !important;
+                                    transition: all 0.3s ease !important;
+                                }
+                                .resumen-aprobacion-modal .btn:hover {
+                                    transform: translateY(-2px) !important;
+                                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+                                }
+                            `;
+                            document.head.appendChild(styles);
+                        }
+                    }
+                });
+                
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: response.error || 'No se pudo cargar la informacion de la solicitud',
+                    confirmButtonText: 'Entendido'
+                });
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('❌ Error al cargar resumen:', {
+                status: xhr.status,
+                error: error,
+                responseText: xhr.responseText
+            });
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Conexion',
+                text: 'No se pudo cargar la informacion de la solicitud',
+                confirmButtonText: 'Entendido'
+            });
+        }
+    });
+});
               // CARGAR SOLICITUDES AL INICIO
               cargarSolicitudes();
     });

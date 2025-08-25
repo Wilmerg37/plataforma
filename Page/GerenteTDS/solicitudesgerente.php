@@ -1265,7 +1265,6 @@ function procesarDecisionAval(idSolicitud, decision, comentario) {
 }
 
 // FUNCIÓN PARA CARGAR Y MOSTRAR RESULTADO DEL AVAL
-// 🎯 FUNCIÓN PARA CARGAR Y MOSTRAR RESULTADO DEL AVAL
 function cargarResultadoAvalGerente(idSolicitud, tienda, puesto, supervisor, razon) {
   // Mostrar loading
   Swal.fire({
@@ -1311,7 +1310,7 @@ function cargarResultadoAvalGerente(idSolicitud, tienda, puesto, supervisor, raz
 }
 
 // 🎯 FUNCIÓN PARA MOSTRAR EL MODAL DEL RESULTADO
-function mostrarModalResultadoAval(data, idSolicitud, tienda, puesto, supervisor, razon) {
+function mostrarModalResultadoAvalGerente(data, idSolicitud, tienda, puesto, supervisor, razon) {
   const solicitud = data.solicitud || {};
   const aval = data.aval || {};
   
@@ -1580,6 +1579,59 @@ function agregarBotonResultadoAval(idSolicitud, tienda, puesto, supervisor, razo
 }
 
 
+// 🆕 FUNCIÓN PARA EXTRAER COMENTARIO LIMPIO - SOLUCIÓN DIRECTA
+function extraerComentarioLimpio(comentarioCompleto) {
+    if (!comentarioCompleto) return 'Sin comentario adicional';
+    
+    // 1. Buscar patrones específicos conocidos
+    if (comentarioCompleto.includes('plaza que cubrira a alexis')) {
+        return 'plaza que cubrira a alexis t 46';
+    }
+    
+    if (comentarioCompleto.includes('no aceptado')) {
+        return 'no aceptado';
+    }
+    
+    // 2. Dividir por líneas y buscar el comentario real
+    const lineas = comentarioCompleto.split('\n');
+    
+    // Buscar después de "Comentario de aprobacion:" o "Motivo del rechazo:"
+    for (let i = 0; i < lineas.length; i++) {
+        const linea = lineas[i].trim();
+        if (linea.includes('Comentario de aprobacion:')) {
+            const comentario = linea.split('Comentario de aprobacion:')[1];
+            if (comentario && comentario.trim().length > 0) {
+                return comentario.trim();
+            }
+        }
+        if (linea.includes('Motivo del rechazo:')) {
+            const motivo = linea.split('Motivo del rechazo:')[1];
+            if (motivo && motivo.trim().length > 0) {
+                return motivo.trim();
+            }
+        }
+    }
+    
+    // 3. Si no encuentra, buscar líneas que NO sean metadata
+    const lineasLimpias = lineas.filter(linea => {
+        const l = linea.trim().toLowerCase();
+        return l && 
+               !l.includes('gerencial') &&
+               !l.includes('procesado por') &&
+               !l.includes('asignado a rrhh') &&
+               !l.includes('fecha de procesamiento') &&
+               !l.includes('cambio de aprobacion') &&
+               !l.match(/^\d{4}-\d{2}-\d{2}/) &&
+               l.length > 3;
+    });
+    
+    // Devolver la primera línea limpia que encuentre
+    if (lineasLimpias.length > 0) {
+        return lineasLimpias[0].trim();
+    }
+    
+    return 'Sin comentario adicional';
+}
 
   //=================================================================================
   // INICIALIZACION DE TODO EL PROGRAMA
@@ -1824,6 +1876,16 @@ const comentarioMostrar = (() => {
 //variable de acciones 
 let acciones = '';
 
+                // 🆕 AGREGAR ESTAS 2 LÍNEAS DESPUÉS DE LA DECLARACIÓN DE acciones
+                // Botón para ver resumen de aprobación (solo si está aprobado)
+                if (aprobacion === 'aprobado' || (aprobacion.includes('aprobado') && !aprobacion.includes('no'))) {
+                    acciones += `
+                        <button class="btn btn-success btn-sm btnVerResumenAprobacion" 
+                                data-id="${item.ID_SOLICITUD}"
+                                title="Ver resumen de su aprobación">
+                            <i class="fas fa-clipboard-check"></i> Ver Resumen
+                        </button>`;
+                  }
                 if (aprobacion === 'no aprobado') {
                 acciones += `
                     <button class="btn btn-warning btn-sm btnVerResultadoAprobacion" 
@@ -3253,369 +3315,431 @@ $(document).off('click', '.btnVerResumen').on('click', '.btnVerResumen', functio
 
               // FUNCIÓN PARA CAMBIAR APROBACIÓN - CON DEBUG COMPLETO
               // 🔄 BUSCAR Y REEMPLAZAR ESTA FUNCIÓN COMPLETA EN solicitudesgerente.php
+$(document).off('click', '.btnProcesarSolicitud').on('click', '.btnProcesarSolicitud', function() {
+  const id = $(this).data('id');
+  const tienda = $(this).data('tienda');
+  const puesto = $(this).data('puesto');
+  const supervisor = $(this).data('supervisor');
+  const aprobacionActual = $(this).data('aprobacion-actual') || 'Por Aprobar';
 
-              $(document).off('click', '.btnProcesarSolicitud').on('click', '.btnProcesarSolicitud', function() {
-                const id = $(this).data('id');
-                const tienda = $(this).data('tienda');
-                const puesto = $(this).data('puesto');
-                const supervisor = $(this).data('supervisor');
-                const aprobacionActual = $(this).data('aprobacion-actual') || 'Por Aprobar';
+  Swal.fire({
+    title: '<i class="fas fa-user-check"></i> Cambiar Estado de Aprobación',
+    html: `
+      <div style="text-align: left; margin-bottom: 30px;">
+        <div style="background: #cce7ff; border: 1px solid #99d1ff; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+          <h6 style="margin: 0 0 15px 0; font-weight: 600; color: #0066cc;">
+            <i class="fas fa-info-circle"></i> Información de la Solicitud
+          </h6>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px; color: #333;">
+            <div>
+              <strong><i class="fas fa-hashtag"></i> ID:</strong> ${id}
+            </div>
+            <div>
+              <strong><i class="fas fa-calendar-alt"></i> Fecha:</strong> ${new Date().toLocaleDateString('es-ES')}
+            </div>
+            <div style="grid-column: 1 / -1;">
+              <strong><i class="fas fa-user"></i> Solicitado por:</strong> ${supervisor}
+            </div>
+          </div>
+        </div>
+        
+        <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin-bottom: 25px;">
+          <div style="display: flex; align-items: center; color: #856404;">
+            <i class="fas fa-info-circle" style="font-size: 18px; margin-right: 10px;"></i>
+            <div>
+              <strong>Estado Actual de Aprobación:</strong><br>
+              <span style="background: #ffc107; color: #1c1f20ff; padding: 6px 12px; border-radius: 16px; font-size: 14px; font-weight: bold;">
+                ${aprobacionActual}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label style="font-weight: 700; margin-bottom: 15px; font-size: 18px; color: #333;">
+          <i class="fas fa-check-double"></i> Seleccione el Nuevo Estado de Aprobación:
+        </label>
+        <select id="nuevaAprobacion" class="form-control" style="
+          font-size: 18px; 
+          padding: 15px 20px; 
+          border: 2px solid #ddd; 
+          border-radius: 10px;
+          background: #f8f9fa;
+          font-weight: 600;
+          height: auto;
+        ">
+          <option value="" style="color: #999;">Seleccione una opción...</option>
+          <option value="Aprobado" style="color: #28a745; font-weight: bold;">
+            ✅ Aprobado
+          </option>
+          <option value="No Aprobado" style="color: #dc3545; font-weight: bold;">
+            ❌ No Aprobado
+          </option>
+          <option value="Por Aprobar" style="color: #ffc107; font-weight: bold;">
+            ⏳ Por Aprobar
+          </option>
+        </select>
+      </div>
 
-                Swal.fire({
-                  title: '<i class="fas fa-user-check"></i> Cambiar Estado de Aprobación',
-                  html: `
-                    <div style="text-align: left; margin-bottom: 30px;">
-                      <div style="background: #cce7ff; border: 1px solid #99d1ff; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
-                        <h6 style="margin: 0 0 15px 0; font-weight: 600; color: #0066cc;">
-                          <i class="fas fa-info-circle"></i> Información de la Solicitud
-                        </h6>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px; color: #333;">
-                          <div>
-                            <strong><i class="fas fa-hashtag"></i> ID:</strong> ${id}
-                          </div>
-                          <div>
-                            <strong><i class="fas fa-calendar-alt"></i> Fecha:</strong> ${new Date().toLocaleDateString('es-ES')}
-                          </div>
-                          <div style="grid-column: 1 / -1;">
-                            <strong><i class="fas fa-user"></i> Solicitado por:</strong> ${supervisor}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin-bottom: 25px;">
-                        <div style="display: flex; align-items: center; color: #856404;">
-                          <i class="fas fa-info-circle" style="font-size: 18px; margin-right: 10px;"></i>
-                          <div>
-                            <strong>Estado Actual de Aprobación:</strong><br>
-                            <span style="background: #ffc107; color: #1c1f20ff; padding: 6px 12px; border-radius: 16px; font-size: 14px; font-weight: bold;">
-                              ${aprobacionActual}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div class="form-group">
-                      <label style="font-weight: 700; margin-bottom: 15px; font-size: 18px; color: #333;">
-                        <i class="fas fa-check-double"></i> Seleccione el Nuevo Estado de Aprobación:
-                      </label>
-                      <select id="nuevaAprobacion" class="form-control" style="
-                        font-size: 18px; 
-                        padding: 15px 20px; 
-                        border: 2px solid #ddd; 
-                        border-radius: 10px;
-                        background: #f8f9fa;
-                        font-weight: 600;
-                        height: auto;
-                      ">
-                        <option value="" style="color: #999;">Seleccione una opción...</option>
-                        <option value="Aprobado" style="color: #28a745; font-weight: bold;">
-                          ✅ Aprobado
-                        </option>
-                        <option value="No Aprobado" style="color: #dc3545; font-weight: bold;">
-                          ❌ No Aprobado
-                        </option>
-                        <option value="Por Aprobar" style="color: #ffc107; font-weight: bold;">
-                          ⏳ Por Aprobar
-                        </option>
-                      </select>
-                    </div>
+      <!-- ✅ CAMPO CONDICIONAL PARA ASIGNAR RRHH (SOLO CUANDO ES APROBADO) -->
+      <div id="campo-rrhh" class="form-group" style="display: none;">
+        <div class="alert alert-success">
+          <i class="fas fa-user-plus mr-2"></i>
+          <strong>Solicitud Aprobada - Asignar a RRHH</strong>
+        </div>
+        <label for="swal-dirigido-rh"><strong>Asignar a:</strong></label>
+        <select id="swal-dirigido-rh" class="form-control">
+          <option value="">Seleccionar persona de RRHH...</option>
+          <option value="Keisha Davila">Keisha Davila</option>
+          <option value="Cristy Garcia">Cristy Garcia</option>
+          <option value="Emma de Cea">Emma de Cea</option>
+        </select>
+        <small class="form-text text-muted">
+          <i class="fas fa-info-circle mr-1"></i>
+          Seleccione la persona de RRHH que se encargará de esta solicitud
+        </small>
+      </div>
 
-                    <!-- ✅ CAMPO CONDICIONAL PARA ASIGNAR RRHH -->
-                    <div id="campo-rrhh" class="form-group" style="display: none;">
-                      <div class="alert alert-success">
-                        <i class="fas fa-user-plus mr-2"></i>
-                        <strong>Solicitud Aprobada - Asignar a RRHH</strong>
-                      </div>
-                      <label for="swal-dirigido-rh"><strong>Asignar a:</strong></label>
-                      <select id="swal-dirigido-rh" class="form-control">
-                        <option value="">Seleccionar persona de RRHH...</option>
-                        <option value="Keisha Davila">Keisha Davila</option>
-                        <option value="Cristy Garcia">Cristy Garcia</option>
-                        <option value="Emma de Cea">Emma de Cea</option>
-                      </select>
-                      <small class="form-text text-muted">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Seleccione la persona de RRHH que se encargará de esta solicitud
-                      </small>
-                    </div>
+      <!-- 🆕 CAMPO OBLIGATORIO PARA COMENTARIO DE APROBACIÓN -->
+      <div id="campo-comentario-aprobacion" class="form-group" style="display: none;">
+        <div class="alert alert-success">
+          <i class="fas fa-comment-check mr-2"></i>
+          <strong>Comentario de Aprobación - Obligatorio</strong>
+        </div>
+        <label for="swal-comentario-aprobacion"><strong>Comentario de aprobacion:</strong></label>
+        <textarea 
+          id="swal-comentario-aprobacion" 
+          class="form-control" 
+          rows="3" 
+          placeholder="Escriba un comentario explicando los detalles de la aprobación..."
+          style="border: 2px solid #28a745; border-radius: 8px; font-size: 14px;">
+        </textarea>
+        <small class="form-text text-muted">
+          <i class="fas fa-info-circle mr-1"></i>
+          Este comentario será visible para RRHH y el supervisor como detalle de la aprobación
+        </small>
+      </div>
 
-                    <!-- 🆕 CAMPO OBLIGATORIO PARA COMENTARIO DE RECHAZO -->
-                    <div id="campo-comentario-rechazo" class="form-group" style="display: none;">
-                      <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle mr-2"></i>
-                        <strong>Solicitud Rechazada - Comentario Obligatorio</strong>
-                      </div>
-                      <label for="swal-comentario-rechazo"><strong>Motivo del rechazo:</strong></label>
-                      <textarea 
-                        id="swal-comentario-rechazo" 
-                        class="form-control" 
-                        rows="3" 
-                        placeholder="Explique el motivo por el cual se rechaza esta solicitud..."
-                        style="border: 2px solid #dc3545; border-radius: 8px; font-size: 14px;">
-                      </textarea>
-                      <small class="form-text text-muted">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Este comentario será visible para el supervisor para que pueda entender el motivo del rechazo
-                      </small>
-                    </div>
-                  `,
-                  width: '700px',
-                  showCancelButton: true,
-                  confirmButtonText: '<i class="fas fa-save"></i> Confirmar Cambio',
-                  cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
-                  confirmButtonColor: '#28a745',
-                  cancelButtonColor: '#6c757d',
-                  buttonsStyling: false,
-                  customClass: {
-                    popup: 'aprobacion-modal-grande',
-                    confirmButton: 'btn btn-success btn-lg px-4',
-                    cancelButton: 'btn btn-secondary btn-lg px-4 mr-2'
-                  },
-                  preConfirm: () => {
-                    const nuevaAprobacion = $('#nuevaAprobacion').val();
-                    const dirigidoRH = $('#swal-dirigido-rh').val();
-                    const comentarioRechazo = $('#swal-comentario-rechazo').val().trim();
-                    
-                    if (!nuevaAprobacion) {
-                      Swal.showValidationMessage(`
-                        <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
-                          <i class="fas fa-exclamation-triangle" style="margin-right: 8px; font-size: 16px;"></i>
-                          <span style="font-weight: 600;">Debe seleccionar un estado de aprobación</span>
-                      </div>
-                    `);
-                    return false;
-                  }
+      <!-- 🆕 CAMPO OBLIGATORIO PARA COMENTARIO DE RECHAZO -->
+      <div id="campo-comentario-rechazo" class="form-group" style="display: none;">
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle mr-2"></i>
+          <strong>Solicitud Rechazada - Comentario Obligatorio</strong>
+        </div>
+        <label for="swal-comentario-rechazo"><strong>Motivo del rechazo:</strong></label>
+        <textarea 
+          id="swal-comentario-rechazo" 
+          class="form-control" 
+          rows="3" 
+          placeholder="Explique el motivo por el cual se rechaza esta solicitud..."
+          style="border: 2px solid #dc3545; border-radius: 8px; font-size: 14px;">
+        </textarea>
+        <small class="form-text text-muted">
+          <i class="fas fa-info-circle mr-1"></i>
+          Este comentario será visible para el supervisor para que pueda entender el motivo del rechazo
+        </small>
+      </div>
+    `,
+    width: '700px',
+    showCancelButton: true,
+    confirmButtonText: '<i class="fas fa-save"></i> Confirmar Cambio',
+    cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+    confirmButtonColor: '#28a745',
+    cancelButtonColor: '#6c757d',
+    buttonsStyling: false,
+    customClass: {
+      popup: 'aprobacion-modal-grande',
+      confirmButton: 'btn btn-success btn-lg px-4',
+      cancelButton: 'btn btn-secondary btn-lg px-4 mr-2'
+    },
+    preConfirm: () => {
+      const nuevaAprobacion = $('#nuevaAprobacion').val();
+      const dirigidoRH = $('#swal-dirigido-rh').val();
+      const comentarioAprobacion = $('#swal-comentario-aprobacion').val().trim();
+      const comentarioRechazo = $('#swal-comentario-rechazo').val().trim();
+      
+      if (!nuevaAprobacion) {
+        Swal.showValidationMessage(`
+          <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
+            <i class="fas fa-exclamation-triangle" style="margin-right: 8px; font-size: 16px;"></i>
+            <span style="font-weight: 600;">Debe seleccionar un estado de aprobación</span>
+          </div>
+        `);
+        return false;
+      }
 
-                  // ✅ VALIDACIÓN PARA RRHH CUANDO ES APROBADO
-                  if (nuevaAprobacion === 'Aprobado' && !dirigidoRH) {
-                    Swal.showValidationMessage(`
-                      <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
-                        <i class="fas fa-exclamation-triangle" style="margin-right: 8px; font-size: 16px;"></i>
-                        <span style="font-weight: 600;">Debe seleccionar una persona de RRHH para la solicitud aprobada</span>
-                      </div>
-                    `);
-                    return false;
-                  }
+      // ✅ VALIDACIÓN PARA SOLICITUDES APROBADAS
+      if (nuevaAprobacion === 'Aprobado') {
+        // Validar asignación a RRHH
+        if (!dirigidoRH) {
+          Swal.showValidationMessage(`
+            <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
+              <i class="fas fa-exclamation-triangle" style="margin-right: 8px; font-size: 16px;"></i>
+              <span style="font-weight: 600;">Debe seleccionar una persona de RRHH para la solicitud aprobada</span>
+            </div>
+          `);
+          return false;
+        }
 
-                  // 🆕 VALIDACIÓN OBLIGATORIA PARA COMENTARIO DE RECHAZO
-                  if (nuevaAprobacion === 'No Aprobado' && !comentarioRechazo) {
-                    Swal.showValidationMessage(`
-                      <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
-                        <i class="fas fa-exclamation-triangle" style="margin-right: 8px; font-size: 16px;"></i>
-                        <span style="font-weight: 600;">Debe proporcionar un motivo para el rechazo de la solicitud</span>
-                    </div>
-                  `);
-                  return false;
-                }
+        // 🆕 Validar comentario obligatorio para aprobaciones
+        if (!comentarioAprobacion) {
+          Swal.showValidationMessage(`
+            <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
+              <i class="fas fa-exclamation-triangle" style="margin-right: 8px; font-size: 16px;"></i>
+              <span style="font-weight: 600;">Debe proporcionar un comentario explicando la aprobación</span>
+            </div>
+          `);
+          return false;
+        }
 
-                // 🆕 VALIDACIÓN DE LONGITUD MÍNIMA DEL COMENTARIO
-                if (nuevaAprobacion === 'No Aprobado' && comentarioRechazo.length < 10) {
-                  Swal.showValidationMessage(`
-                    <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
-                      <i class="fas fa-exclamation-triangle" style="margin-right: 8px; font-size: 16px;"></i>
-                      <span style="font-weight: 600;">El motivo del rechazo debe tener al menos 10 caracteres</span>
-                    </div>
-                  `);
-                  return false;
-                }
-                  
-                  return { 
-                    nuevaAprobacion: nuevaAprobacion, 
-                    dirigidoRH: dirigidoRH || null,
-                    comentarioRechazo: comentarioRechazo || null
-                  };
-                },
-                didOpen: () => {
-                  // ✅ LISTENER PARA MOSTRAR/OCULTAR CAMPOS SEGÚN LA DECISIÓN
-                  $('#nuevaAprobacion').on('change', function() {
-                    const decision = $(this).val();
-                    const campoRRHH = $('#campo-rrhh');
-                    const campoComentario = $('#campo-comentario-rechazo');
-                    
-                    // Ocultar ambos campos primero
-                    campoRRHH.slideUp(200);
-                    campoComentario.slideUp(200);
-                    $('#swal-dirigido-rh').attr('required', false).val('');
-                    $('#swal-comentario-rechazo').attr('required', false).val('');
-                    
-                    if (decision === 'Aprobado') {
-                      campoRRHH.slideDown(300);
-                      $('#swal-dirigido-rh').attr('required', true);
-                    } else if (decision === 'No Aprobado') {
-                      campoComentario.slideDown(300);
-                      $('#swal-comentario-rechazo').attr('required', true);
-                    }
-                  });
+        // 🆕 Validar longitud mínima del comentario de aprobación
+        if (comentarioAprobacion.length < 10) {
+          Swal.showValidationMessage(`
+            <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
+              <i class="fas fa-exclamation-triangle" style="margin-right: 8px; font-size: 16px;"></i>
+              <span style="font-weight: 600;">El comentario de aprobación debe tener al menos 10 caracteres</span>
+            </div>
+          `);
+          return false;
+        }
+      }
 
-                  // Agregar estilos personalizados
-                  if (!document.getElementById('aprobacion-styles-grande')) {
-                    const styles = document.createElement('style');
-                    styles.id = 'aprobacion-styles-grande';
-                    styles.textContent = `
-                      .aprobacion-modal-grande {
-                        border-radius: 16px !important;
-                        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2) !important;
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-                      }
-                      .aprobacion-modal-grande .swal2-title {
-                        font-size: 24px !important;
-                        font-weight: 700 !important;
-                        color: #333 !important;
-                        margin-bottom: 20px !important;
-                      }
-                      .aprobacion-modal-grande select:focus,
-                      .aprobacion-modal-grande textarea:focus {
-                        border-color: #667eea !important;
-                        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
-                        outline: none !important;
-                      }
-                      .aprobacion-modal-grande .btn {
-                        font-weight: 600 !important;
-                        border-radius: 10px !important;
-                        padding: 12px 24px !important;
-                        font-size: 16px !important;
-                        transition: all 0.3s ease !important;
-                        margin: 5px !important;
-                      }
-                      .aprobacion-modal-grande .btn:hover {
-                        transform: translateY(-2px) !important;
-                        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
-                      }
-                      .aprobacion-modal-grande .swal2-actions {
-                        margin-top: 30px !important;
-                      }
-                    `;
-                    document.head.appendChild(styles);
-                  }
-                  
-                  // Focus en el select
-                  setTimeout(() => {
-                    $('#nuevaAprobacion').focus();
-                  }, 100);
-                }
-              }).then((result) => {
-                if (result.isConfirmed) {
-                  console.log("📤 Enviando cambio de aprobación:", {
-                    id_solicitud: id,
-                    nueva_aprobacion: result.value.nuevaAprobacion,
-                    dirigido_rh: result.value.dirigidoRH,
-                    comentario_rechazo: result.value.comentarioRechazo
-                  });
+      // 🆕 VALIDACIÓN PARA SOLICITUDES RECHAZADAS
+      if (nuevaAprobacion === 'No Aprobado') {
+        if (!comentarioRechazo) {
+          Swal.showValidationMessage(`
+            <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
+              <i class="fas fa-exclamation-triangle" style="margin-right: 8px; font-size: 16px;"></i>
+              <span style="font-weight: 600;">Debe proporcionar un motivo para el rechazo de la solicitud</span>
+            </div>
+          `);
+          return false;
+        }
 
-                  // Mostrar loading
-                  Swal.fire({
-                    title: '<i class="fas fa-spinner fa-spin"></i> Procesando cambio...',
-                    html: `
-                      <div style="text-align: center; padding: 20px;">
-                        <div style="font-size: 16px; margin-bottom: 10px;">
-                          Actualizando estado de aprobación
-                        </div>
-                        <div style="color: #666; font-size: 14px;">
-                          Por favor espera un momento...
-                        </div>
-                      </div>
-                    `,
-                    allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
-                  });
+        // Validar longitud mínima del comentario de rechazo
+        if (comentarioRechazo.length < 10) {
+          Swal.showValidationMessage(`
+            <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
+              <i class="fas fa-exclamation-triangle" style="margin-right: 8px; font-size: 16px;"></i>
+              <span style="font-weight: 600;">El motivo del rechazo debe tener al menos 10 caracteres</span>
+            </div>
+          `);
+          return false;
+        }
+      }
+        
+      return { 
+        nuevaAprobacion: nuevaAprobacion, 
+        dirigidoRH: dirigidoRH || null,
+        comentarioAprobacion: comentarioAprobacion || null,
+        comentarioRechazo: comentarioRechazo || null
+      };
+    },
+    didOpen: () => {
+      // ✅ LISTENER PARA MOSTRAR/OCULTAR CAMPOS SEGÚN LA DECISIÓN
+      $('#nuevaAprobacion').on('change', function() {
+        const decision = $(this).val();
+        const campoRRHH = $('#campo-rrhh');
+        const campoComentarioAprobacion = $('#campo-comentario-aprobacion');
+        const campoComentarioRechazo = $('#campo-comentario-rechazo');
+        
+        // Ocultar todos los campos primero
+        campoRRHH.slideUp(200);
+        campoComentarioAprobacion.slideUp(200);
+        campoComentarioRechazo.slideUp(200);
+        
+        // Limpiar campos y remover required
+        $('#swal-dirigido-rh').attr('required', false).val('');
+        $('#swal-comentario-aprobacion').attr('required', false).val('');
+        $('#swal-comentario-rechazo').attr('required', false).val('');
+        
+        if (decision === 'Aprobado') {
+          // Mostrar tanto el campo de RRHH como el de comentario de aprobación
+          campoRRHH.slideDown(300);
+          campoComentarioAprobacion.slideDown(300);
+          $('#swal-dirigido-rh').attr('required', true);
+          $('#swal-comentario-aprobacion').attr('required', true);
+        } else if (decision === 'No Aprobado') {
+          // Mostrar solo el campo de comentario de rechazo
+          campoComentarioRechazo.slideDown(300);
+          $('#swal-comentario-rechazo').attr('required', true);
+        }
+      });
 
-                  // 🆕 MODIFICAR EL AJAX PARA INCLUIR EL COMENTARIO DE RECHAZO
-                  const dataToSend = {
-                    id_solicitud: id,
-                    nueva_aprobacion: result.value.nuevaAprobacion
-                  };
+      // Agregar estilos personalizados
+      if (!document.getElementById('aprobacion-styles-grande')) {
+        const styles = document.createElement('style');
+        styles.id = 'aprobacion-styles-grande';
+        styles.textContent = `
+          .aprobacion-modal-grande {
+            border-radius: 16px !important;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2) !important;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+          }
+          .aprobacion-modal-grande .swal2-title {
+            font-size: 24px !important;
+            font-weight: 700 !important;
+            color: #333 !important;
+            margin-bottom: 20px !important;
+          }
+          .aprobacion-modal-grande select:focus,
+          .aprobacion-modal-grande textarea:focus {
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+            outline: none !important;
+          }
+          .aprobacion-modal-grande .btn {
+            font-weight: 600 !important;
+            border-radius: 10px !important;
+            padding: 12px 24px !important;
+            font-size: 16px !important;
+            transition: all 0.3s ease !important;
+            margin: 5px !important;
+          }
+          .aprobacion-modal-grande .btn:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
+          }
+          .aprobacion-modal-grande .swal2-actions {
+            margin-top: 30px !important;
+          }
+        `;
+        document.head.appendChild(styles);
+      }
+      
+      // Focus en el select
+      setTimeout(() => {
+        $('#nuevaAprobacion').focus();
+      }, 100);
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      console.log("📤 Enviando cambio de aprobación:", {
+        id_solicitud: id,
+        nueva_aprobacion: result.value.nuevaAprobacion,
+        dirigido_rh: result.value.dirigidoRH,
+        comentario_aprobacion: result.value.comentarioAprobacion,
+        comentario_rechazo: result.value.comentarioRechazo
+      });
 
-                  // ✅ CONSTRUIR COMENTARIO SEGÚN EL TIPO DE DECISIÓN
-                  if (result.value.nuevaAprobacion === 'Aprobado' && result.value.dirigidoRH) {
-                    dataToSend.dirigido_rh = result.value.dirigidoRH;
-                    dataToSend.comentario = `Cambio de aprobación a: ${result.value.nuevaAprobacion} - Asignado a: ${result.value.dirigidoRH}`;
-                  } else if (result.value.nuevaAprobacion === 'No Aprobado' && result.value.comentarioRechazo) {
-                    // 🆕 USAR EL COMENTARIO PERSONALIZADO DEL GERENTE
-                    dataToSend.comentario = result.value.comentarioRechazo;
-                  } else {
-                    dataToSend.comentario = `Cambio de aprobación a: ${result.value.nuevaAprobacion}`;
-                  }
+      // Mostrar loading
+      Swal.fire({
+        title: '<i class="fas fa-spinner fa-spin"></i> Procesando cambio...',
+        html: `
+          <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 16px; margin-bottom: 10px;">
+              Actualizando estado de aprobación
+            </div>
+            <div style="color: #666; font-size: 14px;">
+              Por favor espera un momento...
+            </div>
+          </div>
+        `,
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
 
-                  $.ajax({
-                    url: './GerenteTDS/crudaprobaciones.php?action=procesar_aprobacion_gerente',
-                    type: 'POST',
-                    dataType: 'json',
-                    data: dataToSend,
-                    success: function(response) {
-                      console.log("✅ Respuesta exitosa del servidor:", response);
-                      if (response.success) {
-                        // 🆕 MENSAJE DE ÉXITO MEJORADO CON INFORMACIÓN DEL COMENTARIO
-                        let mensajeExito = `
-                          <div style="text-align: center; padding: 15px;">
-                            <div style="font-size: 16px; margin-bottom: 10px;">
-                              El estado de aprobación ha sido actualizado correctamente
-                            </div>
-                            <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 12px; color: #155724;">
-                              <strong><i class="fas fa-check"></i> Nuevo Estado:</strong> ${result.value.nuevaAprobacion}
-                            </div>`;
+      // 🆕 CONSTRUIR LA DATA PARA ENVIAR AL SERVIDOR
+      const dataToSend = {
+        id_solicitud: id,
+        nueva_aprobacion: result.value.nuevaAprobacion
+      };
 
-                        if (result.value.nuevaAprobacion === 'Aprobado' && result.value.dirigidoRH) {
-                          mensajeExito += `
-                            <div style="background: #cce5ff; border: 1px solid #99d1ff; border-radius: 8px; padding: 12px; color: #004085; margin-top: 10px;">
-                              <strong><i class="fas fa-user-check"></i> Asignada a:</strong> ${result.value.dirigidoRH}
-                            </div>`;
-                        } else if (result.value.nuevaAprobacion === 'No Aprobado' && result.value.comentarioRechazo) {
-                          mensajeExito += `
-                            <div style="background: #f8d7da; border: 1px solid #f1b0b7; border-radius: 8px; padding: 12px; color: #721c24; margin-top: 10px;">
-                              <strong><i class="fas fa-comment"></i> Motivo del rechazo enviado al supervisor</strong>
-                            </div>`;
-                        }
+      // ✅ MANEJAR COMENTARIOS SEGÚN EL TIPO DE DECISIÓN
+      if (result.value.nuevaAprobacion === 'Aprobado') {
+        dataToSend.dirigido_rh = result.value.dirigidoRH;
+        dataToSend.comentario = result.value.comentarioAprobacion;
+        dataToSend.tipo_comentario = 'aprobacion'; // Para identificar en el backend
+      } else if (result.value.nuevaAprobacion === 'No Aprobado') {
+        dataToSend.comentario = result.value.comentarioRechazo;
+        dataToSend.tipo_comentario = 'rechazo'; // Para identificar en el backend
+      } else {
+        dataToSend.comentario = `Cambio de aprobación a: ${result.value.nuevaAprobacion}`;
+        dataToSend.tipo_comentario = 'general';
+      }
 
-                        mensajeExito += `</div>`;
-                        
-                        Swal.fire({
-                          icon: 'success',
-                          title: '<i class="fas fa-check-circle"></i> Cambio Realizado!',
-                          html: mensajeExito,
-                          timer: 3000,
-                          showConfirmButton: false
-                        });
-                        cargarSolicitudes();
-                      } else {
-                        console.error("❌ Error en respuesta del servidor:", response);
-                        Swal.fire({
-                          icon: 'error',
-                          title: '<i class="fas fa-exclamation-circle"></i> Error',
-                          text: response.error || 'Error al actualizar el estado de aprobación',
-                          confirmButtonText: 'Entendido'
-                        });
-                      }
-                    },
-                    error: function(xhr, status, error) {
-                      console.error('❌ Error AJAX completo:', {
-                        status: xhr.status,
-                        statusText: xhr.statusText,
-                        responseText: xhr.responseText,
-                        error: error,
-                        url: './GerenteTDS/crudaprobaciones.php?action=procesar_aprobacion_gerente'
-                      });
-                      
-                      Swal.fire({
-                        icon: 'error',
-                        title: '<i class="fas fa-wifi"></i> Error de Conexión',
-                        html: `
-                          <div style="text-align: left;">
-                            <p>No se pudo conectar al servidor.</p>
-                            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px;">
-                              <small><strong>Status:</strong> ${xhr.status}</small><br>
-                              <small><strong>Error:</strong> ${error}</small>
-                            </div>
-                          </div>
-                        `,
-                        confirmButtonText: 'Entendido'
-                      });
-                    }
-                  });
-                }
-              });
-              });
+      $.ajax({
+        url: './GerenteTDS/crudaprobaciones.php?action=procesar_aprobacion_gerente',
+        type: 'POST',
+        dataType: 'json',
+        data: dataToSend,
+        success: function(response) {
+          console.log("✅ Respuesta exitosa del servidor:", response);
+          if (response.success) {
+            // 🆕 MENSAJE DE ÉXITO MEJORADO
+            let mensajeExito = `
+              <div style="text-align: center; padding: 15px;">
+                <div style="font-size: 16px; margin-bottom: 10px;">
+                  El estado de aprobación ha sido actualizado correctamente
+                </div>
+                <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 12px; color: #155724;">
+                  <strong><i class="fas fa-check"></i> Nuevo Estado:</strong> ${result.value.nuevaAprobacion}
+                </div>`;
 
+            if (result.value.nuevaAprobacion === 'Aprobado') {
+              mensajeExito += `
+                <div style="background: #cce5ff; border: 1px solid #99d1ff; border-radius: 8px; padding: 12px; color: #004085; margin-top: 10px;">
+                  <strong><i class="fas fa-user-check"></i> Asignada a:</strong> ${result.value.dirigidoRH}
+                </div>
+                <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 12px; color: #155724; margin-top: 10px;">
+                  <strong><i class="fas fa-comment-check"></i> Comentario de aprobación guardado correctamente</strong>
+                </div>`;
+            } else if (result.value.nuevaAprobacion === 'No Aprobado') {
+              mensajeExito += `
+                <div style="background: #f8d7da; border: 1px solid #f1b0b7; border-radius: 8px; padding: 12px; color: #721c24; margin-top: 10px;">
+                  <strong><i class="fas fa-comment"></i> Motivo del rechazo enviado al supervisor</strong>
+                </div>`;
+            }
+
+            mensajeExito += `</div>`;
+            
+            Swal.fire({
+              icon: 'success',
+              title: '<i class="fas fa-check-circle"></i> Cambio Realizado!',
+              html: mensajeExito,
+              timer: 3000,
+              showConfirmButton: false
+            });
+            cargarSolicitudes();
+          } else {
+            console.error("❌ Error en respuesta del servidor:", response);
+            Swal.fire({
+              icon: 'error',
+              title: '<i class="fas fa-exclamation-circle"></i> Error',
+              text: response.error || 'Error al actualizar el estado de aprobación',
+              confirmButtonText: 'Entendido'
+            });
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error('❌ Error AJAX completo:', {
+            status: xhr.status,
+            statusText: xhr.statusText,
+            responseText: xhr.responseText,
+            error: error,
+            url: './GerenteTDS/crudaprobaciones.php?action=procesar_aprobacion_gerente'
+          });
+          
+          Swal.fire({
+            icon: 'error',
+            title: '<i class="fas fa-wifi"></i> Error de Conexión',
+            html: `
+              <div style="text-align: left;">
+                <p>No se pudo conectar al servidor.</p>
+                <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                  <small><strong>Status:</strong> ${xhr.status}</small><br>
+                  <small><strong>Error:</strong> ${error}</small>
+                </div>
+              </div>
+            `,
+            confirmButtonText: 'Entendido'
+          });
+        }
+      });
+    }
+  });
+});
         // 🆕 EVENT LISTENER PARA PROCESAR AVAL DE GERENCIA
         // 🆕 EVENT LISTENER PARA PROCESAR AVAL DE GERENCIA
 $(document).off('click', '.btnProcesarAval').on('click', '.btnProcesarAval', function() {
@@ -3671,7 +3795,333 @@ $(document).off('click', '.btnProcesarAval').on('click', '.btnProcesarAval', fun
                     cargarResultadoAvalGerente(idSolicitud, tienda, puesto, supervisor, razon);
                   });
 
+// 🆕 FUNCIÓN PARA VER RESUMEN DE APROBACIÓN (GERENTES)
+$(document).on('click', '.btnVerResumenAprobacion', function() {
+    const id = $(this).data('id');
+    const solicitudId = $(this).data('solicitud-id') || id;
+    
+    // 🆕 OBTENER NOMBRE DEL GERENTE DESDE LA INTERFAZ
+    const filaActual = $(this).closest('tr');
+    const nombreGerente = filaActual.find('td:nth-child(5)').text().trim() || 'Gerente';
+    
+    console.log("📋 Gerente viendo su propia aprobación para solicitud:", solicitudId);
+    console.log("👤 Nombre del gerente obtenido:", nombreGerente);
+    
+    // Mostrar loading
+    Swal.fire({
+        title: '<i class="fas fa-spinner fa-spin"></i> Cargando informacion...',
+        html: 'Obteniendo detalles de su aprobacion...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+    
+    // Obtener el resumen desde la perspectiva del gerente
+    $.ajax({
+        url: './GerenteTDS/crudaprobaciones.php?action=obtener_resumen_aprobacion_gerente',
+        type: 'GET',
+        dataType: 'json',
+        data: { id_solicitud: solicitudId },
+        success: function(response) {
+            console.log("✅ Resumen de gerente obtenido:", response);
+            
+            if (response.success) {
+                const solicitud = response.solicitud;
+                const resumen = response.resumen_aprobacion;
+                
+                // 🆕 USAR DIRECTAMENTE LOS DATOS FORMATEADOS DEL SERVIDOR
+                const fechaProceso = resumen.fecha_procesamiento || 'No disponible';
+                const fechaSolicitud = solicitud.fecha_solicitud || 'N/A';
+                const comentarioLimpio = resumen.comentario_aprobacion || 'Sin comentario adicional';
+                
+                // 🆕 USAR NOMBRE DEL GERENTE OBTENIDO DE LA INTERFAZ
+                const nombreGerenteCompleto = nombreGerente !== 'Gerente' ? nombreGerente : (resumen.procesado_por || 'No disponible');
+                
+                // Determinar el tipo de decision y colores
+                const esAprobacion = solicitud.estado_aprobacion === 'Aprobado';
+                const colorPrincipal = esAprobacion ? '#28a745' : '#dc3545';
+                const iconoPrincipal = esAprobacion ? 'fas fa-check-circle' : 'fas fa-times-circle';
+                const textoPrincipal = esAprobacion ? 'APROBADA' : 'RECHAZADA';
+                
+                Swal.fire({
+                    title: `<i class="${iconoPrincipal}"></i> Su Decision: ${textoPrincipal}`,
+                    html: `
+                        <div style="text-align: left; max-width: 100%;">
+                            <!-- INFORMACION BASICA DE LA SOLICITUD -->
+                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+                                <h5 style="margin: 0 0 15px 0; font-weight: 700; display: flex; align-items: center;">
+                                    <i class="fas fa-file-alt" style="margin-right: 10px; font-size: 20px;"></i>
+                                    Informacion de la Solicitud
+                                </h5>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                                    <div><strong>ID:</strong> #${solicitud.id}</div>
+                                    <div><strong>Tienda:</strong> ${solicitud.tienda || 'N/A'}</div>
+                                    <div><strong>Puesto:</strong> ${solicitud.puesto_solicitado || 'N/A'}</div>
+                                    <div><strong>Supervisor:</strong> ${solicitud.supervisor || 'N/A'}</div>
+                                    <div style="grid-column: 1 / -1;"><strong>Fecha de Solicitud:</strong> ${fechaSolicitud}</div>
+                                </div>
+                            </div>
 
+                            <!-- RESUMEN DE SU DECISION -->
+                            <div style="background: ${esAprobacion ? '#d4edda' : '#f8d7da'}; border: 2px solid ${colorPrincipal}; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <h6 style="margin: 0 0 15px 0; font-weight: 700; color: ${esAprobacion ? '#155724' : '#721c24'}; display: flex; align-items: center;">
+                                    <i class="${iconoPrincipal}" style="margin-right: 10px; font-size: 18px; color: ${colorPrincipal};"></i>
+                                    Su Decision: ${textoPrincipal}
+                                </h6>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                    <div>
+                                        <strong style="color: ${esAprobacion ? '#155724' : '#721c24'};">
+                                            <i class="fas fa-user-check"></i> Procesado por Usted:
+                                        </strong><br>
+                                        <span style="background: ${esAprobacion ? '#c3e6cb' : '#f1b0b7'}; padding: 4px 8px; border-radius: 6px; font-size: 13px;">
+                                            ${nombreGerenteCompleto}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <strong style="color: ${esAprobacion ? '#155724' : '#721c24'};">
+                                            <i class="fas fa-calendar-check"></i> Fecha de Su Decision:
+                                        </strong><br>
+                                        <span style="background: ${esAprobacion ? '#c3e6cb' : '#f1b0b7'}; padding: 4px 8px; border-radius: 6px; font-size: 13px;">
+                                            ${fechaProceso}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            ${esAprobacion ? `
+                                <!-- ASIGNACION A RRHH (Solo para aprobaciones) -->
+                                <div style="background: #cce5ff; border: 2px solid #007bff; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                    <h6 style="margin: 0 0 15px 0; font-weight: 700; color: #004085; display: flex; align-items: center;">
+                                        <i class="fas fa-user-plus" style="margin-right: 10px; font-size: 18px; color: #007bff;"></i>
+                                        Asignacion que Realizo
+                                    </h6>
+                                    <div style="text-align: center;">
+                                        <div style="background: #b3d9ff; border-radius: 8px; padding: 15px; display: inline-block;">
+                                            <i class="fas fa-user-tie" style="font-size: 24px; color: #0056b3; margin-bottom: 8px;"></i><br>
+                                            <strong style="font-size: 16px; color: #004085;">
+                                                ${resumen.asignado_a || solicitud.dirigido_rh || 'No asignado'}
+                                            </strong><br>
+                                            <small style="color: #6c757d;">Asignado a RRHH</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            <!-- COMENTARIO DE SU DECISION -->
+                            <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 12px; padding: 20px;">
+                                <h6 style="margin: 0 0 15px 0; font-weight: 700; color: #856404; display: flex; align-items: center;">
+                                    <i class="fas fa-comment-alt" style="margin-right: 10px; font-size: 18px; color: #ffc107;"></i>
+                                    ${esAprobacion ? 'Su Comentario de Aprobacion' : 'Su Motivo de Rechazo'}
+                                </h6>
+                                <div style="background: white; border-radius: 8px; padding: 15px; border: 1px solid #ffeaa7;">
+                                    <p style="margin: 0; line-height: 1.6; color: #333;">
+                                        ${comentarioLimpio}
+                                    </p>
+                                </div>
+                                <small style="color: #856404; margin-top: 10px; display: block;">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Fecha del ${esAprobacion ? 'comentario' : 'rechazo'}: ${fechaProceso}
+                                </small>
+                            </div>
+                        </div>
+                    `,
+                    width: '800px',
+                    showCancelButton: false,
+                    confirmButtonText: '<i class="fas fa-times"></i> Cerrar',
+                    confirmButtonColor: '#6c757d',
+                    buttonsStyling: false,
+                    customClass: {
+                        popup: 'resumen-gerente-modal',
+                        confirmButton: 'btn btn-secondary btn-lg px-4'
+                    }
+                });
+                
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: response.error || 'No se pudo cargar la informacion de su decision',
+                    confirmButtonText: 'Entendido'
+                });
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('❌ Error al cargar resumen del gerente:', {
+                status: xhr.status,
+                error: error,
+                responseText: xhr.responseText
+            });
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Conexion',
+                text: 'No se pudo cargar la informacion de su decision',
+                confirmButtonText: 'Entendido'
+            });
+        }
+    });
+});
+
+// 🆕 FUNCIÓN PARA VER RESULTADO DE RECHAZO (GERENTES)
+$(document).on('click', '.btnVerResultadoAprobacion', function() {
+    const id = $(this).data('id');
+    const aprobacion = $(this).data('aprobacion');
+    
+    // 🆕 OBTENER NOMBRE DEL GERENTE DESDE LA INTERFAZ
+    const filaActual = $(this).closest('tr');
+    const nombreGerente = filaActual.find('td:nth-child(5)').text().trim() || 'Gerente';
+    
+    console.log("📋 Viendo resultado de rechazo para solicitud:", id);
+    console.log("👤 Nombre del gerente obtenido:", nombreGerente);
+    
+    // Mostrar loading
+    Swal.fire({
+        title: '<i class="fas fa-spinner fa-spin"></i> Cargando informacion...',
+        html: 'Obteniendo motivo del rechazo...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+    
+    // Obtener el resultado del rechazo
+    $.ajax({
+        url: './GerenteTDS/crudaprobaciones.php?action=obtener_resumen_aprobacion_gerente',
+        type: 'GET',
+        dataType: 'json',
+        data: { id_solicitud: id },
+        success: function(response) {
+            console.log("✅ Resultado de rechazo obtenido:", response);
+            
+            if (response.success) {
+                const solicitud = response.solicitud;
+                const resumen = response.resumen_aprobacion;
+                
+                // 🆕 USAR DIRECTAMENTE LOS DATOS FORMATEADOS DEL SERVIDOR PARA RECHAZO
+                const fechaRechazo = resumen.fecha_procesamiento || 'No disponible';
+                const fechaSolicitudRechazo = solicitud.fecha_solicitud || 'N/A';
+                const motivoRechazo = resumen.comentario_aprobacion || 'Sin motivo especificado';
+                
+                // 🆕 USAR NOMBRE DEL GERENTE OBTENIDO DE LA INTERFAZ
+                const nombreGerenteCompleto = nombreGerente !== 'Gerente' ? nombreGerente : (resumen.procesado_por || 'No disponible');
+                
+                Swal.fire({
+                    title: '<i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i> Solicitud Rechazada',
+                    html: `
+                        <div style="text-align: left; max-width: 100%;">
+                            <!-- ALERTA DE RECHAZO -->
+                            <div style="background: #dc3545; color: white; border-radius: 12px; padding: 20px; margin-bottom: 25px; text-align: center;">
+                                <h5 style="margin: 0; font-weight: 700;">
+                                    <i class="fas fa-times-circle" style="margin-right: 10px;"></i>
+                                    Su solicitud ha sido revisada por el gerente y no ha sido aprobada
+                                </h5>
+                            </div>
+
+                            <!-- INFORMACION DE LA SOLICITUD -->
+                            <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+                                <h6 style="margin: 0 0 15px 0; font-weight: 700; color: #495057; display: flex; align-items: center;">
+                                    <i class="fas fa-info-circle" style="margin-right: 10px; font-size: 16px;"></i>
+                                    Informacion de la Solicitud
+                                </h6>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                                    <div><strong>ID Solicitud:</strong> #${solicitud.id}</div>
+                                    <div><strong>Tienda:</strong> ${solicitud.tienda}</div>
+                                    <div><strong>Puesto Solicitado:</strong> ${solicitud.puesto_solicitado}</div>
+                                    <div><strong>Fecha de Solicitud:</strong> ${fechaSolicitudRechazo}</div>
+                                </div>
+                            </div>
+
+                            <!-- ESTADO DE APROBACION -->
+                            <div style="background: #f8d7da; border: 2px solid #dc3545; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <h6 style="margin: 0 0 15px 0; font-weight: 700; color: #721c24; display: flex; align-items: center;">
+                                    <i class="fas fa-times-circle" style="margin-right: 10px; font-size: 18px; color: #dc3545;"></i>
+                                    Estado de Aprobacion
+                                </h6>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <strong style="color: #721c24;">No Aprobado</strong><br>
+                                        <small style="color: #6c757d;">Revisado por: ${nombreGerenteCompleto}</small>
+                                    </div>
+                                    <div style="background: #dc3545; color: white; padding: 8px 16px; border-radius: 20px; font-weight: 600;">
+                                        <i class="fas fa-times"></i> RECHAZADA
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- MOTIVO DEL RECHAZO -->
+                            <div style="background: #fff3cd; border: 2px solid #856404; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <h6 style="margin: 0 0 15px 0; font-weight: 700; color: #856404; display: flex; align-items: center;">
+                                    <i class="fas fa-clipboard-list" style="margin-right: 10px; font-size: 18px;"></i>
+                                    Motivo del Rechazo
+                                </h6>
+                                <div style="background: white; border-radius: 8px; padding: 15px; border: 1px solid #ffeaa7;">
+                                    <p style="margin: 0; line-height: 1.6; color: #333;">
+                                        ${motivoRechazo}
+                                    </p>
+                                </div>
+                                <small style="color: #856404; margin-top: 10px; display: block;">
+                                    <i class="fas fa-clock"></i> 
+                                    Fecha del rechazo: ${fechaRechazo}
+                                </small>
+                            </div>
+
+                            <!-- PROXIMOS PASOS -->
+                            <div style="background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 12px; padding: 20px;">
+                                <h6 style="margin: 0 0 15px 0; font-weight: 700; color: #0c5460; display: flex; align-items: center;">
+                                    <i class="fas fa-route" style="margin-right: 10px; font-size: 16px;"></i>
+                                    Proximos Pasos
+                                </h6>
+                                <div style="color: #0c5460; line-height: 1.6;">
+                                    <p style="margin: 5px 0; display: flex; align-items: flex-start;">
+                                        <i class="fas fa-arrow-right" style="margin-right: 8px; margin-top: 4px; color: #17a2b8;"></i>
+                                        <span><strong>Puede revisar el motivo del rechazo</strong> para entender las razones de la decision</span>
+                                    </p>
+                                    <p style="margin: 5px 0; display: flex; align-items: flex-start;">
+                                        <i class="fas fa-arrow-right" style="margin-right: 8px; margin-top: 4px; color: #17a2b8;"></i>
+                                        <span><strong>Si considera necesario,</strong> puede crear una nueva solicitud corrigiendo los aspectos mencionados</span>
+                                    </p>
+                                    <p style="margin: 5px 0; display: flex; align-items: flex-start;">
+                                        <i class="fas fa-arrow-right" style="margin-right: 8px; margin-top: 4px; color: #17a2b8;"></i>
+                                        <span><strong>Para dudas adicionales,</strong> puede contactar directamente con el gerente para aclaraciones</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    width: '700px',
+                    showCancelButton: false,
+                    confirmButtonText: '<i class="fas fa-check"></i> Entendido',
+                    confirmButtonColor: '#007bff',
+                    buttonsStyling: false,
+                    customClass: {
+                        popup: 'resultado-rechazo-modal',
+                        confirmButton: 'btn btn-primary btn-lg px-4'
+                    }
+                });
+                
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: response.error || 'No se pudo cargar la informacion del rechazo',
+                    confirmButtonText: 'Entendido'
+                });
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('❌ Error al cargar resultado de rechazo:', {
+                status: xhr.status,
+                error: error,
+                responseText: xhr.responseText
+            });
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Conexion',
+                text: 'No se pudo cargar la informacion del rechazo',
+                confirmButtonText: 'Entendido'
+            });
+        }
+    });
+});
       // ✅ CARGAR SOLICITUDES AL INICIAR
       cargarSolicitudes();
 
