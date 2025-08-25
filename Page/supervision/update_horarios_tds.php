@@ -152,8 +152,9 @@ if ($resultado && $justificacion !== null && !in_array($justificacion, $requiere
       $horaAlmuerzo = floatval($resHoras[0]['HORA_ALM']);
       $horaley = floatval($resHoras[0]['HORA_LEY']);
 
-      $horaTotS = $totalHoras; // - $horaAlmuerzo;   YA NO RESTO HORAS ALMUERZO
-      $horaExtraS = max(0, $horaTotS - $horaley - $horaAlmuerzo);
+      $horaTotS = $totalHoras - $horaAlmuerzo;   //YA  RESTO HORAS ALMUERZO
+      //$horaExtraS = max(0, $horaTotS - $horaley - $horaAlmuerzo); QUITO FUNSION PARA EXTRAS
+        $horaExtraS =  $horaTotS - $horaley ; 
 
       // Actualizar todos los registros de esa semana y empleado
       $updateTotales = "
