@@ -411,20 +411,20 @@ foreach ($resultado as $rdst) {
     <label>Seleccionar motivo</label>
     <select class="form-control" id="motivo_select">
       <option value="">-- Seleccione un motivo --</option>
-         <option value="GTO PRESENCIAL">GTO PRESENCIAL</option> <!-- ← NUEVA OPCIÓN -->
-         <option value="GTO VIRTUAL">GTO VIRTUAL</option> <!-- ← NUEVA OPCIÓN -->
-         <option value="TV PRESENCIAL">TV PRESENCIAL</option> <!-- ← NUEVA OPCIÓN -->
-         <option value="TV VIRTUAL">TV VIRTUAL</option> <!-- ← NUEVA OPCIÓN -->
-          <option value="REUNION GTS">REUNION GTS</option> <!-- ← NUEVA OPCIÓN -->
-          <option value="REUNION ASS">REUNION ASS</option> <!-- ← NUEVA OPCIÓN -->
-          <option value="INDUCCION ROY">INDUCCION ROY</option> <!-- ← NUEVA OPCIÓN -->
-         <option value="CUMPLEANOS">CUMPLEAÑOS</option> <!-- ← NUEVA OPCIÓN -->
-         <option value="VACACIONES">VACACIONES</option> <!-- ← NUEVA OPCIÓN -->
-         <option value="COBERTURA">COBERTURA</option> <!-- ← NUEVA OPCIÓN -->
-         <option value="SUSPENSION LABORAL">SUSPENSION LABORAL</option> <!-- ← NUEVA OPCIÓN -->
-         <option value="SUSPENSION IGGSS">SUSPENSION IGSS</option> <!-- ← NUEVA OPCIÓN -->
-           <option value="LACTANCIA">LACTANCIA</option> <!-- ← NUEVA OPCIÓN -->
-            <option value="CITA IGSS">CITA IGSS</option> <!-- ← NUEVA OPCIÓN -->
+         <option value="GTO PRESENCIAL">GTO PRESENCIAL</option>
+         <option value="GTO VIRTUAL">GTO VIRTUAL</option>
+         <option value="TV PRESENCIAL">TV PRESENCIAL</option>
+         <option value="TV VIRTUAL">TV VIRTUAL</option>
+          <option value="REUNION GTS">REUNION GTS</option>
+          <option value="REUNION ASS">REUNION ASS</option>
+          <option value="INDUCCION ROY">INDUCCION ROY</option>
+         <option value="CUMPLEANOS">CUMPLEAÑOS</option>
+         <option value="VACACIONES">VACACIONES</option>
+         <option value="COBERTURA">COBERTURA</option>
+         <option value="SUSPENSION LABORAL">SUSPENSION LABORAL</option>
+         <option value="SUSPENSION IGSS">SUSPENSION IGSS</option>
+           <option value="LACTANCIA">LACTANCIA</option>
+            <option value="CITA IGSS">CITA IGSS</option>
       <option value="OTROS">OTROS</option>
     </select>
   </div>
@@ -482,6 +482,12 @@ $(document).ready(function () {
     $('#hora_in').val($(this).data('hora-in'));
     $('#hora_out').val($(this).data('hora-out'));
     $('#justificacion').val($(this).data('justificacion'));
+    
+    // Limpiar motivo y ocultar secciones al abrir modal
+    $('#motivo_select').val('');
+    $('#fechasSuspension').hide();
+    $('#horasGTO').hide();
+    
     $('#justificarModal').modal('show');
   });
 
@@ -495,6 +501,7 @@ $(document).ready(function () {
       success: function (response) {
         alert('Actualizacion guardada correctamente');
         $('#justificarModal').modal('hide');
+        location.reload(); // Recargar la página para ver los cambios
       },
       error: function () {
         alert('Ocurrió un error al guardar la Actualizacion');
@@ -502,11 +509,12 @@ $(document).ready(function () {
     });
   });
 
-  // Cambio de motivo
+  // 🔥 CAMBIO DE MOTIVO - CÓDIGO CORREGIDO 🔥
   $('#motivo_select').on('change', function () {
     var selected = $(this).val();
 
-    if (['SUSPENSION LABORAL', 'VACACIONES'].includes(selected)) {
+    // Mostrar/ocultar fechas para suspensiones y vacaciones
+    if (['SUSPENSION LABORAL', 'VACACIONES', 'SUSPENSION IGSS'].includes(selected)) {
       $('#fechasSuspension').show();
     } else {
       $('#fechasSuspension').hide();
@@ -514,7 +522,8 @@ $(document).ready(function () {
       $('#fecha_fin').val('');
     }
 
-    if (['CITA IGSS', 'GTO PRESENCIAL', 'GTO VIRTUAL', 'REUNION GTS', 'REUNION ASS', 'LACTANCIA','OTROS'].includes(selected)) {
+    // Mostrar/ocultar horas para diferentes tipos de justificaciones
+    if (['CITA IGSS', 'GTO PRESENCIAL', 'GTO VIRTUAL', 'TV PRESENCIAL', 'TV VIRTUAL', 'REUNION GTS', 'REUNION ASS', 'COBERTURA', 'LACTANCIA', 'OTROS'].includes(selected)) {
       $('#horasGTO').show();
     } else {
       $('#horasGTO').hide();
@@ -522,12 +531,19 @@ $(document).ready(function () {
       $('#gto_hora_salida').val('');
     }
 
-    if (selected === 'OTROS' || selected === '') {
+    // 🔥 LÓGICA PRINCIPAL PARA EL CAMPO RAZÓN 🔥
+    if (selected === 'OTROS') {
+      // Para OTROS: campo vacío y editable
+      $('#justificacion').val('').prop('readonly', false).focus();
+    } else if (selected === '') {
+      // Para opción vacía: campo vacío y editable
       $('#justificacion').val('').prop('readonly', false);
     } else {
+      // Para cualquier otro motivo: llenar automáticamente y hacer readonly
       $('#justificacion').val(selected).prop('readonly', true);
     }
 
+    // Asignar etiquetas
     var etiquetas = {
       "GTO PRESENCIAL": 1,
       "GTO VIRTUAL": 2,
@@ -535,14 +551,15 @@ $(document).ready(function () {
       "TV VIRTUAL": 4,
       "REUNION GTS": 5,
       "REUNION ASS": 6,
-      "Induccion ROY": 7,
-      "CUMPLEAÑOS": 8,
+      "INDUCCION ROY": 7,
+      "CUMPLEANOS": 8,
       "VACACIONES": 9,
       "COBERTURA": 10,
       "SUSPENSION LABORAL": 11,
       "SUSPENSION IGSS": 12,
       "LACTANCIA": 13,
-      "CITA IGSS": 14
+      "CITA IGSS": 14,
+      "OTROS": 15
     };
 
     $('#etiqueta').val(etiquetas[selected] || '');
