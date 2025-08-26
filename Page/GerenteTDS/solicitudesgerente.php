@@ -4096,7 +4096,7 @@ $(document).on('click', '.btnVerResultadoAprobacion', function() {
                         confirmButton: 'btn btn-primary btn-lg px-4'
                     }
                 });
-                
+
             } else {
                 Swal.fire({
                     icon: 'error',
