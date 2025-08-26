@@ -63,7 +63,7 @@ case 'get_solicitudes':
         }
 
         // Lista de códigos de supervisores
-        $codigos_supervisores = ['5378','5379','6250','6006','5376','5287','5400','5226'];
+        $codigos_supervisores = ['5378','5379','6250','6006','5385','5287','5400','5226'];
         $es_supervisor = in_array($usuario_logueado, $codigos_supervisores);
 
         // ✅ QUERY CON ALIASES MÁS CORTOS
