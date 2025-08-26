@@ -227,6 +227,14 @@ $(document).ready(function () {
       $('#titulo').text('Reclutamiento de Personal Tiendas');
   });
 
+      //Reporte de VENTAS X INVENTARIO
+   $('#9-186 a').on('click',function(){
+    $('section.content').load('filtro_st.php');
+    $('#titulo').text('Reporte de VENTAS X INVENTARIO TDS');
+    sbs = $('#subsidiaria').val();
+    pagina = 'rvit';
+  });
+
 
   
   /************************************************************ */
@@ -549,3 +557,24 @@ $('#1-4 a').on('click',function(){
     });
 
       
+
+    /*VENTAS ANALISIS NUEVOS REPORTES********************************************************** */
+    /*********************************************************** */
+
+
+    //REPORTE RR3 
+
+    $('#21-210 a').on('click', function () {
+      $('section.content').load('filtro_va.php');
+      $('#titulo').text('RR3 Ventas vrs Stock');
+      sbs = $('#subsidiaria').val();
+      pagina = 'rr3';
+    });
+
+     //REPORTE RR4
+        $('#21-211 a').on('click', function () {
+      $('section.content').load('filtro_va.php');
+      $('#titulo').text('RR4 Ventas Existencias Tienda y Estilo');
+      sbs = $('#subsidiaria').val();
+      pagina = 'rr4';
+    });

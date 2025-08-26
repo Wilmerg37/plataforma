@@ -38,6 +38,12 @@ if (!$id || $justificacion === null) {
   exit('Faltan datos');
 }
 
+// 🔥 CAMBIO: Validar que si es "OTROS" debe tener texto en justificación
+if ($etiqueta == '15' && (empty($justificacion) || trim($justificacion) === '')) {
+  http_response_code(400);
+  exit('Debe proporcionar una razón cuando selecciona OTROS.');
+}
+
 // Actualización según tipo de justificación
 $requiere_fechas = ['SUSPENSION LABORAL', 'VACACIONES','SUSPENSION IGSS'];
 
@@ -47,7 +53,7 @@ if (in_array($justificacion, $requiere_fechas)) {
     exit('Debe proporcionar fecha de inicio y fin para esta justificación.');
   }
 
-  $query = "UPDATE ROY_HORARIO_TDS 
+  $query = "UPDATE ROY_HORARIO_TDS
             SET JUSTIFICACION = :justificacion,
                 FECHA_INICIO = TO_DATE(:fecha_inicio, 'YYYY-MM-DD'),
                 FECHA_FIN = TO_DATE(:fecha_fin, 'YYYY-MM-DD'),
@@ -63,13 +69,15 @@ if (in_array($justificacion, $requiere_fechas)) {
     ':id' => $id
   ];
 
-} elseif (in_array($justificacion, ['CITA IGSS', 'GTO PRESENCIAL', 'GTO VIRTUAL', 'TV PRESENCIAL', 'TV VIRTUAL','REUNION GTS', 'REUNION ASS', 'COBERTURA','LACTANCIA','OTROS'])) {
+} elseif (in_array($justificacion, ['CITA IGSS', 'GTO PRESENCIAL', 'GTO VIRTUAL', 'TV PRESENCIAL', 'TV VIRTUAL','REUNION GTS', 'REUNION ASS', 'COBERTURA','LACTANCIA']) || $etiqueta == '15') {
+  // 🔥 CAMBIO: Agregué || $etiqueta == '15' para incluir OTROS en validación de horas
+  
   if (empty($hora_ingreso) || empty($hora_salida)) {
     http_response_code(400);
     exit('Debe proporcionar hora de ingreso y salida para esta justificación.');
   }
 
-  $query = "UPDATE ROY_HORARIO_TDS 
+  $query = "UPDATE ROY_HORARIO_TDS
             SET JUSTIFICACION = :justificacion,
                 HORA_IN = :hora_ingreso,
                 HORA_OUT = :hora_salida,
@@ -88,7 +96,8 @@ if (in_array($justificacion, $requiere_fechas)) {
   ];
 
 } else {
-  $query = "UPDATE ROY_HORARIO_TDS 
+  // Para justificaciones que no requieren fechas ni horas
+  $query = "UPDATE ROY_HORARIO_TDS
             SET JUSTIFICACION = :justificacion,
                 FECHA_INICIO = NULL,
                 FECHA_FIN = NULL,
@@ -107,6 +116,7 @@ if (in_array($justificacion, $requiere_fechas)) {
 
 $resultado = consultaOracle(4, $query, $params);
 
+// 🔥 CAMBIO: Mejoré la condición para el cálculo de horas
 if ($resultado && $justificacion !== null && !in_array($justificacion, $requiere_fechas)) {
   // Obtener datos de la semana y empleado
   $querySemana = "SELECT SEMANA, CODIGO_EMPL FROM ROY_HORARIO_TDS WHERE ID_REGISTRO = :id";
@@ -122,7 +132,8 @@ if ($resultado && $justificacion !== null && !in_array($justificacion, $requiere
     $queryHoras = "
       SELECT 
         SUM((TO_DATE(HORA_OUT, 'HH24:MI') - TO_DATE(HORA_IN, 'HH24:MI')) * 24) AS TOTAL_HORAS,
-        MAX(HORA_ALM_S) AS HORA_ALM, max(HORA_LEY_S) HORA_LEY
+        MAX(HORA_ALM_S) AS HORA_ALM, 
+        MAX(HORA_LEY_S) AS HORA_LEY
       FROM ROY_HORARIO_TDS
       WHERE SEMANA = :semana AND CODIGO_EMPL = :codigo_empl
        AND HORA_IN IS NOT NULL 
@@ -141,8 +152,9 @@ if ($resultado && $justificacion !== null && !in_array($justificacion, $requiere
       $horaAlmuerzo = floatval($resHoras[0]['HORA_ALM']);
       $horaley = floatval($resHoras[0]['HORA_LEY']);
 
-      $horaTotS = $totalHoras; // - $horaAlmuerzo;   YA NO RESTO HORAS ALMUERZO
-      $horaExtraS = max(0, $horaTotS - $horaley - $horaAlmuerzo);
+      $horaTotS = $totalHoras - $horaAlmuerzo;   //YA  RESTO HORAS ALMUERZO
+      //$horaExtraS = max(0, $horaTotS - $horaley - $horaAlmuerzo); QUITO FUNSION PARA EXTRAS
+        $horaExtraS =  $horaTotS - $horaley ; 
 
       // Actualizar todos los registros de esa semana y empleado
       $updateTotales = "
@@ -164,7 +176,6 @@ if ($resultado && $justificacion !== null && !in_array($justificacion, $requiere
   }
 }
 
-
 // 🟢 Final
 if ($resultado) {
   echo "OK";
@@ -172,3 +183,4 @@ if ($resultado) {
   http_response_code(500);
   echo "Error al guardar en base de datos";
 }
+?>

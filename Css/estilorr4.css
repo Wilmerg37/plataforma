@@ -1,0 +1,320 @@
+   body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 14px;
+        background-color: #f8f9fa;
+        color: #333;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .reporte-container {
+        background-color: #fff;
+        border-radius: 12px;
+        margin: 0 auto;
+        max-width: 1500px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+
+    .header-section {
+        background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+        color: white;
+        padding: 25px 30px;
+        text-align: center;
+    }
+
+    .header-section h1 {
+        margin: 0 0 10px 0;
+        font-size: 32px;
+        font-weight: 300;
+        letter-spacing: 1px;
+    }
+
+    .header-section .subtitle {
+        font-size: 18px;
+        opacity: 0.9;
+        margin: 5px 0;
+    }
+
+    .filtros-section {
+        background: #f8f9fa;
+        padding: 25px 30px;
+        border-bottom: 1px solid #e1e5e9;
+    }
+
+    .filtro-container {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .filtro-grupo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .filtro-grupo label {
+        font-weight: 600;
+        color: #37474f;
+        font-size: 15px;
+    }
+
+    .filtro-input {
+        padding: 10px 15px;
+        border: 2px solid #e1e5e9;
+        border-radius: 6px;
+        font-size: 14px;
+        min-width: 200px;
+        transition: border-color 0.3s ease;
+    }
+
+    .filtro-input:focus {
+        outline: none;
+        border-color: #1976d2;
+    }
+
+    .btn-filtrar, .btn-excel {
+        background: linear-gradient(90deg, #1976d2 0%, #1565c0 100%);
+        color: white;
+        padding: 10px 25px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-excel {
+        background: linear-gradient(90deg, #388e3c 0%, #2e7d32 100%);
+        margin-left: 10px;
+    }
+
+    .btn-limpiar {
+        background: linear-gradient(90deg, #757575 0%, #616161 100%);
+        color: white;
+        padding: 10px 25px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-filtrar:hover, .btn-excel:hover, .btn-limpiar:hover {
+        transform: translateY(-1px);
+    }
+
+    .content-section {
+        padding: 30px;
+    }
+
+    .tabla-principal {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        overflow: hidden;
+        font-size: 15px;
+    }
+
+    .tabla-header {
+        background: linear-gradient(90deg, #1976d2 0%, #1565c0 100%);
+    }
+
+    .tabla-header th {
+        color: white;
+        padding: 18px 15px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-right: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .tabla-header th:first-child {
+        text-align: left;
+        padding-left: 25px;
+    }
+
+    .fila-estilo {
+        border-bottom: 3px solid #f0f0f0;
+    }
+
+    .celda-proveedor {
+        background: #f8f9fa;
+        font-weight: 600;
+        color: #37474f;
+        text-align: left;
+        padding: 15px 25px;
+        border-right: 2px solid #e1e5e9;
+        vertical-align: middle;
+        font-size: 16px;
+    }
+
+    .celda-estilo {
+        background: #f8f9fa;
+        font-weight: 600;
+        color: #1976d2;
+        text-align: left;
+        padding: 15px 20px;
+        border-right: 2px solid #e1e5e9;
+        vertical-align: middle;
+        font-size: 15px;
+    }
+
+    .celda-tipo {
+        background: #eceff1;
+        font-weight: 600;
+        color: #37474f;
+        text-align: center;
+        padding: 12px 15px;
+        border-right: 1px solid #e1e5e9;
+        text-transform: capitalize;
+        font-size: 14px;
+        min-width: 100px;
+    }
+
+    .celda-tienda {
+        text-align: center;
+        padding: 12px 15px;
+        border-right: 1px solid #e1e5e9;
+        font-weight: 500;
+        font-size: 15px;
+        min-width: 80px;
+    }
+
+    .fila-venta { background: #e8f5e8; }
+    .fila-existencia { background: #fff3e0; }
+    .fila-minimo { background: #f3e5f5; }
+
+    .valor-venta {
+        color: #2e7d32;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .valor-existencia {
+        color: #f57c00;
+        font-weight: 500;
+        font-size: 15px;
+    }
+
+    .valor-minimo {
+        color: #7b1fa2;
+        font-weight: 500;
+        font-size: 15px;
+    }
+
+    .low-stock {
+        background-color: #ffebee !important;
+        color: #c62828 !important;
+        font-weight: 700;
+        position: relative;
+        font-size: 15px;
+    }
+
+    .low-stock::before {
+        content: "⚠ ";
+        color: #ff5722;
+        font-size: 16px;
+    }
+
+    .estatus-row {
+        background: linear-gradient(90deg, #f5f5f5 0%, #eeeeee 100%);
+        border-top: 2px solid #e1e5e9;
+    }
+
+    .estatus-cell {
+        text-align: center;
+        padding: 15px;
+        font-weight: 600;
+        color: #37474f;
+        font-style: italic;
+    }
+
+    .estatus-valor {
+        background: #2196f3;
+        color: white;
+        padding: 6px 15px;
+        border-radius: 15px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .no-resultados {
+        text-align: center;
+        padding: 50px;
+        color: #666;
+        font-style: italic;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin: 20px 0;
+        font-size: 16px;
+    }
+
+    .resumen-info {
+        background: #e3f2fd;
+        padding: 20px 25px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border-left: 4px solid #1976d2;
+    }
+
+    .resumen-info h3 {
+        margin: 0 0 12px 0;
+        color: #1976d2;
+        font-size: 18px;
+    }
+
+    .resumen-info p {
+        margin: 8px 0;
+        font-size: 15px;
+    }
+
+    .acciones-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 20px 0;
+        padding: 15px 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    @media (max-width: 768px) {
+        .reporte-container {
+            margin: 10px;
+            border-radius: 8px;
+        }
+        
+        .content-section {
+            padding: 15px;
+        }
+        
+        .tabla-principal {
+            font-size: 13px;
+        }
+        
+        th, td {
+            padding: 8px 6px;
+        }
+
+        .filtro-container {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .filtro-input {
+            min-width: 100%;
+        }
+    }
