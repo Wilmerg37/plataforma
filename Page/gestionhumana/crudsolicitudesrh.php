@@ -873,7 +873,7 @@ if (!$conn) {
                 $joinClause = implode(' ', $joinConditions);
                 $whereClause = implode(' AND ', $whereConditions);
                 
-                $query = "SELECT 
+                $query = "SELECT DISTINCT
                             h.ID_HISTORICO,
                             h.ID_SOLICITUD,
                             s.NUM_TIENDA,
@@ -891,7 +891,7 @@ if (!$conn) {
                         LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
                         $joinClause
                         WHERE $whereClause
-                        ORDER BY h.FECHA_CAMBIO DESC";
+                        ORDER BY FECHA_CAMBIO DESC";
                 
                 $stmt = oci_parse($conn, $query);
                 
@@ -997,7 +997,7 @@ if (!$conn) {
                 
                 // QUERY PARA RESUMEN GENERAL
                 $queryResumen = "SELECT 
-                                    COUNT(*) as TOTAL_CAMBIOS,
+                                    COUNT(DISTINCT h.ID_HISTORICO) as TOTAL_CAMBIOS,
                                     COUNT(DISTINCT s.ID_SOLICITUD) as SOLICITUDES_AFECTADAS,
                                     COUNT(DISTINCT s.NUM_TIENDA) as TIENDAS_AFECTADAS,
                                     COUNT(DISTINCT s.SOLICITADO_POR) as SUPERVISORES_AFECTADOS
@@ -1021,7 +1021,7 @@ if (!$conn) {
                 oci_free_statement($stmtResumen);
                 
                 // QUERY PARA DATOS DETALLADOS
-                $queryDetalle = "SELECT 
+                $queryDetalle = "SELECT DISTINCT
                                     h.ID_HISTORICO,
                                     h.ID_SOLICITUD,
                                     s.NUM_TIENDA,
@@ -1039,7 +1039,7 @@ if (!$conn) {
                                 LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
                                 $joinClause
                                 WHERE $whereClause
-                                ORDER BY h.FECHA_CAMBIO DESC";
+                                ORDER BY FECHA_CAMBIO DESC";
                 
                 $stmtDetalle = oci_parse($conn, $queryDetalle);
                 oci_bind_by_name($stmtDetalle, ':fecha_inicial', $fecha_inicial);
@@ -1230,7 +1230,7 @@ if (!$conn) {
                     
                     $whereClause = implode(' AND ', $whereConditions);
                     
-                    $query = "SELECT 
+                    $query = "SELECT DISTINCT
                                 h.ID_HISTORICO,
                                 h.ID_SOLICITUD,
                                 s.NUM_TIENDA,
@@ -1247,7 +1247,7 @@ if (!$conn) {
                             INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
                             LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
                             WHERE $whereClause
-                            ORDER BY h.FECHA_CAMBIO DESC";
+                            ORDER BY FECHA_CAMBIO DESC";
                     
                     $stmt = oci_parse($conn, $query);
                     
@@ -1349,7 +1349,7 @@ if (!$conn) {
                     oci_free_statement($stmtResumen);
                     
                     // QUERY PARA DATOS DETALLADOS
-                    $queryDetalle = "SELECT 
+                    $queryDetalle = "SELECT DISTINCT
                                         h.ID_HISTORICO,
                                         h.ID_SOLICITUD,
                                         s.NUM_TIENDA,
@@ -1366,7 +1366,7 @@ if (!$conn) {
                                     INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
                                     LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
                                     WHERE $whereClause
-                                    ORDER BY h.FECHA_CAMBIO DESC";
+                                    ORDER BY FECHA_CAMBIO DESC";
                     
                     $stmtDetalle = oci_parse($conn, $queryDetalle);
                     oci_bind_by_name($stmtDetalle, ':fecha_inicial', $fecha_inicial);
@@ -1434,7 +1434,6 @@ if (!$conn) {
                         ]
                     ];
                 }
-
 
                 //FUNCIÓN AUXILIAR PARA SUBIR ARCHIVOS DE AVAL
                             function subirArchivoAval($archivo, $idSolicitud, $tipo) {
@@ -1698,7 +1697,7 @@ if (isset($_GET['action'])) {
                                 $joinClause = implode(' ', $joinConditions);
                                 $whereClause = implode(' AND ', $whereConditions);
                                 
-                                $query = "SELECT 
+                                $query = "SELECT DISTINCT
                                             h.ID_HISTORICO,
                                             h.ID_SOLICITUD,
                                             s.NUM_TIENDA,
@@ -1716,7 +1715,7 @@ if (isset($_GET['action'])) {
                                         LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
                                         $joinClause
                                         WHERE $whereClause
-                                        ORDER BY h.FECHA_CAMBIO DESC";
+                                        ORDER BY FECHA_CAMBIO DESC";
                                 
                                 error_log("🔍 QUERY FINAL CONSTRUIDO:");
                                 error_log($query);
@@ -3152,7 +3151,6 @@ if (isset($_GET['action'])) {
                                                         $gerente_nombres = [
                                                             '5333' => 'Christian Quan', 
                                                             '5210' => 'Giovanni Cardoza'
-
                                                         ];
                                                         $nombre_gerente = $gerente_nombres[$row['CODIGO_GERENTE']] ?? 'Gerente código ' . $row['CODIGO_GERENTE'];
                                                     }
@@ -3260,8 +3258,12 @@ if (isset($_GET['action'])) {
                                             oci_close($conn);
                                             break;
 
-
 case 'obtener_resumen_rrhh':
+    // Limpiar cualquier output buffer antes de enviar JSON
+    if (ob_get_level()) {
+        ob_clean();
+    }
+    
     $id_solicitud = $_GET['id_solicitud'] ?? $_POST['id_solicitud'];
     
     try {
@@ -3381,6 +3383,7 @@ case 'obtener_resumen_rrhh':
                 }
             }
             
+            ob_clean(); // Limpiar cualquier output previo
             echo json_encode([
                 'success' => true,
                 'solicitud' => [
@@ -3399,18 +3402,24 @@ case 'obtener_resumen_rrhh':
                     'fecha_procesamiento' => $row['FECHA_DECISION_FORMATO']
                 ]
             ]);
+            exit; // Evitar que se ejecute código adicional
         } else {
+            ob_clean();
             echo json_encode(['success' => false, 'error' => 'Solicitud no encontrada']);
+            exit;
         }
         
         oci_free_statement($stmt);
         
     } catch (Exception $e) {
+        ob_clean();
         echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        exit;
     }
     
     oci_close($conn);
     break;
+
 
     }
 }

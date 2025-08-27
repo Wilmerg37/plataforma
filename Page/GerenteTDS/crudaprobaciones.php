@@ -819,7 +819,7 @@ function generarReporteFiltrado($conn, $fecha_inicial, $fecha_final, $filtro_tie
     $joinClause = implode(' ', $joinConditions);
     $whereClause = implode(' AND ', $whereConditions);
     
-    $query = "SELECT 
+    $query = "SELECT DISTINCT
                 h.ID_HISTORICO,
                 h.ID_SOLICITUD,
                 s.NUM_TIENDA,
@@ -837,7 +837,7 @@ function generarReporteFiltrado($conn, $fecha_inicial, $fecha_final, $filtro_tie
               LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
               $joinClause
               WHERE $whereClause
-              ORDER BY h.FECHA_CAMBIO DESC";
+              ORDER BY FECHA_CAMBIO DESC";
     
     $stmt = oci_parse($conn, $query);
     
@@ -942,60 +942,74 @@ function generarReporteGeneral($conn, $fecha_inicial, $fecha_final, $incluir_apr
     $whereClause = implode(' AND ', $whereConditions);
     
     // QUERY PARA RESUMEN GENERAL
-    $queryResumen = "SELECT 
-                        COUNT(*) as TOTAL_CAMBIOS,
-                        COUNT(DISTINCT s.ID_SOLICITUD) as SOLICITUDES_AFECTADAS,
-                        COUNT(DISTINCT s.NUM_TIENDA) as TIENDAS_AFECTADAS,
-                        COUNT(DISTINCT s.SOLICITADO_POR) as SUPERVISORES_AFECTADOS
-                     FROM ROY_HISTORICO_SOLICITUD h
-                     INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
-                     $joinClause
-                     WHERE $whereClause";
-    
-    $stmtResumen = oci_parse($conn, $queryResumen);
-    oci_bind_by_name($stmtResumen, ':fecha_inicial', $fecha_inicial);
-    oci_bind_by_name($stmtResumen, ':fecha_final', $fecha_final);
-    
-    if (in_array($usuario_logueado, ['5333', '5210'])) {
-        $gerente_nombres = ['5333' => 'Christian Quan', '5210' => 'Giovanni Cardoza'];
-        $nombre_gerente = $gerente_nombres[$usuario_logueado];
-        oci_bind_by_name($stmtResumen, ':nombre_gerente', $nombre_gerente);
-    }
-    
-    oci_execute($stmtResumen);
-    $resumen = oci_fetch_assoc($stmtResumen);
-    oci_free_statement($stmtResumen);
-    
-    // QUERY PARA DATOS DETALLADOS
-    $queryDetalle = "SELECT 
-                        h.ID_HISTORICO,
-                        h.ID_SOLICITUD,
-                        s.NUM_TIENDA,
-                        s.PUESTO_SOLICITADO,
-                        s.SOLICITADO_POR,
-                        h.ESTADO_ANTERIOR,
-                        h.ESTADO_NUEVO,
-                        h.APROBACION_ANTERIOR,
-                        h.APROBACION_NUEVA,
-                        h.COMENTARIO_NUEVO,
-                        TO_CHAR(h.FECHA_CAMBIO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_CAMBIO,
-                        rps_info.udf1_string as CODIGO_SUPERVISOR
-                     FROM ROY_HISTORICO_SOLICITUD h
-                     INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
-                     LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
-                     $joinClause
-                     WHERE $whereClause
-                     ORDER BY h.FECHA_CAMBIO DESC";
-    
-    $stmtDetalle = oci_parse($conn, $queryDetalle);
-    oci_bind_by_name($stmtDetalle, ':fecha_inicial', $fecha_inicial);
-    oci_bind_by_name($stmtDetalle, ':fecha_final', $fecha_final);
-    
-    if (in_array($usuario_logueado, ['5333', '5210'])) {
-        $gerente_nombres = ['5333' => 'Christian Quan', '5210' => 'Giovanni Cardoza'];
-        $nombre_gerente = $gerente_nombres[$usuario_logueado];
-        oci_bind_by_name($stmtDetalle, ':nombre_gerente', $nombre_gerente);
-    }
+// QUERY PARA RESUMEN GENERAL
+$queryResumen = "SELECT 
+                    COUNT(DISTINCT h.ID_HISTORICO) as TOTAL_CAMBIOS,
+                    COUNT(DISTINCT s.ID_SOLICITUD) as SOLICITUDES_AFECTADAS,
+                    COUNT(DISTINCT s.NUM_TIENDA) as TIENDAS_AFECTADAS,
+                    COUNT(DISTINCT s.SOLICITADO_POR) as SUPERVISORES_AFECTADOS
+                 FROM ROY_HISTORICO_SOLICITUD h
+                 INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
+                 LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
+                 WHERE h.FECHA_CAMBIO BETWEEN TO_DATE(:fecha_inicial, 'YYYY-MM-DD') AND TO_DATE(:fecha_final, 'YYYY-MM-DD') + 1
+                 AND (
+                     :es_gerente_resumen = 0 
+                     OR UPPER(TRIM(rps_info.udf4_string)) = UPPER(TRIM(:nombre_gerente_resumen))
+                 )";
+
+$stmtResumen = oci_parse($conn, $queryResumen);
+$es_gerente = in_array($usuario_logueado, ['5333', '5210']) ? 1 : 0;
+oci_bind_by_name($stmtResumen, ':es_gerente_resumen', $es_gerente);
+oci_bind_by_name($stmtResumen, ':fecha_inicial', $fecha_inicial);
+oci_bind_by_name($stmtResumen, ':fecha_final', $fecha_final);
+
+if (in_array($usuario_logueado, ['5333', '5210'])) {
+    $gerente_nombres = ['5333' => 'Christian Quan', '5210' => 'Giovanni Cardoza'];
+    $nombre_gerente = $gerente_nombres[$usuario_logueado];
+    oci_bind_by_name($stmtResumen, ':nombre_gerente_resumen', $nombre_gerente);
+} else {
+    $nombre_gerente = '';
+    oci_bind_by_name($stmtResumen, ':nombre_gerente_resumen', $nombre_gerente);
+}
+
+oci_execute($stmtResumen);
+$resumen = oci_fetch_assoc($stmtResumen);
+oci_free_statement($stmtResumen);
+
+// QUERY PARA DATOS DETALLADOS
+$queryDetalle = "SELECT DISTINCT
+                    h.ID_HISTORICO,
+                    h.ID_SOLICITUD,
+                    s.NUM_TIENDA,
+                    s.PUESTO_SOLICITADO,
+                    s.SOLICITADO_POR,
+                    h.ESTADO_ANTERIOR,
+                    h.ESTADO_NUEVO,
+                    h.APROBACION_ANTERIOR,
+                    h.APROBACION_NUEVA,
+                    h.COMENTARIO_NUEVO,
+                    TO_CHAR(h.FECHA_CAMBIO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_CAMBIO,
+                    rps_info.udf1_string as CODIGO_SUPERVISOR
+                 FROM ROY_HISTORICO_SOLICITUD h
+                 INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
+                 LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
+                 WHERE h.FECHA_CAMBIO BETWEEN TO_DATE(:fecha_inicial_detalle, 'YYYY-MM-DD') AND TO_DATE(:fecha_final_detalle, 'YYYY-MM-DD') + 1
+                 AND (
+                     :es_gerente_detalle = 0 
+                     OR UPPER(TRIM(rps_info.udf4_string)) = UPPER(TRIM(:nombre_gerente_detalle))
+                 )
+                 ORDER BY FECHA_CAMBIO DESC";
+
+$stmtDetalle = oci_parse($conn, $queryDetalle);
+oci_bind_by_name($stmtDetalle, ':es_gerente_detalle', $es_gerente);
+oci_bind_by_name($stmtDetalle, ':fecha_inicial_detalle', $fecha_inicial);
+oci_bind_by_name($stmtDetalle, ':fecha_final_detalle', $fecha_final);
+
+if (in_array($usuario_logueado, ['5333', '5210'])) {
+    oci_bind_by_name($stmtDetalle, ':nombre_gerente_detalle', $nombre_gerente);
+} else {
+    oci_bind_by_name($stmtDetalle, ':nombre_gerente_detalle', $nombre_gerente);
+}
     
     if (!oci_execute($stmtDetalle)) {
         $error = oci_error($stmtDetalle);
@@ -1807,6 +1821,11 @@ try {
 
 
 case 'obtener_resumen_aprobacion_gerente':
+    // Limpiar cualquier output buffer antes de enviar JSON
+    if (ob_get_level()) {
+        ob_clean();
+    }
+    
     $id_solicitud = $_GET['id_solicitud'] ?? $_POST['id_solicitud'];
     
     try {
@@ -1841,8 +1860,9 @@ case 'obtener_resumen_aprobacion_gerente':
             if ($row['COMENTARIO_GERENTE']) {
                 $comentario_completo = $row['COMENTARIO_GERENTE']->read($row['COMENTARIO_GERENTE']->size());
                 $row['COMENTARIO_GERENTE']->free();
-                
-            // 🆕 OBTENER NOMBRE COMPLETO DEL GERENTE
+            }
+            
+            // OBTENER NOMBRE COMPLETO DEL GERENTE
             $nombre_gerente = 'No disponible';
             if (!empty($row['GERENTE'])) {
                 $nombre_gerente = $row['GERENTE'];
@@ -1854,7 +1874,6 @@ case 'obtener_resumen_aprobacion_gerente':
                 ];
                 $nombre_gerente = $gerente_nombres[$row['CODIGO_GERENTE']] ?? 'Gerente código ' . $row['CODIGO_GERENTE'];
             }
-            }
             
             // Extraer solo el comentario limpio
             $comentario_limpio = 'Sin comentario adicional';
@@ -1862,7 +1881,7 @@ case 'obtener_resumen_aprobacion_gerente':
                 // Debug para ver qué contiene
                 error_log("COMENTARIO COMPLETO DEBUG: " . $comentario_completo);
                 
-                // 🆕 MÉTODO MÁS DIRECTO: buscar y extraer solo después de los dos puntos
+                // MÉTODO MÁS DIRECTO: buscar y extraer solo después de los dos puntos
                 if (strpos($comentario_completo, 'Comentario de aprobacion:') !== false) {
                     $comentario_limpio = substr($comentario_completo, strpos($comentario_completo, 'Comentario de aprobacion:') + strlen('Comentario de aprobacion:'));
                     $comentario_limpio = trim($comentario_limpio);
@@ -1899,7 +1918,7 @@ case 'obtener_resumen_aprobacion_gerente':
                     }
                 }
                 
-                // 🆕 ÚLTIMA LIMPIEZA: quitar caracteres extraños y fechas
+                // ÚLTIMA LIMPIEZA: quitar caracteres extraños y fechas
                 $comentario_limpio = str_replace(['?', '??'], '', $comentario_limpio);
                 $comentario_limpio = preg_replace('/\s*Fecha de procesamiento:.*$/', '', $comentario_limpio);
                 $comentario_limpio = trim($comentario_limpio);
@@ -1927,6 +1946,7 @@ case 'obtener_resumen_aprobacion_gerente':
                 }
             }
             
+            ob_clean(); // Limpiar cualquier output previo
             echo json_encode([
                 'success' => true,
                 'solicitud' => [
@@ -1945,14 +1965,19 @@ case 'obtener_resumen_aprobacion_gerente':
                     'fecha_procesamiento' => $row['FECHA_DECISION_FORMATO']
                 ]
             ]);
+            exit; // Evitar que se ejecute código adicional
         } else {
+            ob_clean();
             echo json_encode(['success' => false, 'error' => 'Solicitud no encontrada']);
+            exit;
         }
         
         oci_free_statement($stmt);
         
     } catch (Exception $e) {
+        ob_clean();
         echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        exit;
     }
     
     oci_close($conn);
@@ -2263,7 +2288,7 @@ case 'get_historial_filtrado':
         $joinClause = implode(' ', $joinConditions);
         $whereClause = implode(' AND ', $whereConditions);
         
-        $query = "SELECT 
+        $query = "SELECT DISTINCT
                     h.ID_HISTORICO,
                     h.ID_SOLICITUD,
                     s.NUM_TIENDA,
@@ -2281,7 +2306,7 @@ case 'get_historial_filtrado':
                   LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
                   $joinClause
                   WHERE $whereClause
-                  ORDER BY h.FECHA_CAMBIO DESC";
+                  ORDER BY FECHA_CAMBIO DESC";
         
         error_log("🔍 QUERY FINAL CONSTRUIDO:");
         error_log($query);
