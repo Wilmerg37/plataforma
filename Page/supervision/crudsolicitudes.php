@@ -62,11 +62,20 @@ case 'get_solicitudes':
             exit;
         }
 
-        // Lista de códigos de supervisores
-        $codigos_supervisores = ['5378','5379','6250','6006','5385','5287','5400','5226'];
+        // Lista de códigos de usuarios
+        $codigos_supervisores = ['5378','5379','6250','6006','5385','5287','5400','5226','5139','5142'];
+        $codigos_gerentes = ['5333', '5210']; // Christian Quan y Giovanni Cardoza
+        
         $es_supervisor = in_array($usuario_logueado, $codigos_supervisores);
+        $es_gerente = in_array($usuario_logueado, $codigos_gerentes);
 
-        // ✅ QUERY CON ALIASES MÁS CORTOS
+        // Mapeo de gerentes a nombres
+        $gerente_nombres = [
+            '5333' => 'Christian Quan', 
+            '5210' => 'Giovanni Cardoza'
+        ];
+
+        // Query base común
         $baseQuery = "
             SELECT
                 s.ID_SOLICITUD,
@@ -117,7 +126,7 @@ case 'get_solicitudes':
                     WHERE sc.ID_SOLICITUD = s.ID_SOLICITUD
                     AND sc.ES_ACTIVA = 'Y'
                 ) AS TIENE_SEL,
-                 (
+                (
                     SELECT CASE
                         WHEN COUNT(*) > 0 THEN 1 ELSE 0
                     END
@@ -158,6 +167,7 @@ case 'get_solicitudes':
         ";
 
         if ($es_supervisor) {
+            // Query para supervisores (solo sus propias solicitudes)
             $query = "SELECT * FROM ($baseQuery) A
                       INNER JOIN (
                         SELECT store_no, udf1_string, udf2_string 
@@ -166,13 +176,30 @@ case 'get_solicitudes':
                       ) sp ON A.SOLICITADO_POR = sp.udf2_string AND A.NUM_TIENDA = sp.store_no
                       WHERE sp.udf1_string = :usuario_logueado
                       ORDER BY FECHA_SOL DESC";
-        } else {
-            $query = "$baseQuery ORDER BY s.FECHA_SOLICITUD DESC";
-        }
-
-        $stmt = oci_parse($conn, $query);
-        if ($es_supervisor) {
+                      
+            $stmt = oci_parse($conn, $query);
             oci_bind_by_name($stmt, ':usuario_logueado', $usuario_logueado);
+            
+        } elseif ($es_gerente) {
+            // Query para gerentes (solo supervisores de su región)
+            $nombre_gerente = $gerente_nombres[$usuario_logueado];
+            
+            $query = "SELECT * FROM ($baseQuery) A
+                      INNER JOIN (
+                        SELECT store_no, udf1_string, udf2_string, udf4_string
+                        FROM RPS.STORE 
+                        WHERE sbs_sid = '680861302000159257' 
+                      ) sp ON A.SOLICITADO_POR = sp.udf2_string AND A.NUM_TIENDA = sp.store_no
+                      WHERE UPPER(TRIM(sp.udf4_string)) = UPPER(TRIM(:nombre_gerente))
+                      ORDER BY FECHA_SOL DESC";
+                      
+            $stmt = oci_parse($conn, $query);
+            oci_bind_by_name($stmt, ':nombre_gerente', $nombre_gerente);
+            
+        } else {
+            // Query general para otros usuarios (como RH)
+            $query = "$baseQuery ORDER BY s.FECHA_SOLICITUD DESC";
+            $stmt = oci_parse($conn, $query);
         }
 
         if (!oci_execute($stmt)) {
@@ -217,7 +244,7 @@ case 'get_solicitudes':
         echo json_encode(['success' => false, 'error' => $e->getMessage()]);
     }
     break;
-
+    
         // BUSCAR EMPLEADO POR CÓDIGO CON VALIDACIÓN DE SUPERVISOR
         case 'search_employee':
             if (!isset($_GET['codigo'])) {

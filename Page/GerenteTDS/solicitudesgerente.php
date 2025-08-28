@@ -543,7 +543,7 @@
         <table id="tblSolicitudes" class="table table-modern" style="display: none;">
           <thead>
             <tr>
-              <th width="40"><i class="fas fa-expand-alt"></i></th>
+              <!--<th width="40"><i class="fas fa-expand-alt"></i></th>-->
               <th width="50">Tienda</th>
               <th width="140">Puesto</th>
               <th width="150">Supervisor</th>
@@ -1964,11 +1964,6 @@ let acciones = '';
             }
                 const row = `
                   <tr data-id="${item.ID_SOLICITUD}">
-                    <td>
-                      <button class="btn btn-expand btn-ver-historial" data-id="${item.ID_SOLICITUD}" title="Ver historial">
-                        <i class="fas fa-plus"></i>
-                      </button>
-                    </td>
                     <td><span class="badge badge-primary">${item.NUM_TIENDA}</span></td>
                     <td><strong>${item.PUESTO_SOLICITADO}</strong></td>
                     <td><small class="text-muted">${item.SOLICITADO_POR}</small></td>
@@ -3336,6 +3331,12 @@ $(document).off('click', '.btnProcesarSolicitud').on('click', '.btnProcesarSolic
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px; color: #333;">
             <div>
               <strong><i class="fas fa-hashtag"></i> ID:</strong> ${id}
+            </div>
+            <div>
+              <strong><i class="fas fa-store"></i> Tienda:</strong> ${tienda}
+            </div>
+            <div>
+              <strong><i class="fas fa-briefcase"></i> Puesto:</strong> ${puesto}
             </div>
             <div>
               <strong><i class="fas fa-calendar-alt"></i> Fecha:</strong> ${new Date().toLocaleDateString('es-ES')}

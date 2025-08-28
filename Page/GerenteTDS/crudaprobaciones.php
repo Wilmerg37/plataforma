@@ -204,22 +204,14 @@ function generarExcelHistorial($datos) {
         exit;
     }
     
-    // IMPORTANTE: Ordenar datos por fecha ascendente antes de calcular
-    $datosOrdenados = ordenarDatosPorFecha($datos['datos']);
-    $datos['datos'] = $datosOrdenados;
-    
-    // Calcular estadísticas de tiempo mejoradas
-    $estadisticasTiempo = generarEstadisticasTiempoMejoradas($datos['datos']);
-    
     header('Content-Type: application/vnd.ms-excel; charset=utf-8');
-    header('Content-Disposition: attachment; filename="historial_solicitudes_' . date('Y-m-d_H-i-s') . '.xls"');
+    header('Content-Disposition: attachment; filename="resumen_gerencial_' . date('Y-m-d_H-i-s') . '.xls"');
     header('Cache-Control: max-age=0');
     
     echo '<!DOCTYPE html>
     <html>
     <head>
         <meta charset="UTF-8">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         <style>
             body { 
                 font-family: Arial, sans-serif; 
@@ -232,21 +224,7 @@ function generarExcelHistorial($datos) {
                 border-bottom: 2px solid #333;
                 margin-bottom: 15px;
             }
-            .header-content {
-                display: inline-block;
-                vertical-align: middle;
-            }
-            .logo-text { 
-                display: inline-block;
-                vertical-align: middle;
-                font-size: 24px;
-                font-weight: bold;
-                color: #000;
-                margin-right: 25px;
-            }
             .title { 
-                display: inline-block;
-                vertical-align: middle;
                 font-size: 18px; 
                 font-weight: bold; 
                 color: #333;
@@ -261,16 +239,6 @@ function generarExcelHistorial($datos) {
                 font-size: 10px;
                 margin-bottom: 15px;
                 text-align: center;
-            }
-            .orden-nota {
-                background-color: #fff3cd;
-                border: 2px solid #ffc107;
-                padding: 10px;
-                margin: 15px 0;
-                border-radius: 5px;
-                text-align: center;
-                font-weight: bold;
-                color: #856404;
             }
             table { 
                 border-collapse: collapse; 
@@ -287,7 +255,7 @@ function generarExcelHistorial($datos) {
                 font-size: 12px;
             }
             td { 
-                padding: 8px 8px;
+                padding: 8px;
                 border: 1px solid #4A90E2;
                 text-align: left;
                 font-size: 12px;
@@ -299,178 +267,75 @@ function generarExcelHistorial($datos) {
             .fila-impar {
                 background-color: #fafffe;
             }
-            .col-azul {
-                border-left: 3px solid #4A90E2;
-            }
-            .col-verde {
-                border-left: 3px solid #4ECDC4;
-            }
-            .tiempo-transcurrido { 
-                background-color: #fff3cd; 
-                font-weight: bold; 
-                color: #856404; 
-                text-align: center;
-                font-size: 11px;
-            }
-            .primer-registro {
-                background-color: #d4edda;
-                color: #155724;
-                text-align: center;
-                font-weight: bold;
-            }
-            .estadisticas-tiempo {
-                background-color: #e8f5e8;
-                border: 2px solid #4CAF50;
-                padding: 15px;
-                margin: 20px auto;
-                border-radius: 5px;
-                width: 60%;
-            }
         </style>
     </head>
     <body>';
     
     // HEADER
     echo '<div class="header-container">
-        <div class="header-content">
-            <span class="logo-text">ROY</span>
-            <span class="title">' . htmlspecialchars($datos['titulo_reporte']) . '</span>
-        </div>
+        <div class="title">ROY Historial General de Solicitudes</div>
     </div>';
     
-    echo '<div class="filters">' . htmlspecialchars($datos['subtitulo']) . '</div>';
+    echo '<div class="filters">Período: ' . htmlspecialchars($datos['periodo']) . '</div>';
     
     echo '<div class="info-row">
         <strong>Período:</strong> ' . htmlspecialchars($datos['periodo']) . ' | 
         <strong>Total de registros:</strong> ' . $datos['registros'] . ' | 
-        <strong>Fecha de generación:</strong> ' . date('d/m/Y H:i:s') . '
+        <strong>Fecha de generación:</strong> ' . date('d/m/Y H:i:s', time() - (6 * 3600)) . '
     </div>';
 
-    // RESUMEN SI ES REPORTE GENERAL
-    if ($datos['tipo_reporte'] === 'general' && isset($datos['resumen'])) {
+    // RESUMEN ESTADÍSTICO
+    if (isset($datos['resumen'])) {
         echo '<table style="margin-bottom: 15px; width: 60%; margin-left: auto; margin-right: auto;">
             <tr><th colspan="2">RESUMEN ESTADÍSTICO</th></tr>
-            <tr class="fila-par"><td style="padding: 8px;"><strong>Total de cambios</strong></td><td style="text-align: center;">' . $datos['resumen']['total_cambios'] . '</td></tr>
-            <tr class="fila-impar"><td style="padding: 8px;"><strong>Solicitudes afectadas</strong></td><td style="text-align: center;">' . $datos['resumen']['solicitudes_afectadas'] . '</td></tr>
-            <tr class="fila-par"><td style="padding: 8px;"><strong>Tiendas afectadas</strong></td><td style="text-align: center;">' . $datos['resumen']['tiendas_afectadas'] . '</td></tr>
-            <tr class="fila-impar"><td style="padding: 8px;"><strong>Supervisores afectados</strong></td><td style="text-align: center;">' . $datos['resumen']['supervisores_afectados'] . '</td></tr>
+            <tr class="fila-par"><td style="padding: 8px;"><strong>Solicitudes afectadas</strong></td><td style="text-align: center;">' . $datos['resumen']['solicitudes_afectadas'] . '</td></tr>
+            <tr class="fila-impar"><td style="padding: 8px;"><strong>Tiendas afectadas</strong></td><td style="text-align: center;">' . $datos['resumen']['tiendas_afectadas'] . '</td></tr>
+            <tr class="fila-par"><td style="padding: 8px;"><strong>Supervisores afectados</strong></td><td style="text-align: center;">' . $datos['resumen']['supervisores_afectados'] . '</td></tr>
         </table>';
     }
     
-    // TABLA PRINCIPAL CON TIEMPO CONSECUTIVO
+    // TABLA PRINCIPAL - UNA FILA POR SOLICITUD
     echo '<table>
         <thead>
-            <tr>';
-    
-    foreach ($datos['headers_excel'] as $header) {
-        echo '<th>' . htmlspecialchars($header) . '</th>';
-    }
-    echo '<th style="background-color: #FF6B6B;"><i class="fas fa-clock"></i> Tiempo Transcurrido</th>';
-    
-    echo '</tr>
+            <tr>
+                <th>ID Solicitud</th>
+                <th>Tienda</th>
+                <th>Puesto</th>
+                <th>Supervisor</th>
+                <th>Aprobación</th>
+                <th>Comentario de aprobación</th>
+                <th>Estado Anterior</th>
+                <th>Estado Nuevo</th>
+                <th>Comentario de rh</th>
+                <th>Responsable del estado actual</th>
+                <th>Fecha de solicitud</th>
+                <th>Fecha Ultimo Cambio</th>
+                <th>Tiempo transcurrido desde la aprobacion de la solicitud</th>
+            </tr>
         </thead>
         <tbody>';
     
     foreach ($datos['datos'] as $rowIndex => $registro) {
         $filaClass = ($rowIndex % 2 == 0) ? 'fila-par' : 'fila-impar';
         
-        // Calcular tiempo desde el cambio anterior (ahora que están ordenados correctamente)
-        $fechaAnterior = ($rowIndex > 0) ? $datos['datos'][$rowIndex - 1]['FECHA_CAMBIO'] : '';
-        $tiempoTranscurrido = calcularTiempoConsecutivoCompleto($fechaAnterior, $registro['FECHA_CAMBIO']);
-        
-        // Determinar si es el primer registro
-        $esPrimerRegistro = ($rowIndex === 0);
-        $tiempoClass = $esPrimerRegistro ? 'primer-registro' : 'tiempo-transcurrido';
-        
         echo '<tr class="' . $filaClass . '">
-            <td class="col-azul">' . htmlspecialchars($registro['ID_SOLICITUD']) . '</td>
-            <td class="col-verde">' . htmlspecialchars($registro['NUM_TIENDA']) . '</td>
-            <td class="col-azul">' . htmlspecialchars($registro['PUESTO_SOLICITADO']) . '</td>
-            <td class="col-verde">' . htmlspecialchars($registro['SOLICITADO_POR']) . '</td>
-            <td class="col-verde">' . htmlspecialchars($registro['ESTADO_ANTERIOR']) . '</td>
-            <td class="col-azul">' . htmlspecialchars($registro['ESTADO_NUEVO']) . '</td>
-            <td class="col-verde">' . htmlspecialchars($registro['APROBACION_ANTERIOR']) . '</td>
-            <td class="col-azul">' . htmlspecialchars($registro['APROBACION_NUEVA']) . '</td>
-            <td class="col-verde">' . htmlspecialchars($registro['COMENTARIO_NUEVO']) . '</td>
-            <td class="col-azul">' . htmlspecialchars($registro['FECHA_CAMBIO']) . '</td>
-            <td class="' . $tiempoClass . '">' . htmlspecialchars($tiempoTranscurrido) . '</td>
+            <td>' . htmlspecialchars($registro['ID_SOLICITUD']) . '</td>
+            <td>' . htmlspecialchars($registro['NUM_TIENDA']) . '</td>
+            <td>' . htmlspecialchars($registro['PUESTO_SOLICITADO']) . '</td>
+            <td>' . htmlspecialchars($registro['SOLICITADO_POR']) . '</td>
+            <td>' . htmlspecialchars($registro['ESTADO_APROBACION']) . '</td>
+            <td>' . htmlspecialchars($registro['COMENTARIO_APROBACION']) . '</td>
+            <td>' . htmlspecialchars($registro['ESTADO_ANTERIOR']) . '</td>
+            <td>' . htmlspecialchars($registro['ESTADO_NUEVO']) . '</td>
+            <td>' . htmlspecialchars($registro['COMENTARIO_NUEVO']) . '</td>
+            <td>' . htmlspecialchars($registro['RESPONSABLE_ACTUAL']) . '</td>
+            <td>' . htmlspecialchars($registro['FECHA_SOLICITUD']) . '</td>
+            <td>' . htmlspecialchars($registro['FECHA_CAMBIO']) . '</td>
+            <td>' . htmlspecialchars($registro['TIEMPO_TRANSCURRIDO']) . '</td>
         </tr>';
     }
     
     echo '</tbody>
-    </table>';
-    
-    // ✅ AGREGAR FILA DE TIEMPO TOTAL TRANSCURRIDO
-    echo '<table style="width: 100%; margin-bottom: 20px;">
-        <tr>
-            <td colspan="10" style="text-align: right; font-weight: bold; background-color: #e8f4f8; padding: 10px; border: 2px solid #4A90E2;">
-                TIEMPO TOTAL TRANSCURRIDO:
-            </td>
-            <td style="text-align: center; font-weight: bold; background-color: #fff3cd; color: #856404; padding: 10px; border: 2px solid #FF6B6B;">
-                ' . htmlspecialchars($estadisticasTiempo['tiempo_total']) . '
-            </td>
-        </tr>
-    </table>';
-    
-    // ESTADÍSTICAS DE TIEMPO CENTRADAS - MOVIDO MÁS AL CENTRO
-    echo '<br><br>
-    <table style="width: 100%; border-collapse: collapse;">
-        <tr>
-            <td colspan="11" style="text-align: center; font-size: 16px; font-weight: bold; color: #2E7D32; padding: 15px; background-color: #f8f9fa; border: 1px solid #ddd;">
-                ANÁLISIS DE TIEMPO TRANSCURRIDO
-            </td>
-        </tr>
-    </table>
-    
-    <table style="width: 100%; border-collapse: collapse;">
-        <tr>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 16.67%; padding: 8px; border: 2px solid #4CAF50; background-color: #e8f5e8; font-weight: bold; font-size: 12px;">Cambio más antiguo:</td>
-            <td style="width: 16.67%; padding: 8px; border: 2px solid #4CAF50; background-color: white; text-align: center; font-size: 12px;">' . htmlspecialchars($estadisticasTiempo['fecha_mas_antiguo']) . '</td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-        </tr>
-        <tr>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 16.67%; padding: 8px; border: 2px solid #4CAF50; background-color: #e8f5e8; font-weight: bold; font-size: 12px;">Cambio más reciente:</td>
-            <td style="width: 16.67%; padding: 8px; border: 2px solid #4CAF50; background-color: white; text-align: center; font-size: 12px;">' . htmlspecialchars($estadisticasTiempo['fecha_mas_reciente']) . '</td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-        </tr>
-        <tr>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 16.67%; padding: 8px; border: 2px solid #4CAF50; background-color: #e8f5e8; font-weight: bold; font-size: 12px;">Tiempo total entre cambios:</td>
-            <td style="width: 16.67%; padding: 8px; border: 2px solid #4CAF50; background-color: white; text-align: center; font-size: 12px;">' . htmlspecialchars($estadisticasTiempo['tiempo_total']) . '</td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-        </tr>
-        <tr>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 16.67%; padding: 8px; border: 2px solid #4CAF50; background-color: #e8f5e8; font-weight: bold; font-size: 12px;">Tiempo promedio entre cambios:</td>
-            <td style="width: 16.67%; padding: 8px; border: 2px solid #4CAF50; background-color: white; text-align: center; font-size: 12px;">' . htmlspecialchars($estadisticasTiempo['promedio_real']) . '</td>
-            <td style="width: 8.33%;"></td>
-            <td style="width: 8.33%;"></td>
-        </tr>
     </table>';
     
     echo '</body>
@@ -478,7 +343,6 @@ function generarExcelHistorial($datos) {
     
     exit;
 }
-
 // ✅ FUNCIÓN PDF COMPLETA CORREGIDA (similar implementación)
 function generarPDFHistorial($datos) {
     if (!isset($datos['datos']) || empty($datos['datos'])) {
@@ -486,21 +350,13 @@ function generarPDFHistorial($datos) {
         exit;
     }
     
-    // IMPORTANTE: Ordenar datos por fecha ascendente antes de calcular
-    $datosOrdenados = ordenarDatosPorFecha($datos['datos']);
-    $datos['datos'] = $datosOrdenados;
-    
-    // Calcular estadísticas de tiempo mejoradas
-    $estadisticasTiempo = generarEstadisticasTiempoMejoradas($datos['datos']);
-    
     header('Content-Type: text/html; charset=UTF-8');
     
     echo '<!DOCTYPE html>
     <html>
     <head>
         <meta charset="UTF-8">
-        <title>' . $datos['titulo_reporte'] . '</title>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <title>ROY Historial General de Solicitudes</title>
         <style>
             body { 
                 font-family: Arial, sans-serif; 
@@ -514,11 +370,6 @@ function generarPDFHistorial($datos) {
                 margin-bottom: 20px;
                 border-bottom: 2px solid #333;
                 padding-bottom: 15px;
-            }
-            .header img {
-                height: 50px;
-                margin-right: 15px;
-                vertical-align: middle;
             }
             .logo-text {
                 font-size: 24px;
@@ -542,16 +393,7 @@ function generarPDFHistorial($datos) {
                 padding: 10px;
                 border-radius: 5px;
                 margin-bottom: 20px;
-            }
-            .orden-nota {
-                background-color: #fff3cd;
-                border: 2px solid #ffc107;
-                padding: 10px;
-                margin: 15px 0;
-                border-radius: 5px;
                 text-align: center;
-                font-weight: bold;
-                color: #856404;
             }
             .resumen {
                 display: flex;
@@ -577,11 +419,11 @@ function generarPDFHistorial($datos) {
                 width: 100%;
                 border-collapse: collapse;
                 margin-bottom: 20px;
-                font-size: 10px;
+                font-size: 8px;
             }
             th, td {
                 border: 1px solid #ddd;
-                padding: 6px;
+                padding: 4px;
                 text-align: left;
             }
             th {
@@ -592,26 +434,6 @@ function generarPDFHistorial($datos) {
             }
             tr:nth-child(even) {
                 background-color: #f9f9f9;
-            }
-            .tiempo-transcurrido {
-                background-color: #fff3cd;
-                font-weight: bold;
-                color: #856404;
-                text-align: center;
-            }
-            .primer-registro {
-                background-color: #d4edda;
-                color: #155724;
-                text-align: center;
-                font-weight: bold;
-            }
-            .estadisticas-tiempo {
-                background-color: #e8f5e8;
-                border: 2px solid #4CAF50;
-                padding: 15px;
-                margin: 20px auto;
-                border-radius: 5px;
-                width: 60%;
             }
             .footer {
                 margin-top: 30px;
@@ -637,135 +459,84 @@ function generarPDFHistorial($datos) {
     <body>
         <div class="header">
             <img src="logo3.png" alt="Logo ROY" style="height: 50px; margin-right: 15px; vertical-align: middle;">
-            <div>
-                <div class="titulo">' . htmlspecialchars($datos['titulo_reporte']) . '</div>
-            </div>
+            <div class="titulo">Historial General de Solicitudes</div>
         </div>
         
-        <div class="subtitulo">' . htmlspecialchars($datos['subtitulo']) . '</div>
+        <div class="subtitulo">Período: ' . htmlspecialchars($datos['periodo']) . '</div>
         
         <div class="info">
-            <strong>Período:</strong> ' . htmlspecialchars($datos['periodo']) . '<br>
-            <strong>Total de registros:</strong> ' . $datos['registros'] . '<br>
-            <strong>Fecha de generación:</strong> ' . date('d/m/Y H:i:s') . '
-        </div>
-        
-        <div class="orden-nota">
-            <i class="fas fa-info-circle"></i> 
-            <strong>NOTA:</strong> Los datos han sido ordenados cronológicamente (más antiguo primero) para calcular correctamente el tiempo transcurrido entre cambios consecutivos.
+            <strong>Período:</strong> ' . htmlspecialchars($datos['periodo']) . ' | 
+            <strong>Total de registros:</strong> ' . $datos['registros'] . ' | 
+            <strong>Fecha de generación:</strong> ' . date('d/m/Y H:i:s', time() - (6 * 3600)) . '
         </div>';
     
-    // Mostrar resumen si es reporte general
-    if ($datos['tipo_reporte'] === 'general' && isset($datos['resumen'])) {
-        echo '<div class="resumen">
-            <div class="resumen-item">
-                <div class="resumen-numero">' . $datos['resumen']['total_cambios'] . '</div>
-                <div class="resumen-texto">Total de Cambios</div>
-            </div>
-            <div class="resumen-item">
-                <div class="resumen-numero">' . $datos['resumen']['solicitudes_afectadas'] . '</div>
-                <div class="resumen-texto">Solicitudes Afectadas</div>
-            </div>
-            <div class="resumen-item">
-                <div class="resumen-numero">' . $datos['resumen']['tiendas_afectadas'] . '</div>
-                <div class="resumen-texto">Tiendas Afectadas</div>
-            </div>
-            <div class="resumen-item">
-                <div class="resumen-numero">' . $datos['resumen']['supervisores_afectados'] . '</div>
-                <div class="resumen-texto">Supervisores Afectados</div>
-            </div>
-        </div>';
+    // Mostrar resumen si existe
+    if (isset($datos['resumen'])) {
+        echo '<table style="margin-bottom: 15px; width: 60%; margin-left: auto; margin-right: auto;">
+            <tr><th colspan="2">RESUMEN ESTADÍSTICO</th></tr>
+            <tr style="background-color: #f0f8ff;"><td style="padding: 8px;"><strong>Solicitudes afectadas</strong></td><td style="text-align: center;">' . $datos['resumen']['solicitudes_afectadas'] . '</td></tr>
+            <tr style="background-color: #fafffe;"><td style="padding: 8px;"><strong>Tiendas afectadas</strong></td><td style="text-align: center;">' . $datos['resumen']['tiendas_afectadas'] . '</td></tr>
+            <tr style="background-color: #f0f8ff;"><td style="padding: 8px;"><strong>Supervisores afectados</strong></td><td style="text-align: center;">' . $datos['resumen']['supervisores_afectados'] . '</td></tr>
+        </table>';
     }
     
-    // Tabla de datos con tiempo consecutivo
+    // Tabla de datos - UNA FILA POR SOLICITUD
     echo '<table>
         <thead>
             <tr>
-                <th>ID</th>
+                <th>ID Solicitud</th>
                 <th>Tienda</th>
                 <th>Puesto</th>
                 <th>Supervisor</th>
+                <th>Aprobación</th>
+                <th>Comentario de aprobación</th>
                 <th>Estado Anterior</th>
                 <th>Estado Nuevo</th>
-                <th>Aprob. Anterior</th>
-                <th>Aprob. Nueva</th>
-                <th>Comentario</th>
-                <th>Fecha</th>
-                <th><i class="fas fa-clock"></i> Tiempo Transcurrido</th>
+                <th>Comentario de rh</th>
+                <th>Responsable del estado actual</th>
+                <th>Fecha de solicitud</th>
+                <th>Fecha Ultimo Cambio</th>
+                <th>Tiempo transcurrido desde la aprobacion de la solicitud</th>
             </tr>
         </thead>
         <tbody>';
     
-    foreach ($datos['datos'] as $rowIndex => $registro) {
-        // Calcular tiempo desde el cambio anterior (ahora que están ordenados correctamente)
-        $fechaAnterior = ($rowIndex > 0) ? $datos['datos'][$rowIndex - 1]['FECHA_CAMBIO'] : '';
-        $tiempoTranscurrido = calcularTiempoConsecutivoCompleto($fechaAnterior, $registro['FECHA_CAMBIO']);
-        
-        // Determinar si es el primer registro
-        $esPrimerRegistro = ($rowIndex === 0);
-        $tiempoClass = $esPrimerRegistro ? 'primer-registro' : 'tiempo-transcurrido';
-        
+    foreach ($datos['datos'] as $registro) {
         echo '<tr>
             <td>' . htmlspecialchars($registro['ID_SOLICITUD']) . '</td>
             <td>' . htmlspecialchars($registro['NUM_TIENDA']) . '</td>
             <td>' . htmlspecialchars($registro['PUESTO_SOLICITADO']) . '</td>
             <td>' . htmlspecialchars($registro['SOLICITADO_POR']) . '</td>
+            <td>' . htmlspecialchars($registro['ESTADO_APROBACION']) . '</td>
+            <td>' . htmlspecialchars($registro['COMENTARIO_APROBACION']) . '</td>
             <td>' . htmlspecialchars($registro['ESTADO_ANTERIOR']) . '</td>
             <td>' . htmlspecialchars($registro['ESTADO_NUEVO']) . '</td>
-            <td>' . htmlspecialchars($registro['APROBACION_ANTERIOR']) . '</td>
-            <td>' . htmlspecialchars($registro['APROBACION_NUEVA']) . '</td>
             <td>' . htmlspecialchars($registro['COMENTARIO_NUEVO']) . '</td>
+            <td>' . htmlspecialchars($registro['RESPONSABLE_ACTUAL']) . '</td>
+            <td>' . htmlspecialchars($registro['FECHA_SOLICITUD']) . '</td>
             <td>' . htmlspecialchars($registro['FECHA_CAMBIO']) . '</td>
-            <td class="' . $tiempoClass . '">' . htmlspecialchars($tiempoTranscurrido) . '</td>
+            <td>' . htmlspecialchars($registro['TIEMPO_TRANSCURRIDO']) . '</td>
         </tr>';
     }
     
     echo '</tbody>
-    </table>';
-    
-    // Estadísticas de tiempo centradas
-    echo '<div style="text-align: center; margin: 30px 0;">
-        <h3 style="color: #2E7D32;"><i class="fas fa-chart-bar"></i> ANÁLISIS DE TIEMPO TRANSCURRIDO</h3>
-    </div>
-    
-    <div class="estadisticas-tiempo">
-        <table style="width: 100%; background-color: white; margin: 0;">
-            <tr>
-                <td style="padding: 10px;"><strong><i class="fas fa-calendar-alt"></i> Cambio más antiguo:</strong></td>
-                <td style="padding: 10px;">' . htmlspecialchars($estadisticasTiempo['fecha_mas_antiguo']) . '</td>
-            </tr>
-            <tr>
-                <td style="padding: 10px;"><strong><i class="fas fa-calendar-check"></i> Cambio más reciente:</strong></td>
-                <td style="padding: 10px;">' . htmlspecialchars($estadisticasTiempo['fecha_mas_reciente']) . '</td>
-            </tr>
-            <tr>
-                <td style="padding: 10px;"><strong><i class="fas fa-calculator"></i> Tiempo total entre cambios:</strong></td>
-                <td style="padding: 10px;">' . htmlspecialchars($estadisticasTiempo['tiempo_total']) . '</td>
-            </tr>
-            <tr>
-                <td style="padding: 10px;"><strong><i class="fas fa-clock"></i> Tiempo promedio entre cambios:</strong></td>
-                <td style="padding: 10px;">' . htmlspecialchars($estadisticasTiempo['promedio_real']) . '</td>
-            </tr>
-        </table>
-    </div>
+    </table>
     
     <div class="footer">
         <p>Reporte generado por Sistema ROY - ' . date('d/m/Y H:i:s') . '</p>
         <p class="no-print">
-            <button onclick="window.print()"><i class="fas fa-print"></i> Imprimir / Guardar como PDF</button>
-            <button onclick="window.close()"><i class="fas fa-times"></i> Cerrar</button>
+            <button onclick="window.print()">Imprimir / Guardar como PDF</button>
+            <button onclick="window.close()">Cerrar</button>
         </p>
     </div>
     
     </body>
     </html>';
-    
     exit;
 }
-
 function generarReporteFiltrado($conn, $fecha_inicial, $fecha_final, $filtro_tienda, $filtro_supervisor, $filtro_puesto, $incluir_aprobaciones, $incluir_estados, $usuario_logueado) {
     
-    //  OBTENER NOMBRE DEL SUPERVISOR SI SE FILTRA POR CÓDIGO
+    // OBTENER NOMBRE DEL SUPERVISOR SI SE FILTRA POR CÓDIGO
     $nombre_supervisor_filtrado = '';
     $codigo_supervisor_real = '';
     if (!empty($filtro_supervisor)) {
@@ -782,18 +553,18 @@ function generarReporteFiltrado($conn, $fecha_inicial, $fecha_final, $filtro_tie
         if ($rowSup = oci_fetch_assoc($stmtNombreSup)) {
             $nombre_supervisor_filtrado = trim($rowSup['NOMBRE']);
             $codigo_supervisor_real = trim($rowSup['CODIGO']);
-            error_log("✅ Supervisor para reporte - Código: $codigo_supervisor_real, Nombre: $nombre_supervisor_filtrado");
         } else {
             return ['error' => 'No se encontró supervisor con código: ' . $filtro_supervisor];
         }
         oci_free_statement($stmtNombreSup);
     }
     
-    //CONSTRUIR QUERY PARA REPORTE FILTRADO
+    // CONSTRUIR QUERY FILTRADO BASADO EN SOLICITUDES (NO HISTORIAL)
     $whereConditions = [];
     $joinConditions = [];
     
-    $whereConditions[] = "h.FECHA_CAMBIO BETWEEN TO_DATE(:fecha_inicial, 'YYYY-MM-DD') AND TO_DATE(:fecha_final, 'YYYY-MM-DD') + 1";
+    // Filtro por fecha de solicitud (no de cambio)
+    $whereConditions[] = "s.FECHA_SOLICITUD BETWEEN TO_DATE(:fecha_inicial, 'YYYY-MM-DD') AND TO_DATE(:fecha_final, 'YYYY-MM-DD') + 1";
     
     // Filtro de usuario (gerentes)
     if (in_array($usuario_logueado, ['5333', '5210'])) {
@@ -819,25 +590,47 @@ function generarReporteFiltrado($conn, $fecha_inicial, $fecha_final, $filtro_tie
     $joinClause = implode(' ', $joinConditions);
     $whereClause = implode(' AND ', $whereConditions);
     
-    $query = "SELECT DISTINCT
-                h.ID_HISTORICO,
-                h.ID_SOLICITUD,
+    // QUERY PRINCIPAL SIMILAR AL REPORTE GENERAL
+    $query = "SELECT
+                s.ID_SOLICITUD,
                 s.NUM_TIENDA,
                 s.PUESTO_SOLICITADO,
                 s.SOLICITADO_POR,
-                h.ESTADO_ANTERIOR,
-                h.ESTADO_NUEVO,
-                h.APROBACION_ANTERIOR,
-                h.APROBACION_NUEVA,
-                h.COMENTARIO_NUEVO,
-                TO_CHAR(h.FECHA_CAMBIO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_CAMBIO,
-                rps_info.udf1_string as CODIGO_SUPERVISOR
-              FROM ROY_HISTORICO_SOLICITUD h
-              INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
-              LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
-              $joinClause
-              WHERE $whereClause
-              ORDER BY FECHA_CAMBIO DESC";
+                s.ESTADO_SOLICITUD as ESTADO_ACTUAL,
+                s.ESTADO_APROBACION,
+                s.DIRIGIDO_RH,
+                TO_CHAR(s.FECHA_SOLICITUD, 'DD-MM-YYYY') AS FECHA_SOLICITUD,
+                
+                -- Comentario general del último historial
+                (SELECT COMENTARIO_NUEVO 
+                 FROM ROY_HISTORICO_SOLICITUD h3 
+                 WHERE h3.ID_SOLICITUD = s.ID_SOLICITUD 
+                 AND h3.FECHA_CAMBIO = (SELECT MAX(FECHA_CAMBIO) FROM ROY_HISTORICO_SOLICITUD h4 WHERE h4.ID_SOLICITUD = s.ID_SOLICITUD)
+                 AND ROWNUM = 1) AS COMENTARIO_GENERAL,
+                
+                -- Fecha del último cambio
+                TO_CHAR(NVL((SELECT MAX(FECHA_CAMBIO) FROM ROY_HISTORICO_SOLICITUD h5 WHERE h5.ID_SOLICITUD = s.ID_SOLICITUD), s.FECHA_SOLICITUD), 'DD-MM-YYYY HH24:MI:SS') AS FECHA_ULTIMO_CAMBIO,
+                
+                -- Estado anterior del último historial
+                NVL((SELECT ESTADO_ANTERIOR 
+                     FROM ROY_HISTORICO_SOLICITUD h6 
+                     WHERE h6.ID_SOLICITUD = s.ID_SOLICITUD 
+                     AND h6.FECHA_CAMBIO = (SELECT MAX(FECHA_CAMBIO) FROM ROY_HISTORICO_SOLICITUD h7 WHERE h7.ID_SOLICITUD = s.ID_SOLICITUD)
+                     AND ROWNUM = 1), 'Estado Inicial') AS ESTADO_ANTERIOR,
+                
+                -- Información de aprobación gerencial
+                ag.DECISION,
+                ag.GERENTE,
+                ag.COMENTARIO_GERENTE
+                
+             FROM ROY_SOLICITUD_PERSONAL s
+             
+             -- JOIN para comentarios de aprobación gerencial
+             LEFT JOIN ROY_APROBACIONES_GERENCIA ag ON s.ID_SOLICITUD = ag.ID_SOLICITUD
+             
+             $joinClause
+             WHERE $whereClause
+             ORDER BY s.FECHA_SOLICITUD DESC";
     
     $stmt = oci_parse($conn, $query);
     
@@ -869,21 +662,34 @@ function generarReporteFiltrado($conn, $fecha_inicial, $fecha_final, $filtro_tie
         return ['error' => 'Error en consulta filtrada: ' . $error['message']];
     }
     
-    $historial = [];
+    $solicitudes = [];
     while ($row = oci_fetch_assoc($stmt)) {
-        $incluir_registro = false;
         
-        if ($incluir_aprobaciones && $incluir_estados) {
-            $incluir_registro = true;
-        } elseif ($incluir_aprobaciones && !$incluir_estados) {
-            $incluir_registro = ($row['APROBACION_ANTERIOR'] !== $row['APROBACION_NUEVA']);
-        } elseif (!$incluir_aprobaciones && $incluir_estados) {
-            $incluir_registro = ($row['ESTADO_ANTERIOR'] !== $row['ESTADO_NUEVO']);
-        }
+        // Procesar CLOB de comentario de aprobación
+        $comentario_aprobacion = obtenerComentarioAprobacion($conn, $row['ID_SOLICITUD']);
         
-        if ($incluir_registro) {
-            $historial[] = $row;
-        }
+        // Calcular tiempo transcurrido desde aprobación hasta HOY
+        $tiempoTranscurrido = calcularTiempoTranscurridoDesdeAprobacion($conn, $row['ID_SOLICITUD']);
+        
+        // Determinar responsable del estado actual
+        $responsable = determinarResponsableEstadoActual($row['ESTADO_ACTUAL'], $row['DIRIGIDO_RH'], $row['SOLICITADO_POR'], $conn);
+        
+        $solicitudes[] = [
+            'ID_SOLICITUD' => $row['ID_SOLICITUD'],
+            'NUM_TIENDA' => $row['NUM_TIENDA'],
+            'PUESTO_SOLICITADO' => $row['PUESTO_SOLICITADO'],
+            'SOLICITADO_POR' => $row['SOLICITADO_POR'],
+            'ESTADO_APROBACION' => $row['ESTADO_APROBACION'] ?: 'Por Aprobar',
+            'ESTADO_ANTERIOR' => $row['ESTADO_ANTERIOR'] ?: 'Estado Inicial',
+            'ESTADO_NUEVO' => $row['ESTADO_ACTUAL'],
+            'RESPONSABLE_ACTUAL' => $responsable,
+            'COMENTARIO_NUEVO' => $row['COMENTARIO_GENERAL'] ?: 'Sin comentarios',
+            'COMENTARIO_APROBACION' => $comentario_aprobacion,
+            'DECISION_GERENTE' => $row['DECISION'] ?: 'Pendiente',
+            'FECHA_SOLICITUD' => $row['FECHA_SOLICITUD'],
+            'FECHA_CAMBIO' => $row['FECHA_ULTIMO_CAMBIO'],
+            'TIEMPO_TRANSCURRIDO' => $tiempoTranscurrido
+        ];
     }
     
     oci_free_statement($stmt);
@@ -897,12 +703,12 @@ function generarReporteFiltrado($conn, $fecha_inicial, $fecha_final, $filtro_tie
     return [
         'success' => true,
         'tipo_reporte' => 'filtrado',
-        'registros' => count($historial),
+        'registros' => count($solicitudes),
         'filtros_aplicados' => $filtros_aplicados,
         'periodo' => "$fecha_inicial - $fecha_final",
         'fecha_inicial' => $fecha_inicial,
         'fecha_final' => $fecha_final,
-        'datos' => $historial,
+        'datos' => $solicitudes,
         'incluye_aprobaciones' => $incluir_aprobaciones,
         'incluye_estados' => $incluir_estados,
         'titulo_reporte' => 'Historial Filtrado de Solicitudes',
@@ -914,9 +720,9 @@ function generarReporteFiltrado($conn, $fecha_inicial, $fecha_final, $filtro_tie
             'SOLICITADO_POR' => 'Supervisor',
             'ESTADO_ANTERIOR' => 'Estado Anterior',
             'ESTADO_NUEVO' => 'Estado Nuevo',
-            'APROBACION_ANTERIOR' => 'Aprobación Anterior',
-            'APROBACION_NUEVA' => 'Aprobación Nueva',
-            'COMENTARIO_NUEVO' => 'Comentario',
+            'RESPONSABLE_ACTUAL' => 'Responsable Actual',
+            'COMENTARIO_NUEVO' => 'Comentario General',
+            'COMENTARIO_APROBACION' => 'Comentario de Aprobación',
             'FECHA_CAMBIO' => 'Fecha Cambio'
         ]
     ];
@@ -928,7 +734,8 @@ function generarReporteGeneral($conn, $fecha_inicial, $fecha_final, $incluir_apr
     $whereConditions = [];
     $joinConditions = [];
     
-    $whereConditions[] = "h.FECHA_CAMBIO BETWEEN TO_DATE(:fecha_inicial, 'YYYY-MM-DD') AND TO_DATE(:fecha_final, 'YYYY-MM-DD') + 1";
+    // Filtro por fecha de solicitud
+    $whereConditions[] = "s.FECHA_SOLICITUD BETWEEN TO_DATE(:fecha_inicial, 'YYYY-MM-DD') AND TO_DATE(:fecha_final, 'YYYY-MM-DD') + 1";
     
     // Filtro de usuario (gerentes)
     if (in_array($usuario_logueado, ['5333', '5210'])) {
@@ -941,97 +748,113 @@ function generarReporteGeneral($conn, $fecha_inicial, $fecha_final, $incluir_apr
     $joinClause = implode(' ', $joinConditions);
     $whereClause = implode(' AND ', $whereConditions);
     
-    // QUERY PARA RESUMEN GENERAL
-// QUERY PARA RESUMEN GENERAL
-$queryResumen = "SELECT 
-                    COUNT(DISTINCT h.ID_HISTORICO) as TOTAL_CAMBIOS,
-                    COUNT(DISTINCT s.ID_SOLICITUD) as SOLICITUDES_AFECTADAS,
-                    COUNT(DISTINCT s.NUM_TIENDA) as TIENDAS_AFECTADAS,
-                    COUNT(DISTINCT s.SOLICITADO_POR) as SUPERVISORES_AFECTADOS
-                 FROM ROY_HISTORICO_SOLICITUD h
-                 INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
-                 LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
-                 WHERE h.FECHA_CAMBIO BETWEEN TO_DATE(:fecha_inicial, 'YYYY-MM-DD') AND TO_DATE(:fecha_final, 'YYYY-MM-DD') + 1
-                 AND (
-                     :es_gerente_resumen = 0 
-                     OR UPPER(TRIM(rps_info.udf4_string)) = UPPER(TRIM(:nombre_gerente_resumen))
-                 )";
-
-$stmtResumen = oci_parse($conn, $queryResumen);
-$es_gerente = in_array($usuario_logueado, ['5333', '5210']) ? 1 : 0;
-oci_bind_by_name($stmtResumen, ':es_gerente_resumen', $es_gerente);
-oci_bind_by_name($stmtResumen, ':fecha_inicial', $fecha_inicial);
-oci_bind_by_name($stmtResumen, ':fecha_final', $fecha_final);
-
-if (in_array($usuario_logueado, ['5333', '5210'])) {
-    $gerente_nombres = ['5333' => 'Christian Quan', '5210' => 'Giovanni Cardoza'];
-    $nombre_gerente = $gerente_nombres[$usuario_logueado];
-    oci_bind_by_name($stmtResumen, ':nombre_gerente_resumen', $nombre_gerente);
-} else {
-    $nombre_gerente = '';
-    oci_bind_by_name($stmtResumen, ':nombre_gerente_resumen', $nombre_gerente);
-}
-
-oci_execute($stmtResumen);
-$resumen = oci_fetch_assoc($stmtResumen);
-oci_free_statement($stmtResumen);
-
-// QUERY PARA DATOS DETALLADOS
-$queryDetalle = "SELECT DISTINCT
-                    h.ID_HISTORICO,
-                    h.ID_SOLICITUD,
+    // QUERY PARA RESUMEN
+    $queryResumen = "SELECT 
+                        COUNT(DISTINCT s.ID_SOLICITUD) as TOTAL_SOLICITUDES,
+                        COUNT(DISTINCT s.NUM_TIENDA) as TIENDAS_AFECTADAS,
+                        COUNT(DISTINCT s.SOLICITADO_POR) as SUPERVISORES_AFECTADOS
+                     FROM ROY_SOLICITUD_PERSONAL s
+                     $joinClause
+                     WHERE $whereClause";
+    
+    $stmtResumen = oci_parse($conn, $queryResumen);
+    oci_bind_by_name($stmtResumen, ':fecha_inicial', $fecha_inicial);
+    oci_bind_by_name($stmtResumen, ':fecha_final', $fecha_final);
+    
+    if (in_array($usuario_logueado, ['5333', '5210'])) {
+        $gerente_nombres = ['5333' => 'Christian Quan', '5210' => 'Giovanni Cardoza'];
+        $nombre_gerente = $gerente_nombres[$usuario_logueado];
+        oci_bind_by_name($stmtResumen, ':nombre_gerente', $nombre_gerente);
+    }
+    
+    oci_execute($stmtResumen);
+    $resumen = oci_fetch_assoc($stmtResumen);
+    oci_free_statement($stmtResumen);
+    
+    // QUERY PRINCIPAL SIMPLIFICADO
+$queryDetalle = "SELECT
+                    s.ID_SOLICITUD,
                     s.NUM_TIENDA,
                     s.PUESTO_SOLICITADO,
                     s.SOLICITADO_POR,
-                    h.ESTADO_ANTERIOR,
-                    h.ESTADO_NUEVO,
-                    h.APROBACION_ANTERIOR,
-                    h.APROBACION_NUEVA,
-                    h.COMENTARIO_NUEVO,
-                    TO_CHAR(h.FECHA_CAMBIO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_CAMBIO,
-                    rps_info.udf1_string as CODIGO_SUPERVISOR
-                 FROM ROY_HISTORICO_SOLICITUD h
-                 INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
-                 LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
-                 WHERE h.FECHA_CAMBIO BETWEEN TO_DATE(:fecha_inicial_detalle, 'YYYY-MM-DD') AND TO_DATE(:fecha_final_detalle, 'YYYY-MM-DD') + 1
-                 AND (
-                     :es_gerente_detalle = 0 
-                     OR UPPER(TRIM(rps_info.udf4_string)) = UPPER(TRIM(:nombre_gerente_detalle))
-                 )
-                 ORDER BY FECHA_CAMBIO DESC";
-
-$stmtDetalle = oci_parse($conn, $queryDetalle);
-oci_bind_by_name($stmtDetalle, ':es_gerente_detalle', $es_gerente);
-oci_bind_by_name($stmtDetalle, ':fecha_inicial_detalle', $fecha_inicial);
-oci_bind_by_name($stmtDetalle, ':fecha_final_detalle', $fecha_final);
-
-if (in_array($usuario_logueado, ['5333', '5210'])) {
-    oci_bind_by_name($stmtDetalle, ':nombre_gerente_detalle', $nombre_gerente);
-} else {
-    oci_bind_by_name($stmtDetalle, ':nombre_gerente_detalle', $nombre_gerente);
-}
+                    s.ESTADO_SOLICITUD as ESTADO_ACTUAL,
+                    s.ESTADO_APROBACION,
+                    s.DIRIGIDO_RH,
+                    TO_CHAR(s.FECHA_SOLICITUD, 'DD-MM-YYYY') AS FECHA_SOLICITUD,
+                    
+                    -- Comentario general del último historial
+                    (SELECT COMENTARIO_NUEVO 
+                     FROM ROY_HISTORICO_SOLICITUD h3 
+                     WHERE h3.ID_SOLICITUD = s.ID_SOLICITUD 
+                     AND h3.FECHA_CAMBIO = (SELECT MAX(FECHA_CAMBIO) FROM ROY_HISTORICO_SOLICITUD h4 WHERE h4.ID_SOLICITUD = s.ID_SOLICITUD)
+                     AND ROWNUM = 1) AS COMENTARIO_GENERAL,
+                    
+                    -- Fecha del último cambio
+                    TO_CHAR(NVL((SELECT MAX(FECHA_CAMBIO) FROM ROY_HISTORICO_SOLICITUD h5 WHERE h5.ID_SOLICITUD = s.ID_SOLICITUD), s.FECHA_SOLICITUD), 'DD-MM-YYYY HH24:MI:SS') AS FECHA_ULTIMO_CAMBIO,
+                    
+                    -- Estado anterior del último historial
+                    NVL((SELECT ESTADO_ANTERIOR 
+                         FROM ROY_HISTORICO_SOLICITUD h6 
+                         WHERE h6.ID_SOLICITUD = s.ID_SOLICITUD 
+                         AND h6.FECHA_CAMBIO = (SELECT MAX(FECHA_CAMBIO) FROM ROY_HISTORICO_SOLICITUD h7 WHERE h7.ID_SOLICITUD = s.ID_SOLICITUD)
+                         AND ROWNUM = 1), 'Estado Inicial') AS ESTADO_ANTERIOR,
+                    
+                    -- Información de aprobación gerencial
+                    ag.DECISION,
+                    ag.GERENTE,
+                    ag.COMENTARIO_GERENTE
+                    
+                 FROM ROY_SOLICITUD_PERSONAL s
+                 
+                 -- JOIN para comentarios de aprobación gerencial
+                 LEFT JOIN ROY_APROBACIONES_GERENCIA ag ON s.ID_SOLICITUD = ag.ID_SOLICITUD
+                 
+                 $joinClause
+                 WHERE $whereClause
+                 ORDER BY s.FECHA_SOLICITUD DESC";
+    
+    $stmtDetalle = oci_parse($conn, $queryDetalle);
+    oci_bind_by_name($stmtDetalle, ':fecha_inicial', $fecha_inicial);
+    oci_bind_by_name($stmtDetalle, ':fecha_final', $fecha_final);
+    
+    if (in_array($usuario_logueado, ['5333', '5210'])) {
+        oci_bind_by_name($stmtDetalle, ':nombre_gerente', $nombre_gerente);
+    }
     
     if (!oci_execute($stmtDetalle)) {
         $error = oci_error($stmtDetalle);
-        oci_free_statement($stmtDetalle);
         return ['error' => 'Error en consulta general: ' . $error['message']];
     }
     
-    $historial = [];
+    $solicitudes = [];
     while ($row = oci_fetch_assoc($stmtDetalle)) {
-        $incluir_registro = false;
         
-        if ($incluir_aprobaciones && $incluir_estados) {
-            $incluir_registro = true;
-        } elseif ($incluir_aprobaciones && !$incluir_estados) {
-            $incluir_registro = ($row['APROBACION_ANTERIOR'] !== $row['APROBACION_NUEVA']);
-        } elseif (!$incluir_aprobaciones && $incluir_estados) {
-            $incluir_registro = ($row['ESTADO_ANTERIOR'] !== $row['ESTADO_NUEVO']);
-        }
+        // Procesar CLOB de comentario de aprobación
+        $comentario_aprobacion = obtenerComentarioAprobacion($conn, $row['ID_SOLICITUD']);
+
         
-        if ($incluir_registro) {
-            $historial[] = $row;
-        }
+        // Calcular tiempo transcurrido desde último cambio hasta HOY
+        $tiempoTranscurrido = calcularTiempoTranscurridoDesdeAprobacion($conn, $row['ID_SOLICITUD']);
+        
+        // Determinar responsable del estado actual
+        $responsable = determinarResponsableEstadoActual($row['ESTADO_ACTUAL'], $row['DIRIGIDO_RH'], $row['SOLICITADO_POR'], $conn);
+        
+        $solicitudes[] = [
+            'ID_SOLICITUD' => $row['ID_SOLICITUD'],
+            'NUM_TIENDA' => $row['NUM_TIENDA'],
+            'PUESTO_SOLICITADO' => $row['PUESTO_SOLICITADO'],
+            'SOLICITADO_POR' => $row['SOLICITADO_POR'],
+            'ESTADO_APROBACION' => $row['ESTADO_APROBACION'] ?: 'Por Aprobar', // Agregar esto
+            'ESTADO_ANTERIOR' => $row['ESTADO_ANTERIOR'] ?: 'Estado Inicial',
+            'ESTADO_NUEVO' => $row['ESTADO_ACTUAL'],
+            'RESPONSABLE_ACTUAL' => $responsable,
+            'COMENTARIO_NUEVO' => $row['COMENTARIO_GENERAL'] ?: 'Sin comentarios',
+            'COMENTARIO_APROBACION' => $comentario_aprobacion,
+            'DECISION_GERENTE' => $row['DECISION'] ?: 'Pendiente',
+            'FECHA_SOLICITUD' => $row['FECHA_SOLICITUD'], // Agregar esto
+            'FECHA_CAMBIO' => $row['FECHA_ULTIMO_CAMBIO'],
+            'TIEMPO_TRANSCURRIDO' => $tiempoTranscurrido
+        ];
     }
     
     oci_free_statement($stmtDetalle);
@@ -1039,39 +862,242 @@ if (in_array($usuario_logueado, ['5333', '5210'])) {
     return [
         'success' => true,
         'tipo_reporte' => 'general',
-        'registros' => count($historial),
+        'registros' => count($solicitudes),
         'resumen' => [
-            'total_cambios' => $resumen['TOTAL_CAMBIOS'],
-            'solicitudes_afectadas' => $resumen['SOLICITUDES_AFECTADAS'],
+            'total_cambios' => $resumen['TOTAL_SOLICITUDES'],
+            'solicitudes_afectadas' => $resumen['TOTAL_SOLICITUDES'],
             'tiendas_afectadas' => $resumen['TIENDAS_AFECTADAS'],
             'supervisores_afectados' => $resumen['SUPERVISORES_AFECTADOS']
         ],
         'periodo' => "$fecha_inicial - $fecha_final",
         'fecha_inicial' => $fecha_inicial,
         'fecha_final' => $fecha_final,
-        'datos' => $historial,
+        'datos' => $solicitudes,
         'incluye_aprobaciones' => $incluir_aprobaciones,
         'incluye_estados' => $incluir_estados,
-        'titulo_reporte' => 'Historial General de Solicitudes',
-        'subtitulo' => 'Período: ' . date('d/m/Y', strtotime($fecha_inicial)) . ' - ' . date('d/m/Y', strtotime($fecha_final)),
+        'titulo_reporte' => 'Resumen Gerencial de Solicitudes',
+        'subtitulo' => 'Estado actual y responsables - Período: ' . date('d/m/Y', strtotime($fecha_inicial)) . ' - ' . date('d/m/Y', strtotime($fecha_final)),
         'headers_excel' => [
-            'ID_SOLICITUD' => 'ID Solicitud',
-            'NUM_TIENDA' => 'Tienda',
+            'ID_SOLICITUD' => 'ID',
+            'NUM_TIENDA' => 'Tienda', 
             'PUESTO_SOLICITADO' => 'Puesto',
             'SOLICITADO_POR' => 'Supervisor',
             'ESTADO_ANTERIOR' => 'Estado Anterior',
-            'ESTADO_NUEVO' => 'Estado Nuevo',
-            'APROBACION_ANTERIOR' => 'Aprobación Anterior',
-            'APROBACION_NUEVA' => 'Aprobación Nueva',
-            'COMENTARIO_NUEVO' => 'Comentario',
-            'FECHA_CAMBIO' => 'Fecha Cambio'
-        ],
-        'estadisticas_adicionales' => [
-            'cambios_por_tipo' => getCambiosPorTipo($historial),
-            'actividad_por_tienda' => getActividadPorTienda($historial),
-            'cambios_por_dia' => getCambiosPorDia($historial)
+            'ESTADO_NUEVO' => 'Estado Actual',
+            'RESPONSABLE_ACTUAL' => 'Responsable Actual',
+            'COMENTARIO_NUEVO' => 'Comentario General',
+            'COMENTARIO_APROBACION' => 'Comentario de Aprobación',
+            'FECHA_CAMBIO' => 'Fecha Último Cambio'
         ]
     ];
+}
+
+function determinarResponsableEstadoActual($estadoActual, $dirigidoRH, $supervisor = '', $conn = null) {
+    switch($estadoActual) {
+        case 'Por Aprobar':
+            // Obtener el gerente real basado en el supervisor
+            if (!empty($supervisor) && $conn) {
+                $queryGerente = "SELECT udf4_string as GERENTE 
+                               FROM RPS.STORE 
+                               WHERE udf2_string = :supervisor 
+                               AND sbs_sid = '680861302000159257' 
+                               AND ROWNUM = 1";
+                $stmtGerente = oci_parse($conn, $queryGerente);
+                oci_bind_by_name($stmtGerente, ':supervisor', $supervisor);
+                if (oci_execute($stmtGerente)) {
+                    if ($row = oci_fetch_assoc($stmtGerente)) {
+                        $nombreGerente = trim($row['GERENTE']);
+                        oci_free_statement($stmtGerente);
+                        return !empty($nombreGerente) ? $nombreGerente : 'Gerente no asignado';
+                    }
+                }
+                oci_free_statement($stmtGerente);
+            }
+            return 'Gerente no asignado';
+            
+        case 'Aprobado':
+        case 'En Proceso':
+        case 'Con CVs Disponibles':
+        case 'Cvs Enviados':
+        case 'P. Psicometrica':
+        case 'Vacante Activa':
+            // Para todos los estados de RRHH, mostrar la asesora asignada
+            return !empty($dirigidoRH) ? $dirigidoRH : 'Asesora no asignada';
+            
+        case 'Pendiente Aval':
+            // El gerente debe revisar el aval
+            if (!empty($supervisor) && $conn) {
+                $queryGerente = "SELECT udf4_string as GERENTE 
+                               FROM RPS.STORE 
+                               WHERE udf2_string = :supervisor 
+                               AND sbs_sid = '680861302000159257' 
+                               AND ROWNUM = 1";
+                $stmtGerente = oci_parse($conn, $queryGerente);
+                oci_bind_by_name($stmtGerente, ':supervisor', $supervisor);
+                if (oci_execute($stmtGerente)) {
+                    if ($row = oci_fetch_assoc($stmtGerente)) {
+                        $nombreGerente = trim($row['GERENTE']);
+                        oci_free_statement($stmtGerente);
+                        return !empty($nombreGerente) ? $nombreGerente : 'Gerente no asignado';
+                    }
+                }
+                oci_free_statement($stmtGerente);
+            }
+            return 'Gerente no asignado';
+            
+        case 'Dia de Prueba':
+            // El supervisor debe hacer la prueba
+            return !empty($supervisor) ? $supervisor : 'Supervisor no identificado';
+            
+        case 'No Aprobado':
+            return !empty($supervisor) ? $supervisor : 'Supervisor no identificado';
+            
+        default:
+            return 'No asignado';
+    }
+}
+
+
+function obtenerComentarioAprobacion($conn, $id_solicitud) {
+    // 1) Intentar desde el HISTÓRICO (primer evento de aprobación o rechazo)
+    $sqlHist = "
+        SELECT COMENTARIO_NUEVO
+        FROM (
+            SELECT h.COMENTARIO_NUEVO, h.FECHA_CAMBIO
+            FROM ROY_HISTORICO_SOLICITUD h
+            WHERE h.ID_SOLICITUD = :id
+              AND UPPER(h.APROBACION_ANTERIOR) LIKE '%POR APROBAR%'
+              AND (UPPER(h.APROBACION_NUEVA) LIKE '%APROBAD%' OR UPPER(h.APROBACION_NUEVA) LIKE '%NO APROBAD%')
+            ORDER BY h.FECHA_CAMBIO ASC
+        ) 
+        WHERE ROWNUM = 1";
+    $stHist = oci_parse($conn, $sqlHist);
+    oci_bind_by_name($stHist, ':id', $id_solicitud);
+    if (oci_execute($stHist) && ($r = oci_fetch_assoc($stHist))) {
+        $c = trim((string)$r['COMENTARIO_NUEVO']);
+        oci_free_statement($stHist);
+        if ($c !== '') return $c;
+    } else {
+        oci_free_statement($stHist);
+    }
+
+    // 2) Fallback: leer CLOB de ROY_APROBACIONES_GERENCIA (última decisión)
+    $sqlCLOB = "
+        SELECT COMENTARIO_GERENTE
+        FROM (
+            SELECT ag.COMENTARIO_GERENTE, ag.FECHA_DECISION
+            FROM ROY_APROBACIONES_GERENCIA ag
+            WHERE ag.ID_SOLICITUD = :id
+              AND (UPPER(ag.DECISION) LIKE '%APROBAD%' OR UPPER(ag.DECISION) LIKE '%NO APROBAD%')
+            ORDER BY ag.FECHA_DECISION DESC
+        )
+        WHERE ROWNUM = 1";
+    $stClob = oci_parse($conn, $sqlCLOB);
+    oci_bind_by_name($stClob, ':id', $id_solicitud);
+    if (oci_execute($stClob) && ($r = oci_fetch_assoc($stClob))) {
+        $cl = $r['COMENTARIO_GERENTE'];
+        oci_free_statement($stClob);
+
+        // Convertir CLOB a string
+        $texto = is_object($cl) ? $cl->load() : (string)$cl;
+        $texto = trim($texto);
+
+        if ($texto !== '') {
+            // Intentar extraer secciones conocidas, pero si no existen, devolver todo el texto
+            $u = mb_strtoupper($texto, 'UTF-8');
+
+            // Palabras clave
+            $k1 = 'COMENTARIO DE APROBACION:';  // a veces sin tilde
+            $k2 = 'COMENTARIO DE APROBACIÓN:';  // con tilde
+            $k3 = 'MOTIVO DEL RECHAZO:';
+
+            $pos = false;
+            foreach ([$k1, $k2, $k3] as $k) {
+                $p = mb_strpos($u, $k, 0, 'UTF-8');
+                if ($p !== false) { $pos = [$p, $k]; break; }
+            }
+
+            if ($pos !== false) {
+                // Cortar desde la etiqueta encontrada hasta fin de línea
+                [$p, $key] = $pos;
+                $len = mb_strlen($key, 'UTF-8');
+                // Slice respetando UTF-8
+                $resto = trim(mb_substr($texto, $p + $len, null, 'UTF-8'));
+                // Tomar solo la primera línea si vienen varias
+                $linea = preg_split("/\r\n|\n|\r/u", $resto)[0] ?? $resto;
+                $linea = trim($linea);
+                if ($linea !== '') return $linea;
+            }
+
+            // Si no se encontró etiqueta, devolver todo el texto (ya limpio)
+            return $texto;
+        }
+    } else {
+        oci_free_statement($stClob);
+    }
+
+    return 'N/A';
+}
+
+function calcularTiempoTranscurridoDesdeAprobacion($conn, $id_solicitud) {
+   try {
+       // Buscar la fecha cuando el gerente aprobó la solicitud
+       $query = "SELECT * FROM (
+                   SELECT TO_CHAR(FECHA_DECISION, 'DD-MM-YYYY HH24:MI:SS') as FECHA_APROBACION
+                   FROM ROY_APROBACIONES_GERENCIA 
+                   WHERE ID_SOLICITUD = :id 
+                   AND DECISION = 'APROBADO'
+                   ORDER BY FECHA_DECISION DESC
+                 ) WHERE ROWNUM = 1";
+       
+       $stmt = oci_parse($conn, $query);
+       oci_bind_by_name($stmt, ':id', $id_solicitud);
+       
+       if (!oci_execute($stmt)) {
+           oci_free_statement($stmt);
+           return 'Error en consulta';
+       }
+       
+       $fechaAprobacion = null;
+       if ($row = oci_fetch_assoc($stmt)) {
+           $fechaAprobacion = $row['FECHA_APROBACION'];
+       }
+       oci_free_statement($stmt);
+       
+       if (!$fechaAprobacion) {
+           return 'No aprobado aún';
+       }
+       
+       $fechaInicio = DateTime::createFromFormat('d-m-Y H:i:s', $fechaAprobacion);
+       if (!$fechaInicio) {
+           $fechaInicio = DateTime::createFromFormat('Y-m-d H:i:s', $fechaAprobacion);
+       }
+       if (!$fechaInicio) {
+           return 'Error de formato de fecha';
+       }
+       
+       $ahora = new DateTime();
+       $diferencia = $ahora->diff($fechaInicio);
+       
+       $partes = [];
+       if ($diferencia->days > 0) {
+           $partes[] = $diferencia->days . ' día' . ($diferencia->days > 1 ? 's' : '');
+       }
+       if ($diferencia->h > 0) {
+           $partes[] = $diferencia->h . ' hora' . ($diferencia->h > 1 ? 's' : '');
+       }
+       if ($diferencia->i > 0) {
+           $partes[] = $diferencia->i . ' minuto' . ($diferencia->i > 1 ? 's' : '');
+       }
+       if ($diferencia->s > 0 || empty($partes)) {
+           $partes[] = $diferencia->s . ' segundo' . ($diferencia->s > 1 ? 's' : '');
+       }
+       
+       return implode(', ', $partes);
+       
+   } catch (Exception $e) {
+       return 'Error de cálculo: ' . $e->getMessage();
+   }
 }
 
 //  FUNCIONES AUXILIARES PARA ESTADÍSTICAS
@@ -1534,6 +1560,12 @@ try {
         // ===================================================================
         
                     case 'procesar_aprobacion_gerente':
+
+                        while (ob_get_level()) {
+                                ob_end_clean();
+                        }
+                        ob_start();
+
                         error_log("Procesando cambio de aprobacion con comentarios obligatorios...");
                         error_log("POST data: " . print_r($_POST, true));
                         
@@ -1775,6 +1807,9 @@ try {
                             } elseif ($nueva_aprobacion === 'No Aprobado') {
                                 $mensaje .= ". El motivo del rechazo ha sido registrado y será visible para el supervisor.";
                             }
+
+                            // ✅ LIMPIAR CUALQUIER OUTPUT PREVIO ANTES DEL JSON
+                            ob_clean();
 
                             echo json_encode([
                                 'success' => true,
@@ -2219,205 +2254,34 @@ case 'get_historial_filtrado':
         $filtro_supervisor = $_GET['filtro_supervisor'] ?? '';
         $filtro_puesto = $_GET['filtro_puesto'] ?? '';
         
-        error_log("🔍 FILTROS RECIBIDOS - Tienda: '$filtro_tienda', Código Supervisor: '$filtro_supervisor', Puesto: '$filtro_puesto'");
-        
         if (empty($fecha_inicial) || empty($fecha_final)) {
             header('Content-Type: application/json');
             echo json_encode(['error' => 'Fechas requeridas']);
             exit;
         }
         
-        // ✅ OBTENER NOMBRE DEL SUPERVISOR SI SE FILTRA POR CÓDIGO
-        $nombre_supervisor_filtrado = '';
-        if (!empty($filtro_supervisor)) {
-            $queryNombreSup = "SELECT udf2_string as nombre 
-                              FROM RPS.STORE 
-                              WHERE udf1_string = :filtro_supervisor 
-                              AND sbs_sid = '680861302000159257' 
-                              AND ROWNUM = 1";
-            
-            $stmtNombreSup = oci_parse($conn, $queryNombreSup);
-            oci_bind_by_name($stmtNombreSup, ':filtro_supervisor', $filtro_supervisor);
-            oci_execute($stmtNombreSup);
-            
-            if ($rowSup = oci_fetch_assoc($stmtNombreSup)) {
-                $nombre_supervisor_filtrado = trim($rowSup['NOMBRE']);
-                error_log("✅ Supervisor encontrado - Código: $filtro_supervisor, Nombre: $nombre_supervisor_filtrado");
-            } else {
-                error_log("❌ No se encontró supervisor con código: $filtro_supervisor");
-                // Si no existe el supervisor, devolver array vacío
-                header('Content-Type: application/json');
-                echo json_encode([]);
-                exit;
-            }
-            oci_free_statement($stmtNombreSup);
-        }
+        // Usar la función generarReporteFiltrado que ya está corregida
+        $resultado = generarReporteFiltrado($conn, $fecha_inicial, $fecha_final, $filtro_tienda, $filtro_supervisor, $filtro_puesto, $incluir_aprobaciones, $incluir_estados, $usuario_logueado);
         
-        // ✅ CONSTRUIR QUERY PRINCIPAL CON JOINS CORRECTOS
-        $whereConditions = [];
-        $joinConditions = [];
-        
-        // Fecha siempre requerida
-        $whereConditions[] = "h.FECHA_CAMBIO BETWEEN TO_DATE(:fecha_inicial, 'YYYY-MM-DD') AND TO_DATE(:fecha_final, 'YYYY-MM-DD') + 1";
-        
-        // ✅ FILTRO DE USUARIO (GERENTES)
-        if (in_array($usuario_logueado, ['5333', '5210'])) {
-            $gerente_nombres = ['5333' => 'Christian Quan', '5210' => 'Giovanni Cardoza'];
-            $nombre_gerente = $gerente_nombres[$usuario_logueado];
-            
-            $joinConditions[] = "LEFT JOIN RPS.STORE rps_gerente ON rps_gerente.udf2_string = s.SOLICITADO_POR AND rps_gerente.sbs_sid = '680861302000159257'";
-            $whereConditions[] = "UPPER(TRIM(rps_gerente.udf4_string)) = UPPER(TRIM(:nombre_gerente))";
-        }
-        
-        // ✅ FILTRO POR TIENDA
-        if (!empty($filtro_tienda)) {
-            $whereConditions[] = "s.NUM_TIENDA = :filtro_tienda";
-        }
-        
-        // ✅ FILTRO POR SUPERVISOR (usando nombre obtenido)
-        if (!empty($filtro_supervisor) && !empty($nombre_supervisor_filtrado)) {
-            $whereConditions[] = "s.SOLICITADO_POR = :nombre_supervisor_filtrado";
-        }
-        
-        // ✅ FILTRO POR PUESTO
-        if (!empty($filtro_puesto)) {
-            $whereConditions[] = "s.PUESTO_SOLICITADO = :filtro_puesto";
-        }
-        
-        // ✅ CONSTRUIR QUERY COMPLETO
-        $joinClause = implode(' ', $joinConditions);
-        $whereClause = implode(' AND ', $whereConditions);
-        
-        $query = "SELECT DISTINCT
-                    h.ID_HISTORICO,
-                    h.ID_SOLICITUD,
-                    s.NUM_TIENDA,
-                    s.PUESTO_SOLICITADO,
-                    s.SOLICITADO_POR,
-                    h.ESTADO_ANTERIOR,
-                    h.ESTADO_NUEVO,
-                    h.APROBACION_ANTERIOR,
-                    h.APROBACION_NUEVA,
-                    h.COMENTARIO_NUEVO,
-                    TO_CHAR(h.FECHA_CAMBIO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_CAMBIO,
-                    rps_info.udf1_string as CODIGO_SUPERVISOR
-                  FROM ROY_HISTORICO_SOLICITUD h
-                  INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
-                  LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
-                  $joinClause
-                  WHERE $whereClause
-                  ORDER BY FECHA_CAMBIO DESC";
-        
-        error_log("🔍 QUERY FINAL CONSTRUIDO:");
-        error_log($query);
-        
-        // ✅ PREPARAR Y EJECUTAR
-        $stmt = oci_parse($conn, $query);
-        if (!$stmt) {
-            $error = oci_error($conn);
-            error_log("❌ Error preparando query: " . print_r($error, true));
+        if (isset($resultado['error'])) {
             header('Content-Type: application/json');
-            echo json_encode(['error' => 'Error preparando consulta']);
+            echo json_encode(['error' => $resultado['error']]);
             exit;
         }
         
-        // ✅ BIND PARÁMETROS
-        oci_bind_by_name($stmt, ':fecha_inicial', $fecha_inicial);
-        oci_bind_by_name($stmt, ':fecha_final', $fecha_final);
-        error_log("✅ Parámetros de fecha vinculados");
-        
-        if (!empty($filtro_tienda)) {
-            oci_bind_by_name($stmt, ':filtro_tienda', $filtro_tienda);
-            error_log("✅ Parámetro tienda vinculado: $filtro_tienda");
-        }
-        
-        if (!empty($nombre_supervisor_filtrado)) {
-            oci_bind_by_name($stmt, ':nombre_supervisor_filtrado', $nombre_supervisor_filtrado);
-            error_log("✅ Parámetro supervisor vinculado: $nombre_supervisor_filtrado");
-        }
-        
-        if (!empty($filtro_puesto)) {
-            oci_bind_by_name($stmt, ':filtro_puesto', $filtro_puesto);
-            error_log("✅ Parámetro puesto vinculado: $filtro_puesto");
-        }
-        
-        if (in_array($usuario_logueado, ['5333', '5210'])) {
-            $gerente_nombres = ['5333' => 'Christian Quan', '5210' => 'Giovanni Cardoza'];
-            $nombre_gerente = $gerente_nombres[$usuario_logueado];
-            oci_bind_by_name($stmt, ':nombre_gerente', $nombre_gerente);
-            error_log("✅ Parámetro gerente vinculado: $nombre_gerente");
-        }
-        
-        // ✅ EJECUTAR QUERY
-        error_log("🚀 Ejecutando query...");
-        if (!oci_execute($stmt)) {
-            $error = oci_error($stmt);
-            error_log("❌ Error ejecutando query: " . print_r($error, true));
-            header('Content-Type: application/json');
-            echo json_encode(['error' => 'Error en consulta: ' . $error['message']]);
-            exit;
-        }
-        
-        error_log("✅ Query ejecutado exitosamente, procesando resultados...");
-        
-        // ✅ PROCESAR RESULTADOS
-        $historial = [];
-        $registrosEncontrados = 0;
-        
-        while ($row = oci_fetch_assoc($stmt)) {
-            $registrosEncontrados++;
-            
-            if ($registrosEncontrados <= 5) { // Log de primeros 5 registros
-                error_log("📝 Registro $registrosEncontrados: Tienda={$row['NUM_TIENDA']}, Supervisor={$row['SOLICITADO_POR']}, Código={$row['CODIGO_SUPERVISOR']}, Puesto={$row['PUESTO_SOLICITADO']}");
-            }
-            
-            // ✅ APLICAR FILTROS DE INCLUSIÓN
-            $incluir_registro = false;
-            
-            if ($incluir_aprobaciones && $incluir_estados) {
-                $incluir_registro = true;
-            } elseif ($incluir_aprobaciones && !$incluir_estados) {
-                $incluir_registro = ($row['APROBACION_ANTERIOR'] !== $row['APROBACION_NUEVA']);
-            } elseif (!$incluir_aprobaciones && $incluir_estados) {
-                $incluir_registro = ($row['ESTADO_ANTERIOR'] !== $row['ESTADO_NUEVO']);
-            }
-            
-            if ($incluir_registro) {
-                $historial[] = [
-                    'ID_HISTORICO' => $row['ID_HISTORICO'],
-                    'ID_SOLICITUD' => $row['ID_SOLICITUD'],
-                    'NUM_TIENDA' => $row['NUM_TIENDA'],
-                    'PUESTO_SOLICITADO' => $row['PUESTO_SOLICITADO'],
-                    'SOLICITADO_POR' => $row['SOLICITADO_POR'],
-                    'CODIGO_SUPERVISOR' => $row['CODIGO_SUPERVISOR'],
-                    'ESTADO_ANTERIOR' => $row['ESTADO_ANTERIOR'],
-                    'ESTADO_NUEVO' => $row['ESTADO_NUEVO'],
-                    'APROBACION_ANTERIOR' => $row['APROBACION_ANTERIOR'],
-                    'APROBACION_NUEVA' => $row['APROBACION_NUEVA'],
-                    'COMENTARIO_NUEVO' => $row['COMENTARIO_NUEVO'],
-                    'FECHA_CAMBIO' => $row['FECHA_CAMBIO']
-                ];
-            }
-        }
-        
-        oci_free_statement($stmt);
-        oci_close($conn);
-        
-        error_log("✅ RESULTADO FINAL: $registrosEncontrados registros encontrados, " . count($historial) . " incluidos en respuesta");
-        
-        // ✅ RESPUESTA
+        // Devolver solo los datos (no toda la estructura del reporte)
         header('Content-Type: application/json');
-        echo json_encode($historial);
+        echo json_encode($resultado['datos']);
         exit;
         
     } catch (Exception $e) {
-        error_log("❌ EXCEPCIÓN CAPTURADA: " . $e->getMessage());
-        error_log("❌ Stack trace: " . $e->getTraceAsString());
+        error_log("Error en get_historial_filtrado: " . $e->getMessage());
         header('Content-Type: application/json');
         echo json_encode(['error' => 'Error interno: ' . $e->getMessage()]);
         exit;
     }
     break;
+
 
         // VER ARCHIVOS
         case 'get_archivos':
