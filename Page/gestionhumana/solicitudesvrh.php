@@ -1816,15 +1816,16 @@ function descargarResumen(solicitudId) {
 
                                 // 🆕 PARA SOLICITUDES APROBADAS SIN ESTADO ESPECÍFICO: Mostrar resumen general
                                 const aprobacion = (item.ESTADO_APROBACION || '').toLowerCase();
-                                if (aprobacion === 'aprobado' || aprobacion.includes('aprobado')) {
-                                  return `
-                                    <button class="btn btn-sm btn-outline-info btnVerResumenProcesamiento"
-                                            data-id="${item.ID_SOLICITUD}"
-                                            data-solicitud-id="${item.ID_SOLICITUD}"
-                                            title="Ver resumen completo de la aprobación">
-                                      <i class="fas fa-file-alt"></i> Ver Resumen
-                                    </button>
-                                  `;
+                                if ((aprobacion === 'aprobado' || aprobacion.includes('aprobado')) 
+                                    && (estado.includes('pendiente') || estado.includes('por aprobar'))) {
+                                    return `
+                                        <button class="btn btn-sm btn-outline-info btnVerResumenProcesamiento"
+                                                data-id="${item.ID_SOLICITUD}"
+                                                data-solicitud-id="${item.ID_SOLICITUD}"
+                                                title="Ver resumen completo de la aprobación">
+                                          <i class="fas fa-file-alt"></i> Ver Resumen
+                                        </button>
+                                      `;
                                 }
 
                                 // Nada que mostrar
@@ -4268,7 +4269,7 @@ function descargarResumen(solicitudId) {
     
     // 🆕 USAR EL MISMO ENDPOINT QUE FUNCIONA PARA GERENTES
     $.ajax({
-        url: './GerenteTDS/crudaprobaciones.php?action=obtener_resumen_aprobacion_gerente',
+        url: './gestionhumana/crudsolicitudesrh.php?action=obtener_resumen_rrhh',
         type: 'GET',
         dataType: 'json',
         data: { id_solicitud: solicitudId },

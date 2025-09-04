@@ -543,7 +543,7 @@
         <table id="tblSolicitudes" class="table table-modern" style="display: none;">
           <thead>
             <tr>
-              <th width="40"><i class="fas fa-expand-alt"></i></th>
+              <!--<th width="40"><i class="fas fa-expand-alt"></i></th>-->
               <th width="50">Tienda</th>
               <th width="140">Puesto</th>
               <th width="150">Supervisor</th>
@@ -1878,23 +1878,26 @@ let acciones = '';
 
                 // 🆕 AGREGAR ESTAS 2 LÍNEAS DESPUÉS DE LA DECLARACIÓN DE acciones
                 // Botón para ver resumen de aprobación (solo si está aprobado)
-                if (aprobacion === 'aprobado' || (aprobacion.includes('aprobado') && !aprobacion.includes('no'))) {
-                    acciones += `
-                        <button class="btn btn-success btn-sm btnVerResumenAprobacion" 
-                                data-id="${item.ID_SOLICITUD}"
-                                title="Ver resumen de su aprobación">
-                            <i class="fas fa-clipboard-check"></i> Ver Resumen
-                        </button>`;
-                  }
-                if (aprobacion === 'no aprobado') {
-                acciones += `
-                    <button class="btn btn-warning btn-sm btnVerResultadoAprobacion" 
-                            data-id="${item.ID_SOLICITUD}"
-                            data-aprobacion="${item.ESTADO_APROBACION}"
-                            title="Ver motivo del rechazo">
-                    <i class="fas fa-exclamation-circle"></i> Ver Resultado
-                    </button>`;
-                }
+              if ((aprobacion === 'aprobado' || (aprobacion.includes('aprobado') && !aprobacion.includes('no'))) 
+                  && (estado.includes('pendiente') || estado.includes('por aprobar'))) {
+                  acciones += `
+                      <button class="btn btn-success btn-sm btnVerResumenAprobacion" 
+                              data-id="${item.ID_SOLICITUD}"
+                              title="Ver resumen de su aprobación">
+                          <i class="fas fa-clipboard-check"></i> Ver Resumen
+                      </button>`;
+              }
+
+              if (aprobacion === 'no aprobado' 
+                  && (estado.includes('pendiente') || estado.includes('por aprobar'))) {
+                  acciones += `
+                      <button class="btn btn-warning btn-sm btnVerResultadoAprobacion" 
+                              data-id="${item.ID_SOLICITUD}"
+                              data-aprobacion="${item.ESTADO_APROBACION}"
+                              title="Ver motivo del rechazo">
+                      <i class="fas fa-exclamation-circle"></i> Ver Resultado
+                      </button>`;
+              }
 
 
       // Mostrar solo "Ver resumen" si hay selección
@@ -1961,11 +1964,6 @@ let acciones = '';
             }
                 const row = `
                   <tr data-id="${item.ID_SOLICITUD}">
-                    <td>
-                      <button class="btn btn-expand btn-ver-historial" data-id="${item.ID_SOLICITUD}" title="Ver historial">
-                        <i class="fas fa-plus"></i>
-                      </button>
-                    </td>
                     <td><span class="badge badge-primary">${item.NUM_TIENDA}</span></td>
                     <td><strong>${item.PUESTO_SOLICITADO}</strong></td>
                     <td><small class="text-muted">${item.SOLICITADO_POR}</small></td>
@@ -3335,6 +3333,12 @@ $(document).off('click', '.btnProcesarSolicitud').on('click', '.btnProcesarSolic
               <strong><i class="fas fa-hashtag"></i> ID:</strong> ${id}
             </div>
             <div>
+              <strong><i class="fas fa-store"></i> Tienda:</strong> ${tienda}
+            </div>
+            <div>
+              <strong><i class="fas fa-briefcase"></i> Puesto:</strong> ${puesto}
+            </div>
+            <div>
               <strong><i class="fas fa-calendar-alt"></i> Fecha:</strong> ${new Date().toLocaleDateString('es-ES')}
             </div>
             <div style="grid-column: 1 / -1;">
@@ -3998,7 +4002,7 @@ $(document).on('click', '.btnVerResultadoAprobacion', function() {
                 // 🆕 USAR DIRECTAMENTE LOS DATOS FORMATEADOS DEL SERVIDOR PARA RECHAZO
                 const fechaRechazo = resumen.fecha_procesamiento || 'No disponible';
                 const fechaSolicitudRechazo = solicitud.fecha_solicitud || 'N/A';
-                const motivoRechazo = resumen.comentario_aprobacion || 'Sin motivo especificado';
+                const motivoRechazo = resumen.comentario_aprobacion || 'Sin motivo especificado';     
                 
                 // 🆕 USAR NOMBRE DEL GERENTE OBTENIDO DE LA INTERFAZ
                 const nombreGerenteCompleto = nombreGerente !== 'Gerente' ? nombreGerente : (resumen.procesado_por || 'No disponible');

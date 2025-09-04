@@ -873,7 +873,7 @@ if (!$conn) {
                 $joinClause = implode(' ', $joinConditions);
                 $whereClause = implode(' AND ', $whereConditions);
                 
-                $query = "SELECT 
+                $query = "SELECT DISTINCT
                             h.ID_HISTORICO,
                             h.ID_SOLICITUD,
                             s.NUM_TIENDA,
@@ -891,7 +891,7 @@ if (!$conn) {
                         LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
                         $joinClause
                         WHERE $whereClause
-                        ORDER BY h.FECHA_CAMBIO DESC";
+                        ORDER BY FECHA_CAMBIO DESC";
                 
                 $stmt = oci_parse($conn, $query);
                 
@@ -997,7 +997,7 @@ if (!$conn) {
                 
                 // QUERY PARA RESUMEN GENERAL
                 $queryResumen = "SELECT 
-                                    COUNT(*) as TOTAL_CAMBIOS,
+                                    COUNT(DISTINCT h.ID_HISTORICO) as TOTAL_CAMBIOS,
                                     COUNT(DISTINCT s.ID_SOLICITUD) as SOLICITUDES_AFECTADAS,
                                     COUNT(DISTINCT s.NUM_TIENDA) as TIENDAS_AFECTADAS,
                                     COUNT(DISTINCT s.SOLICITADO_POR) as SUPERVISORES_AFECTADOS
@@ -1021,7 +1021,7 @@ if (!$conn) {
                 oci_free_statement($stmtResumen);
                 
                 // QUERY PARA DATOS DETALLADOS
-                $queryDetalle = "SELECT 
+                $queryDetalle = "SELECT DISTINCT
                                     h.ID_HISTORICO,
                                     h.ID_SOLICITUD,
                                     s.NUM_TIENDA,
@@ -1039,7 +1039,7 @@ if (!$conn) {
                                 LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
                                 $joinClause
                                 WHERE $whereClause
-                                ORDER BY h.FECHA_CAMBIO DESC";
+                                ORDER BY FECHA_CAMBIO DESC";
                 
                 $stmtDetalle = oci_parse($conn, $queryDetalle);
                 oci_bind_by_name($stmtDetalle, ':fecha_inicial', $fecha_inicial);
@@ -1230,7 +1230,7 @@ if (!$conn) {
                     
                     $whereClause = implode(' AND ', $whereConditions);
                     
-                    $query = "SELECT 
+                    $query = "SELECT DISTINCT
                                 h.ID_HISTORICO,
                                 h.ID_SOLICITUD,
                                 s.NUM_TIENDA,
@@ -1247,7 +1247,7 @@ if (!$conn) {
                             INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
                             LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
                             WHERE $whereClause
-                            ORDER BY h.FECHA_CAMBIO DESC";
+                            ORDER BY FECHA_CAMBIO DESC";
                     
                     $stmt = oci_parse($conn, $query);
                     
@@ -1349,7 +1349,7 @@ if (!$conn) {
                     oci_free_statement($stmtResumen);
                     
                     // QUERY PARA DATOS DETALLADOS
-                    $queryDetalle = "SELECT 
+                    $queryDetalle = "SELECT DISTINCT
                                         h.ID_HISTORICO,
                                         h.ID_SOLICITUD,
                                         s.NUM_TIENDA,
@@ -1366,7 +1366,7 @@ if (!$conn) {
                                     INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
                                     LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
                                     WHERE $whereClause
-                                    ORDER BY h.FECHA_CAMBIO DESC";
+                                    ORDER BY FECHA_CAMBIO DESC";
                     
                     $stmtDetalle = oci_parse($conn, $queryDetalle);
                     oci_bind_by_name($stmtDetalle, ':fecha_inicial', $fecha_inicial);
@@ -1434,7 +1434,6 @@ if (!$conn) {
                         ]
                     ];
                 }
-
 
                 //FUNCIÓN AUXILIAR PARA SUBIR ARCHIVOS DE AVAL
                             function subirArchivoAval($archivo, $idSolicitud, $tipo) {
@@ -1698,7 +1697,7 @@ if (isset($_GET['action'])) {
                                 $joinClause = implode(' ', $joinConditions);
                                 $whereClause = implode(' AND ', $whereConditions);
                                 
-                                $query = "SELECT 
+                                $query = "SELECT DISTINCT
                                             h.ID_HISTORICO,
                                             h.ID_SOLICITUD,
                                             s.NUM_TIENDA,
@@ -1716,7 +1715,7 @@ if (isset($_GET['action'])) {
                                         LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
                                         $joinClause
                                         WHERE $whereClause
-                                        ORDER BY h.FECHA_CAMBIO DESC";
+                                        ORDER BY FECHA_CAMBIO DESC";
                                 
                                 error_log("🔍 QUERY FINAL CONSTRUIDO:");
                                 error_log($query);
@@ -3258,6 +3257,169 @@ if (isset($_GET['action'])) {
                                             
                                             oci_close($conn);
                                             break;
+
+case 'obtener_resumen_rrhh':
+    // Limpiar cualquier output buffer antes de enviar JSON
+    if (ob_get_level()) {
+        ob_clean();
+    }
+    
+    $id_solicitud = $_GET['id_solicitud'] ?? $_POST['id_solicitud'];
+    
+    try {
+        // Consulta sin validación de sesión para RRHH
+        $query = "SELECT 
+                    s.ID_SOLICITUD,
+                    s.NUM_TIENDA,
+                    s.PUESTO_SOLICITADO,
+                    s.SOLICITADO_POR,
+                    s.ESTADO_APROBACION,
+                    s.DIRIGIDO_RH,
+                    s.FECHA_SOLICITUD,
+                    ag.COMENTARIO_GERENTE,
+                    ag.GERENTE,
+                    ag.CODIGO_GERENTE,
+                    TO_CHAR(ag.FECHA_DECISION, 'DD/MM/YYYY HH24:MI:SS') as FECHA_DECISION_FORMATO
+                  FROM ROY_SOLICITUD_PERSONAL s
+                  LEFT JOIN ROY_APROBACIONES_GERENCIA ag ON s.ID_SOLICITUD = ag.ID_SOLICITUD
+                  WHERE s.ID_SOLICITUD = :id_solicitud";
+        
+        $stmt = oci_parse($conn, $query);
+        oci_bind_by_name($stmt, ':id_solicitud', $id_solicitud);
+        
+        if (!oci_execute($stmt)) {
+            $error = oci_error($stmt);
+            throw new Exception("Error en consulta: " . $error['message']);
+        }
+        
+        if ($row = oci_fetch_assoc($stmt)) {
+            // Leer comentario CLOB
+            $comentario_completo = '';
+            if ($row['COMENTARIO_GERENTE']) {
+                $comentario_completo = $row['COMENTARIO_GERENTE']->read($row['COMENTARIO_GERENTE']->size());
+                $row['COMENTARIO_GERENTE']->free();
+            }
+            
+            // OBTENER NOMBRE COMPLETO DEL GERENTE
+            $nombre_gerente = 'No disponible';
+            if (!empty($row['GERENTE'])) {
+                $nombre_gerente = $row['GERENTE'];
+            } elseif (!empty($row['CODIGO_GERENTE'])) {
+                $gerente_nombres = [
+                    '5333' => 'Christian Quan', 
+                    '5210' => 'Giovanni Cardoza'
+                ];
+                $nombre_gerente = $gerente_nombres[$row['CODIGO_GERENTE']] ?? 'Gerente código ' . $row['CODIGO_GERENTE'];
+            }
+            
+            // Extraer solo el comentario limpio - USAR LA MISMA LÓGICA QUE FUNCIONA EN GERENTES
+            $comentario_limpio = 'Sin comentario adicional';
+            if ($comentario_completo) {
+                // Debug para ver qué contiene
+                error_log("COMENTARIO COMPLETO DEBUG: " . $comentario_completo);
+                
+                // MÉTODO DIRECTO: buscar y extraer solo después de los dos puntos
+                if (strpos($comentario_completo, 'Comentario de aprobacion:') !== false) {
+                    $comentario_limpio = substr($comentario_completo, strpos($comentario_completo, 'Comentario de aprobacion:') + strlen('Comentario de aprobacion:'));
+                    $comentario_limpio = trim($comentario_limpio);
+                    // Quitar todo lo que viene después incluyendo saltos de línea
+                    $comentario_limpio = explode("\n", $comentario_limpio)[0];
+                    $comentario_limpio = trim($comentario_limpio);
+                } elseif (strpos($comentario_completo, 'Motivo del rechazo:') !== false) {
+                    $comentario_limpio = substr($comentario_completo, strpos($comentario_completo, 'Motivo del rechazo:') + strlen('Motivo del rechazo:'));
+                    $comentario_limpio = trim($comentario_limpio);
+                    $comentario_limpio = explode("\n", $comentario_limpio)[0];
+                    $comentario_limpio = trim($comentario_limpio);
+                } else {
+                    // Si no encuentra el patrón, tomar la línea más útil
+                    $lineas = explode("\n", $comentario_completo);
+                    foreach ($lineas as $linea) {
+                        $linea = trim($linea);
+                        if (!empty($linea) && 
+                            stripos($linea, 'GERENCIAL') === false && 
+                            stripos($linea, 'Procesado por') === false && 
+                            stripos($linea, 'Asignado a RRHH') === false && 
+                            stripos($linea, 'Fecha de procesamiento') === false &&
+                            !preg_match('/^\d{4}-\d{2}-\d{2}/', $linea) &&
+                            strlen($linea) > 3) {
+                            
+                            // Si la línea contiene dos puntos, tomar solo lo que está después
+                            if (strpos($linea, ':') !== false) {
+                                $partes = explode(':', $linea);
+                                $comentario_limpio = trim(end($partes));
+                            } else {
+                                $comentario_limpio = $linea;
+                            }
+                            break;
+                        }
+                    }
+                }
+                
+                // ÚLTIMA LIMPIEZA: quitar caracteres extraños y fechas
+                $comentario_limpio = str_replace(['?', '??'], '', $comentario_limpio);
+                $comentario_limpio = preg_replace('/\s*Fecha de procesamiento:.*$/', '', $comentario_limpio);
+                $comentario_limpio = trim($comentario_limpio);
+                
+                // Si después de todo sigue vacío, poner mensaje por defecto
+                if (empty($comentario_limpio) || strlen($comentario_limpio) < 3) {
+                    $comentario_limpio = 'Aprobacion procesada';
+                }
+                
+                error_log("COMENTARIO LIMPIO EXTRAIDO: " . $comentario_limpio);
+            }
+            
+            // Formatear fecha de solicitud
+            $fecha_solicitud_formato = '';
+            if ($row['FECHA_SOLICITUD']) {
+                if (is_object($row['FECHA_SOLICITUD'])) {
+                    $fecha_solicitud_formato = $row['FECHA_SOLICITUD']->format('d/m/Y');
+                } else {
+                    $fecha_obj = DateTime::createFromFormat('d/M/y', $row['FECHA_SOLICITUD']);
+                    if ($fecha_obj) {
+                        $fecha_solicitud_formato = $fecha_obj->format('d/m/Y');
+                    } else {
+                        $fecha_solicitud_formato = $row['FECHA_SOLICITUD'];
+                    }
+                }
+            }
+            
+            ob_clean(); // Limpiar cualquier output previo
+            echo json_encode([
+                'success' => true,
+                'solicitud' => [
+                    'id' => $row['ID_SOLICITUD'],
+                    'tienda' => $row['NUM_TIENDA'],
+                    'puesto_solicitado' => $row['PUESTO_SOLICITADO'],
+                    'supervisor' => $row['SOLICITADO_POR'],
+                    'estado_aprobacion' => $row['ESTADO_APROBACION'],
+                    'dirigido_rh' => $row['DIRIGIDO_RH'],
+                    'fecha_solicitud' => $fecha_solicitud_formato
+                ],
+                'resumen_aprobacion' => [
+                    'procesado_por' => $nombre_gerente,
+                    'asignado_a' => $row['DIRIGIDO_RH'],
+                    'comentario_aprobacion' => $comentario_limpio,
+                    'fecha_procesamiento' => $row['FECHA_DECISION_FORMATO']
+                ]
+            ]);
+            exit; // Evitar que se ejecute código adicional
+        } else {
+            ob_clean();
+            echo json_encode(['success' => false, 'error' => 'Solicitud no encontrada']);
+            exit;
+        }
+        
+        oci_free_statement($stmt);
+        
+    } catch (Exception $e) {
+        ob_clean();
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        exit;
+    }
+    
+    oci_close($conn);
+    break;
+
 
     }
 }
