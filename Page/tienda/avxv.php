@@ -3,8 +3,6 @@ require_once "../../Funsiones/consulta.php";
 require_once "../../Funsiones/kpi.php";
 require_once "../../Funsiones/tienda/queryRpro.php";
 
-
-
 $tienda = (isset($_POST['tienda'])) ? $_POST['tienda'] : '';
 $fi = date('Y-m-d', strtotime(substr($_POST['fecha'], 0, -13)));
 $ff = date('Y-m-d', strtotime(substr($_POST['fecha'], -10)));
@@ -25,6 +23,24 @@ $semanas = rangoWe($fi, $ff);
 $tiendas = explode(',', $tienda);
 sort($tiendas);
 ?>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="../css/estiloavx.css">
+    <title>Análisis Ventas X Vendedor</title>
+</head>
+<body>
+
+<!-- Título principal del reporte -->
+<div class="main-title">
+    <h1 id="titulo-reporte"><i class="fas fa-chart-line"></i> Análisis Ventas X Vendedor</h1>
+    <p class="subtitle">Reporte detallado del período: <?php echo date('d/m/Y', strtotime($fi)) . ' al ' . date('d/m/Y', strtotime($ff)); ?></p>
+</div>
+
 <div class="container-fluid shadow rounded py-3 px-4">
   <?php
   foreach ($tiendas as $tienda) {
@@ -118,16 +134,19 @@ sort($tiendas);
       $cnt = 1;
 
   ?>
-       <br><small class="h4 text-primary font-weight-bold text-center"><?php echo "| Dia:" . date('d-m') . " | Meta del Dia: Q " . number_format(MTDS($tienda,  $fi, date('Y', strtotime($ff)), $sbs)[0], 2) . " |" ?></small></br></h3>
+       
+     <!-- Contenedor centrado para encabezado -->
+ <br><small class="h4 text-primary font-weight-bold text-center"><?php echo "| Dia:" . date('d-m') . " | Meta del Dia: Q " . number_format(MTDS($tienda,  $fi, date('Y', strtotime($ff)), $sbs)[0], 2) . " |" ?></small></br></h3>
+
       
-      <table style="font-size:14px;" class="table table-hover table-sm tbavxv">
+      <table style="font-size:17px;" class="table table-hover table-sm tbavxv">
         <thead class="bg-primary">
           <td>No</td>
           <td>Antiguedad</td>
           <td>Código</td>
           <td>Asesora</td>
           <td>Puesto</td>
-          <td>hora</td>
+          <td>Hora</td>
           <td>Meta Sem.</td>
           <td>Venta</td>
           <td>Diferencia</td>
@@ -150,8 +169,8 @@ sort($tiendas);
           ?>
             <tr>
               <td><?php echo $cnt++ ?></td>
-              <td><?php echo Antiguedad($avxv[15])[0] . " - días" ?></td>
-              <td><b><?php echo $avxv[0] ?><b></td>
+              <td><?php echo Antiguedad($avxv[15])[0] . " días" ?></td>
+              <td><b><?php echo $avxv[0] ?></b></td>
               <td><?php echo ucwords(strtolower($avxv[1])) ?></td>
               <td><?php echo substr($avxv[2], 0, 3) ?></td>
               <td><?php echo $avxv[16] ?></td>
@@ -210,114 +229,129 @@ sort($tiendas);
             <td><?php echo upt($total[0], $total[3], $total[4]) ?></td>
             <td><?php echo $sim[0] . " " . qpt($total[5], $total[0]) ?></td>
             <td><?php echo $sim[0] . " " . vh($total[5],$total[7])?></td>
-            <td><?php echo Porcentaje($total[5], $total[6]) . " %" ?></th>
+            <td><?php echo Porcentaje($total[5], $total[6]) . " %" ?></td>
             <td>
               <span class="<?php echo status(Porcentaje($total[5], $total[6])) ?>" style="<?php echo color(Porcentaje($total[5], $total[6])) ?>"></span>
             </td>
           </tr>
-                        <!--SE AGREGA PARA CALCULO DE PORCENTAJE DE META CONTRA VENTA-->
-                <br>
-              
-
-                          <thead  class="bg-primary">
-                                                                                            
-                                          <tr>
-                                              <th bgcolor="#FFFFFF" align="center" colspan="20"><font color="Black"><h2> RESUMEN  VENTAS  VRS  METAS</h2></font></th>
-                                          </tr>    
-                                          <tr>     
-                                          <td>TIENDA</td>
-                                          <td>META PARES</td>
-                                          <td>VENTA PARES</td>
-                                          <td>DIFERENCIA</td>
-                                          <td>PORCENTAJE META</td>
-                                          <td>Estado</td>     
-                                          <td> | </td>
-                                          <td>META SIN IVA</td>
-                                          <td>VENTA SIN IVA</td>
-                                          <td>DIFERENCIA</td>
-                                          <td>PORCENTAJE META</td>
-                                          <td>Estado</td>                                  
-                                            
-                                          </tr>
-
-                                         
-                          </thead>
-
-                          <tbody align="center" style="background-color: #ccc; font-weight:bold;">
-		                    	<?php
-				 $query ="
-									SELECT TIENDA, ROUND(SUM(META_S_IVA),2) META_S_IVA, ROUND(SUM(META_C_IVA),2)META_C_IVA,SUM(META_PRS)META_PRS 
-									FROM ROY_META_DIARIA_TDS
-									WHERE FECHA  between to_date('$fi 00:00:00', 'YYYY-MM-DD HH24:MI:SS') ANd to_date('$ff 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
-									AND TIENDA in($tienda)
-									GROUP BY TIENDA
-									ORDER BY  TIENDA
-								 ";
-                 $resultado1 = consultaOracle(3, $query);
-                 $cnt = 1;
-
-                 
-                 foreach ($resultado1 as $avxv1) {
-                 ?>
-                   <tr>
-                     
-                     <td><b><?php echo $avxv1[0] ?><b></td>
-                     <td><b><?php echo $avxv1[3] ?><b></td>
-                     <td><?php echo $total[3] ?></td>
-                     <td style="<?php echo v_vrs_m(DifVentaMeta($total[3], $avxv1[3])) ?>"><?php echo iva($iva, DifVentaMeta($total[3],$avxv1[3]), $sbs) ?></td>
-                     <td><?php echo Porcentaje($total[3], $avxv1[3]) . " %" ?></th>
-                     <td><span class="<?php echo status(Porcentaje($total[3], $avxv1[3])) ?>" style="<?php echo color(Porcentaje($total[3], $avxv1[3])) ?>"></span></td>
-                     <td> | </td>
-                     <td><?php echo iva($iva, $avxv1[1], $sbs) ?></td>
-                    <td><?php echo iva($iva, $total[5], $sbs) ?></td>
-                    <td style="<?php echo v_vrs_m(DifVentaMeta($total[5], $avxv1[1])) ?>"><?php echo iva($iva, DifVentaMeta($total[5],$avxv1[1]), $sbs) ?></td>
-                    <td><?php echo Porcentaje($total[5], $avxv1[1]) . " %" ?></th>
-                    <td>
-                      <span class="<?php echo status(Porcentaje($total[5], $avxv1[1])) ?>" style="<?php echo color(Porcentaje($total[5], $avxv1[1])) ?>"></span>
-                    </td>
-                    
-                   </tr>
-					
-					
-								 
-										 
-								 <?php
-				 
-								 
-									 
-								 }//fin del for
-								 
-								 
-								 ?>
-			                    </tbody>                  
-                      
         </tbody>
-           
-        <tfoot >
-               
-        </tfoot>
       </table>
+
+      <!-- Tabla de resumen -->
+      <div class="summary-section">
+          <table class="table summary-table">
+              <thead class="bg-primary">                                                                                   
+                  <tr>
+                      <th bgcolor="#FFFFFF" align="center" colspan="12">
+                          <h2><i class="fas fa-chart-bar"></i> RESUMEN VENTAS VRS METAS</h2>
+                      </th>
+                  </tr>    
+                  <tr>     
+                      <td>TIENDA</td>
+                      <td>META PARES</td>
+                      <td>VENTA PARES</td>
+                      <td>DIFERENCIA</td>
+                      <td>PORCENTAJE META</td>
+                      <td>Estado</td>     
+                      <td class="separator">|</td>
+                      <td>META SIN IVA</td>
+                      <td>VENTA SIN IVA</td>
+                      <td>DIFERENCIA</td>
+                      <td>PORCENTAJE META</td>
+                      <td>Estado</td>                                  
+                  </tr>
+              </thead>
+
+              <tbody align="center" style="background-color: #ccc; font-weight:bold;">
+                  <?php
+                  $query ="
+                      SELECT TIENDA, ROUND(SUM(META_S_IVA),2) META_S_IVA, ROUND(SUM(META_C_IVA),2)META_C_IVA,SUM(META_PRS)META_PRS 
+                      FROM ROY_META_DIARIA_TDS
+                      WHERE FECHA  between to_date('$fi 00:00:00', 'YYYY-MM-DD HH24:MI:SS') ANd to_date('$ff 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+                      AND TIENDA in($tienda)
+                      GROUP BY TIENDA
+                      ORDER BY  TIENDA
+                  ";
+                  $resultado1 = consultaOracle(3, $query);
+                  $cnt = 1;
+                 
+                  foreach ($resultado1 as $avxv1) {
+                  ?>
+                      <tr>
+                          <td><b><?php echo $avxv1[0] ?></b></td>
+                          <td><b><?php echo $avxv1[3] ?></b></td>
+                          <td><?php echo $total[3] ?></td>
+                          <td style="<?php echo v_vrs_m(DifVentaMeta($total[3], $avxv1[3])) ?>"><?php echo iva($iva, DifVentaMeta($total[3],$avxv1[3]), $sbs) ?></td>
+                          <td><?php echo Porcentaje($total[3], $avxv1[3]) . " %" ?></td>
+                          <td><span class="<?php echo status(Porcentaje($total[3], $avxv1[3])) ?>" style="<?php echo color(Porcentaje($total[3], $avxv1[3])) ?>"></span></td>
+                          <td class="separator">|</td>
+                          <td><?php echo iva($iva, $avxv1[1], $sbs) ?></td>
+                          <td><?php echo iva($iva, $total[5], $sbs) ?></td>
+                          <td style="<?php echo v_vrs_m(DifVentaMeta($total[5], $avxv1[1])) ?>"><?php echo iva($iva, DifVentaMeta($total[5],$avxv1[1]), $sbs) ?></td>
+                          <td><?php echo Porcentaje($total[5], $avxv1[1]) . " %" ?></td>
+                          <td>
+                              <span class="<?php echo status(Porcentaje($total[5], $avxv1[1])) ?>" style="<?php echo color(Porcentaje($total[5], $avxv1[1])) ?>"></span>
+                          </td>
+                      </tr>
+                  <?php
+                  }
+                  ?>
+              </tbody>                  
+          </table>
+      </div>
 
       <hr>
   <?php
     }
-  
   ?>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script>
-  $('.tbavxv').DataTable({
-    "searching": false,
-    "paging": false,
-    "ordering": false,
-    "info": false,
-    "responsive": true,
-    "autoWidth": false
+  $(document).ready(function() {
+    // Configuración de DataTables
+    $('.tbavxv').DataTable({
+      "searching": false,
+      "paging": false,
+      "ordering": false,
+      "info": false,
+      "responsive": true,
+      "autoWidth": false
+    });
+
+    // Inicializar tooltips
+    $('.tooltip').tooltip();
+
+    // Cargar script adicional
+    var url = "../Js/tienda/tienda.js";
+    $.getScript(url);
+
+    // Función para actualizar el título desde JavaScript externo
+    window.actualizarTitulo = function(nuevoTitulo) {
+      $('#titulo-reporte').html('<i class="fas fa-chart-line"></i> ' + nuevoTitulo);
+      document.title = nuevoTitulo;
+    };
+
+    // Escuchar cambios en el título para actualizarlo automáticamente
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'childList') {
+          const tituloElement = document.getElementById('titulo');
+          if (tituloElement && tituloElement.textContent) {
+            actualizarTitulo(tituloElement.textContent);
+          }
+        }
+      });
+    });
+
+    // Observar cambios en el DOM para detectar cuando se actualice el título
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
   });
-
-  $('.tooltip').tooltip();
-
-  var url = "../Js/tienda/tienda.js";
-  $.getScript(url);
-
 </script>
+
+</body>
+</html>

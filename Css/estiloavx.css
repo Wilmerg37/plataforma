@@ -1,0 +1,472 @@
+/* ===== ESTILOS PROFESIONALES PARA REPORTE DE VENTAS ===== */
+
+/* Variables CSS para colores profesionales */
+:root {
+    --primary-color: #2563eb;
+    --primary-dark: #1d4ed8;
+    --secondary-color: #64748b;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #06b6d4;
+    --light-gray: #f8fafc;
+    --medium-gray: #e2e8f0;
+    --dark-gray: #000000;
+    --white: #ffffff;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+/* Reset y estilos base */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    margin: 0;
+    padding: 20px;
+    line-height: 1.6;
+}
+
+/* Título principal del reporte */
+.main-title {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: var(--white);
+    padding: 25px 30px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+}
+
+.main-title h1 {
+    margin: 0 0 10px 0;
+    font-size: 2.2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.main-title h1 i {
+    margin-right: 15px;
+    color: #60a5fa;
+}
+
+.main-title .subtitle {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #e2e8f0;
+    font-weight: 400;
+}
+
+/* Encabezado de tienda */
+.store-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border: 1px solid var(--medium-gray);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.store-title {
+    color: var(--primary-color);
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0 0 15px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.store-title i {
+    margin-right: 10px;
+    color: var(--info-color);
+}
+
+.daily-info {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.info-badge {
+    background: var(--white);
+    border: 1px solid var(--medium-gray);
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--dark-gray);
+    box-shadow: var(--shadow-sm);
+}
+
+.info-badge i {
+    margin-right: 6px;
+    color: var(--info-color);
+}
+
+.meta-badge {
+    background: linear-gradient(135deg, var(--success-color), #059669);
+    color: var(--white) !important;
+    border: none;
+}
+
+.meta-badge i {
+    color: #86efac !important;
+}
+
+/* Sección de resumen */
+.summary-section {
+    margin-top: 30px;
+}
+
+.summary-table .separator {
+    background: var(--medium-gray) !important;
+    font-weight: 900;
+    font-size: 1.2rem;
+    color: var(--dark-gray) !important;
+    border-left: 3px solid var(--primary-color);
+    border-right: 3px solid var(--primary-color);
+}
+
+/* Contenedor principal */
+.container-fluid {
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--medium-gray);
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+/* Títulos y encabezados */
+.h4.text-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: var(--white) !important;
+    padding: 15px 25px;
+    margin: -24px -24px 20px -24px;
+    border-radius: 12px 12px 0 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+}
+
+.h4.text-primary::before {
+    content: '\f201';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    margin-right: 8px;
+    font-size: 1.2em;
+}
+
+/* Estilos de tabla principales */
+.table {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+    background: var(--white);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Encabezado de tabla profesional */
+.table thead.bg-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%) !important;
+    color: var(--white);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.table thead.bg-primary td {
+    background: transparent !important;
+    color: var(--white) !important;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 8px;
+    border: none;
+    position: relative;
+    white-space: nowrap;
+    text-align: center;
+}
+
+/* Iconos en encabezados */
+.table thead.bg-primary td:nth-child(1)::before { content: '\f0cb'; font-family: 'Font Awesome 5 Free'; font-weight: 900; margin-right: 5px; }
+.table thead.bg-primary td:nth-child(2)::before { content: '\f017'; font-family: 'Font Awesome 5 Free'; font-weight: 900; margin-right: 5px; }
+.table thead.bg-primary td:nth-child(3)::before { content: '\f2c2'; font-family: 'Font Awesome 5 Free'; font-weight: 900; margin-right: 5px; }
+.table thead.bg-primary td:nth-child(4)::before { content: '\f007'; font-family: 'Font Awesome 5 Free'; font-weight: 900; margin-right: 5px; }
+.table thead.bg-primary td:nth-child(5)::before { content: '\f0f2'; font-family: 'Font Awesome 5 Free'; font-weight: 900; margin-right: 5px; }
+.table thead.bg-primary td:nth-child(6)::before { content: '\f017'; font-family: 'Font Awesome 5 Free'; font-weight: 900; margin-right: 5px; }
+.table thead.bg-primary td:nth-child(7)::before { content: '\f140'; font-family: 'Font Awesome 5 Free'; font-weight: 900; margin-right: 5px; }
+.table thead.bg-primary td:nth-child(8)::before { content: '\f155'; font-family: 'Font Awesome 5 Free'; font-weight: 900; margin-right: 5px; }
+.table thead.bg-primary td:nth-child(9)::before { content: '\f201'; font-family: 'Font Awesome 5 Free'; font-weight: 900; margin-right: 5px; }
+.table thead.bg-primary td:nth-child(10)::before { content: '\f571'; font-family: 'Font Awesome 5 Free'; font-weight: 900; margin-right: 5px; }
+.table thead.bg-primary td:nth-child(19)::before { content: '\f200'; font-family: 'Font Awesome 5 Free'; font-weight: 900; margin-right: 5px; }
+.table thead.bg-primary td:nth-child(20)::before { content: '\f06e'; font-family: 'Font Awesome 5 Free'; font-weight: 900; margin-right: 5px; }
+
+/* Filas del cuerpo de la tabla */
+.table tbody tr {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid var(--medium-gray);
+}
+
+.table tbody tr:hover {
+    background-color: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: #f9fafb;
+}
+
+.table tbody td {
+    padding: 10px 8px;
+    vertical-align: middle;
+    border: none;
+    font-size: 14px;
+    text-align: center;
+    white-space: nowrap;
+    position: relative;
+}
+
+/* Códigos de vendedor destacados */
+.table tbody td:nth-child(3) b {
+    background: linear-gradient(135deg, var(--info-color), #0891b2);
+    color: var(--white);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Nombres de asesores */
+.table tbody td:nth-child(4) {
+    text-align: left;
+    font-weight: 500;
+    color: var(--dark-gray);
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Fila de totales */
+.table tbody tr.table-active {
+    background: linear-gradient(135deg, var(--light-gray) 0%, var(--medium-gray) 100%) !important;
+    font-weight: 600;
+    color: var(--dark-gray);
+    border-top: 2px solid var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.table tbody tr.table-active td {
+    padding: 12px 8px;
+    font-size: 14px;
+    background: transparent !important;
+}
+
+.table tbody tr.table-active td:nth-child(4) {
+    background: var(--primary-color);
+    color: var(--white);
+    border-radius: 6px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Tabla de resumen */
+.table thead tr th[bgcolor="#FFFFFF"] {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%) !important;
+    color: var(--white) !important;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 20px;
+    border-radius: 8px 8px 0 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: var(--shadow-md);
+}
+
+.table thead tr th[bgcolor="#FFFFFF"] h2 {
+    margin: 0;
+    color: var(--white) !important;
+}
+
+.table tbody tr[style*="background-color: #ccc"] {
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%) !important;
+    font-weight: 600;
+    color: var(--dark-gray);
+    border: 1px solid var(--medium-gray);
+}
+
+.table tbody tr[style*="background-color: #ccc"] td {
+    padding: 12px 10px;
+    font-size: 13px;
+    border-right: 1px solid var(--medium-gray);
+}
+
+.table tbody tr[style*="background-color: #ccc"] td b {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* Separadores visuales */
+hr {
+    border: none;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+    margin: 30px 0;
+    border-radius: 2px;
+}
+
+/* Indicadores de estado (spans con clases de colores) */
+span[class*="text-success"], 
+span[style*="color: green"],
+span[style*="background-color: green"] {
+    background: var(--success-color) !important;
+    color: var(--white) !important;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    display: inline-block;
+    min-width: 20px;
+    min-height: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+span[class*="text-warning"],
+span[style*="color: orange"],
+span[style*="background-color: orange"] {
+    background: var(--warning-color) !important;
+    color: var(--white) !important;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    display: inline-block;
+    min-width: 20px;
+    min-height: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+span[class*="text-danger"],
+span[style*="color: red"],
+span[style*="background-color: red"] {
+    background: var(--danger-color) !important;
+    color: var(--white) !important;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    display: inline-block;
+    min-width: 20px;
+    min-height: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Mejoras para valores monetarios y porcentajes */
+.table tbody td[style*="color:"] {
+    font-weight: 600;
+    padding: 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .table {
+        font-size: 14px;
+    }
+    
+    .table thead.bg-primary td {
+        font-size: 10px;
+        padding: 8px 4px;
+    }
+    
+    .table tbody td {
+        padding: 8px 4px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .container-fluid {
+        margin: 0;
+        border-radius: 8px;
+    }
+    
+    .table {
+        font-size: 10px;
+    }
+    
+    .h4.text-primary {
+        font-size: 0.9rem;
+        padding: 10px 15px;
+    }
+    
+    /* Ocultar algunas columnas en móvil para mejor legibilidad */
+    .table td:nth-child(2),
+    .table td:nth-child(15),
+    .table td:nth-child(16),
+    .table td:nth-child(17) {
+        display: none;
+    }
+}
+
+/* Animaciones sutiles */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.container-fluid {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Mejoras para accesibilidad */
+.table:focus-within {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Estilos para impresión */
+@media print {
+    body {
+        background: white;
+        padding: 0;
+    }
+    
+    .container-fluid {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    .table thead.bg-primary td {
+        background: #333 !important;
+        color: white !important;
+    }
+    
+    .table tbody tr:hover {
+        background: transparent;
+        transform: none;
+        box-shadow: none;
+    }
+}
+

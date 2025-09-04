@@ -144,20 +144,23 @@ if (isset($_GET['action'])) {
 }
 
 
-// VALIDAR si ya hay horarios asignados para la tienda y semana
+// VALIDAR si ya hay horarios asignados para la tienda, semana y año
 if (isset($_GET['action']) && $_GET['action'] === 'check_schedule') {
     $store_no = $_GET['store_no'];
     $fecha = $_GET['fecha']; // Fecha base (inicio de semana)
 
-    // Calcular el número de la semana
-    $semana = date('W', strtotime(date('Y-m-d', strtotime($fecha . ' +1 week'))));
+    // Calcular semana y año basados en la fecha +1 semana
+    $fecha_base = date('Y-m-d', strtotime($fecha . ' +1 week'));
+    $semana = date('W', strtotime($fecha_base));
+    $anio = date('Y', strtotime($fecha_base));
 
     $query = "SELECT COUNT(*) AS TOTAL FROM ROY_HORARIO_TDS 
-              WHERE TIENDA = :tienda AND SEMANA = :semana";
+              WHERE TIENDA = :tienda AND SEMANA = :semana AND ANIO = :anio";
 
     $stmt = oci_parse($conn, $query);
     oci_bind_by_name($stmt, ':tienda', $store_no);
     oci_bind_by_name($stmt, ':semana', $semana);
+    oci_bind_by_name($stmt, ':anio', $anio);
     oci_execute($stmt);
 
     $row = oci_fetch_assoc($stmt);

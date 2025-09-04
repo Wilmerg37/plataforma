@@ -1,0 +1,405 @@
+/* estilords.css - Estilos Profesionales para Reportes */
+
+/* Variables CSS para colores profesionales */
+:root {
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #4b7ba2 100%);
+  --header-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  --table-header-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+--total-row-gradient: linear-gradient(135deg, #2c3e50  0%, #2c3e50 100%);
+  --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  --hover-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+  --border-radius: 15px;
+  --transition: all 0.3s ease;
+}
+
+/* Contenedor principal con fondo profesional */
+.professional-tienda-container {
+  background: var(--primary-gradient);
+  min-height: 100vh;
+  padding: 20px 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Tarjeta de reporte principal */
+.tienda-report-card {
+  background: #ffffff;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  margin-bottom: 30px;
+  overflow: hidden;
+  transition: var(--transition);
+  animation: slideInUp 0.6s ease forwards;
+}
+
+.tienda-report-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--hover-shadow);
+}
+
+/* Encabezado con gradiente profesional */
+.tienda-header-gradient {
+  background: var(--header-gradient);
+  color: white;
+  padding: 25px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.tienda-header-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+  opacity: 0.3;
+}
+
+.tienda-header-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Títulos del encabezado */
+.tienda-title {
+  font-size: 2.1rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  color: #fff;
+}
+
+.tienda-subtitle {
+  font-size: 1.1rem;
+  opacity: 0.95;
+  font-weight: 400;
+  color: #ecf0f1;
+}
+
+/* Tabla profesional */
+.professional-tienda-table {
+  font-size: 14px;
+  margin: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+/* Encabezado de tabla con gradiente */
+.professional-tienda-table thead {
+  background: var(--table-header-gradient);
+  color: white;
+}
+
+.professional-tienda-table thead td {
+  padding: 15px 8px;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  position: relative;
+  vertical-align: middle;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Cuerpo de la tabla */
+.professional-tienda-table tbody td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #ecf0f1;
+  text-align: center;
+  transition: var(--transition);
+  vertical-align: middle;
+  font-size: 13px;
+}
+
+/* Efecto hover en filas */
+.professional-tienda-table tbody tr:hover {
+  background: linear-gradient(90deg, #f8f9fa 0%, #e3f2fd 50%, #f8f9fa 100%);
+  transform: scale(1.005);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.professional-tienda-table tbody tr:nth-child(even) {
+  background-color: #fafbfc;
+}
+
+/* Fila de totales con estilo especial */
+.tienda-total-row {
+  background: var(--total-row-gradient) !important;
+  color: white !important;
+  font-weight: 700;
+  box-shadow: 0 3px 12px rgba(231, 76, 60, 0.3);
+  border-top: 3px solid #c0392b !important;
+}
+
+.tienda-total-row td {
+  border: none !important;
+  padding: 16px 8px !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  font-size: 13px;
+}
+
+/* Badges y elementos destacados */
+.tienda-metric-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: linear-gradient(45deg, #3498db, #2980b9);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.tienda-code-badge {
+  background: linear-gradient(45deg, #9b59b6, #8e44ad);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.tienda-position-badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.position-jefe { background: linear-gradient(45deg, #e74c3c, #c0392b); color: white; }
+.position-sub { background: linear-gradient(45deg, #f39c12, #e67e22); color: white; }
+.position-asesor { background: linear-gradient(45deg, #27ae60, #229954); color: white; }
+
+/* Indicadores de estado */
+.tienda-status-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Iconos en encabezados */
+.tienda-icon-header {
+  margin-right: 8px;
+  font-size: 1.1em;
+  opacity: 0.9;
+}
+
+.tienda-table-icon {
+  margin-right: 5px;
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+/* Divider profesional */
+.tienda-divider {
+  height: 4px;
+  background: linear-gradient(90deg, #3498db, #9b59b6, #e74c3c, #f39c12);
+  border: none;
+  margin: 40px 0;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Contenedor responsive para tabla */
+.tienda-table-responsive {
+  overflow-x: auto;
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+  background: white;
+}
+
+/* Scrollbar personalizado */
+.tienda-table-responsive::-webkit-scrollbar {
+  height: 8px;
+}
+
+.tienda-table-responsive::-webkit-scrollbar-track {
+  background: #f1f2f6;
+  border-radius: 10px;
+}
+
+.tienda-table-responsive::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #3498db, #2980b9);
+  border-radius: 10px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.tienda-table-responsive::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #2980b9, #3498db);
+}
+
+/* Animaciones */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(52, 152, 219, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+}
+
+/* Efectos especiales para métricas importantes */
+.highlight-metric {
+  background: linear-gradient(45deg, #f1c40f, #f39c12);
+  color: #2c3e50;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-weight: 700;
+  text-shadow: none;
+}
+
+/* Estilos para diferentes tipos de datos */
+.currency-value {
+  font-weight: 600;
+  color: #034e22;
+}
+
+.percentage-value {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.count-value {
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .professional-tienda-table {
+    font-size: 12px;
+  }
+  
+  .professional-tienda-table thead td,
+  .professional-tienda-table tbody td {
+    padding: 10px 6px;
+  }
+}
+
+@media (max-width: 768px) {
+  .professional-tienda-table {
+    font-size: 11px;
+  }
+  
+  .tienda-title {
+    font-size: 1.7rem;
+  }
+  
+  .tienda-subtitle {
+    font-size: 1rem;
+  }
+  
+  .professional-tienda-table thead td,
+  .professional-tienda-table tbody td,
+  .tienda-total-row td {
+    padding: 8px 3px !important;
+    font-size: 10px;
+  }
+  
+  .tienda-metric-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+}
+
+@media (max-width: 576px) {
+  .professional-tienda-container {
+    padding: 10px 0;
+  }
+  
+  .tienda-header-gradient {
+    padding: 20px 15px;
+  }
+  
+  .tienda-title {
+    font-size: 1.5rem;
+  }
+  
+  .tienda-subtitle {
+    font-size: 0.9rem;
+  }
+}
+
+/* Mejoras adicionales para accesibilidad */
+.professional-tienda-table tbody tr:focus-within {
+  outline: 2px solid #3498db;
+  outline-offset: -2px;
+}
+
+/* Estados de carga */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Tooltips personalizados */
+.tienda-tooltip {
+  position: relative;
+  cursor: help;
+}
+
+.tienda-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2c3e50;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  z-index: 1000;
+}
+
+.tienda-tooltip:hover::after {
+  opacity: 1;
+}
+
+/* Estilos para impresión */
+@media print {
+  .professional-tienda-container {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .tienda-report-card {
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+  
+  .tienda-header-gradient,
+  .professional-tienda-table thead {
+    background: #f8f9fa !important;
+    color: black !important;
+  }
+}

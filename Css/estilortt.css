@@ -1,0 +1,723 @@
+/* ===== ESTILOS PROFESIONALES PARA REPORTE DE TENDENCIAS POR TIENDA ===== */
+
+/* Variables CSS para colores profesionales */
+:root {
+    --primary-color: #3b82f6;
+    --primary-dark: #1e40af;
+    --secondary-color: #64748b;
+    --success-color: #22c55e;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #06b6d4;
+    --light-gray: #f8fafc;
+    --medium-gray: #e2e8f0;
+    --dark-gray: #475569;
+    --white: #ffffff;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    --gradient-success: linear-gradient(135deg, var(--success-color) 0%, #16a34a 100%);
+}
+
+/* Reset y estilos base */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    margin: 0;
+    padding: 20px;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+/* Título principal del reporte */
+.main-title {
+    background: var(--gradient-primary);
+    color: var(--white);
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.main-title::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: translateX(-100%);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.main-title h1 {
+    margin: 0 0 15px 0;
+    font-size: 2.4rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    position: relative;
+    z-index: 1;
+}
+
+.main-title h1 i {
+    margin-right: 15px;
+    color: #93c5fd;
+    font-size: 2.2rem;
+}
+
+.main-title .subtitle {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #e2e8f0;
+    font-weight: 400;
+    position: relative;
+    z-index: 1;
+}
+
+/* Contenedor principal */
+.container-fluid {
+    background: var(--white);
+    border-radius: 15px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--medium-gray);
+    margin-bottom: 30px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Encabezado de tienda */
+.store-header {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-bottom: 3px solid var(--primary-color);
+    padding: 25px 30px;
+    margin: -24px -24px 25px -24px;
+    position: relative;
+}
+
+.store-title {
+    color: var(--primary-color);
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0 0 15px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.store-title i {
+    margin-right: 12px;
+    color: var(--info-color);
+    font-size: 1.6rem;
+}
+
+.period-info {
+    display: flex;
+    align-items: center;
+}
+
+.period-badge {
+    background: var(--white);
+    border: 2px solid var(--primary-color);
+    padding: 10px 18px;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.period-badge:hover {
+    background: var(--primary-color);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.period-badge i {
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+
+/* Contenedor de tabla */
+.table-container {
+    overflow-x: auto;
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Estilos de tabla */
+.table {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+    background: var(--white);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Encabezado de tabla */
+.table thead.bg-primary {
+    background: var(--gradient-primary) !important;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.table thead.bg-primary td {
+    background: transparent !important;
+    color: var(--white) !important;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 15px 12px;
+    border: none;
+    text-align: center;
+    white-space: nowrap;
+    position: relative;
+}
+
+.table thead.bg-primary td:first-child::before { content: '\f017'; font-family: 'Font Awesome 5 Free'; font-weight: 900; margin-right: 6px; }
+.table thead.bg-primary td:nth-child(2)::before { content: '\f2c2'; font-family: 'Font Awesome 5 Free'; font-weight: 900; margin-right: 6px; }
+.table thead.bg-primary td:nth-child(3)::before { content: '\f007'; font-family: 'Font Awesome 5 Free'; font-weight: 900; margin-right: 6px; }
+.table thead.bg-primary td:nth-child(4)::before { content: '\f0f2'; font-family: 'Font Awesome 5 Free'; font-weight: 900; margin-right: 6px; }
+
+.semana-header {
+    background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%) !important;
+    min-width: 80px;
+}
+
+.semana-header i {
+    margin-right: 5px;
+    color: #93c5fd;
+}
+
+/* Filas de vendedores */
+.vendedor-row {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid var(--medium-gray);
+}
+
+.vendedor-row:hover,
+.vendedor-row.row-hover {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.vendedor-row:nth-child(even) {
+    background-color: #fafbfc;
+}
+
+.table tbody td {
+    padding: 12px 10px;
+    vertical-align: middle;
+    border: none;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* Celdas específicas */
+.antiguedad-cell {
+    font-size: 11px;
+    color: var(--secondary-color);
+    font-weight: 500;
+}
+
+.codigo-cell b {
+    background: linear-gradient(135deg, var(--info-color), #0891b2);
+    color: var(--white);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    box-shadow: var(--shadow-sm);
+    display: inline-block;
+}
+
+.nombre-cell {
+    text-align: left !important;
+    font-weight: 600;
+    color: var(--dark-gray);
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.puesto-cell {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--primary-color);
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 6px;
+    padding: 4px 8px !important;
+}
+
+/* Indicadores de rendimiento */
+.performance-cell {
+    padding: 8px !important;
+}
+
+.performance-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.8);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.percentage {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--dark-gray);
+}
+
+/* Celda sin datos */
+.no-data-cell {
+    background: #f9fafb;
+    color: var(--secondary-color);
+}
+
+.no-data-indicator {
+    opacity: 0.4;
+    font-size: 1.2em;
+}
+
+/* Fila de promedio */
+.promedio-row {
+    background: var(--gradient-success) !important;
+    color: var(--white) !important;
+    font-weight: 700;
+    border-top: 3px solid #16a34a;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.promedio-row td {
+    padding: 15px 12px !important;
+    border: none;
+    background: transparent !important;
+}
+
+.promedio-label {
+    text-align: center !important;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.promedio-label i {
+    margin-right: 8px;
+    color: #bbf7d0;
+}
+
+.promedio-cell {
+    text-align: center;
+}
+
+.promedio-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.promedio-indicator .status-dot {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.8);
+}
+
+.percentage-bold {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--white);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Separador entre tiendas */
+.store-divider {
+    border: none;
+    height: 4px;
+    background: var(--gradient-primary);
+    margin: 40px 0;
+    border-radius: 2px;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Indicadores de estado mejorados */
+span[class*="text-success"], 
+span[style*="color: green"],
+span[style*="background-color: green"] {
+    background: var(--success-color) !important;
+    color: var(--white) !important;
+}
+
+span[class*="text-warning"],
+span[style*="color: orange"],
+span[style*="background-color: orange"] {
+    background: var(--warning-color) !important;
+    color: var(--white) !important;
+}
+
+span[class*="text-danger"],
+span[style*="color: red"],
+span[style*="background-color: red"] {
+    background: var(--danger-color) !important;
+    color: var(--white) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .main-title h1 {
+        font-size: 2rem;
+    }
+    
+    .store-title {
+        font-size: 1.5rem;
+    }
+    
+    .table {
+        font-size: 12px;
+    }
+    
+    .table thead.bg-primary td {
+        font-size: 11px;
+        padding: 12px 6px;
+    }
+    
+    .table tbody td {
+        font-size: 11px;
+        padding: 10px 6px;
+    }
+    
+    .performance-indicator {
+        gap: 6px;
+    }
+    
+    .percentage {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .main-title {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .main-title h1 {
+        font-size: 1.6rem;
+    }
+    
+    .store-header {
+        padding: 20px;
+        margin: -15px -15px 20px -15px;
+    }
+    
+    .store-title {
+        font-size: 1.3rem;
+    }
+    
+    .table {
+        font-size: 10px;
+    }
+    
+    .table thead.bg-primary td {
+        font-size: 9px;
+        padding: 10px 4px;
+    }
+    
+    .table tbody td {
+        font-size: 10px;
+        padding: 8px 4px;
+    }
+    
+    /* Ajustar anchos en móvil */
+    .table thead.bg-primary td:nth-child(1) { width: 80px; }
+    .table thead.bg-primary td:nth-child(2) { width: 60px; }
+    .table thead.bg-primary td:nth-child(3) { width: 120px; }
+    .table thead.bg-primary td:nth-child(4) { width: 60px; }
+    
+    .semana-header {
+        min-width: 70px !important;
+        width: 70px !important;
+        font-size: 9px !important;
+        padding: 10px 3px !important;
+    }
+    
+    .performance-indicator {
+        flex-direction: column;
+        gap: 2px;
+        height: 35px;
+    }
+    
+    .status-dot {
+        width: 12px;
+        height: 12px;
+    }
+    
+    .percentage {
+        font-size: 9px;
+    }
+}
+    
+    /* Ocultar algunas columnas en móvil para mejor legibilidad */
+    .table td:first-child {
+        display: none;
+    }
+    
+    .performance-indicator {
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .percentage {
+        font-size: 9px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-title h1 {
+        font-size: 1.4rem;
+    }
+    
+    .main-title .subtitle {
+        font-size: 1rem;
+    }
+    
+    .store-title {
+        font-size: 1.1rem;
+    }
+    
+    .period-badge {
+        font-size: 0.9rem;
+        padding: 8px 14px;
+    }
+}
+
+/* Animaciones de entrada */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.container-fluid {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.store-header {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.table-container {
+    animation: fadeInUp 1s ease-out;
+}
+
+/* Efectos de hover mejorados */
+.period-badge:hover {
+    transform: translateY(-3px) scale(1.05);
+}
+
+.codigo-cell b:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(6, 182, 212, 0.3);
+}
+
+/* Estilos para impresión */
+@media print {
+    body {
+        background: white;
+        padding: 0;
+    }
+    
+    .main-title {
+        background: #2563eb !important;
+        color: white !important;
+        box-shadow: none;
+        border: 2px solid #1e40af;
+    }
+    
+    .container-fluid {
+        box-shadow: none;
+        border: 1px solid #000;
+        margin-bottom: 20px;
+    }
+    
+    .store-header {
+        background: #f0f9ff !important;
+        border-bottom: 2px solid #2563eb;
+    }
+    
+    .table thead.bg-primary td {
+        background: #1e40af !important;
+        color: white !important;
+    }
+    
+    .promedio-row {
+        background: #16a34a !important;
+        color: white !important;
+    }
+    
+    .vendedor-row:hover {
+        background: transparent !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* Evitar saltos de página dentro de tablas */
+    .table-container {
+        page-break-inside: avoid;
+    }
+    
+    .store-header {
+        page-break-after: avoid;
+    }
+}
+
+/* Mejoras para accesibilidad */
+.table:focus-within {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Estados de rendimiento personalizados */
+.performance-excellent {
+    background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+}
+
+.performance-good {
+    background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+.performance-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+}
+
+.performance-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+/* Tooltip personalizado para indicadores */
+.performance-indicator {
+    position: relative;
+    cursor: help;
+}
+
+.performance-indicator:hover::after {
+    content: 'Porcentaje de cumplimiento de meta';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 10px;
+    white-space: nowrap;
+    z-index: 1000;
+    margin-bottom: 5px;
+}
+
+.performance-indicator:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+}
+
+/* Efecto de carga */
+.loading-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Estilos para DataTables responsive */
+.dataTables_wrapper {
+    overflow-x: auto;
+}
+
+/* Mejoras visuales adicionales */
+.store-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+}
+
+.main-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}

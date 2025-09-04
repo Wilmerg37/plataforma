@@ -43,47 +43,9 @@ require_once "../auth.php";
 
   <link rel="stylesheet" href="../Css/EstilosGenerales.css">
   <link rel="shortcut icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../Css/estiloinicio.css">
 </head>
-<style>
-  /* Aplica sangría visual a las páginas */
-  .nav-treeview {
-    padding-left: 1rem;
-  }
 
-  .nav-treeview .nav-link {
-    padding-left: 2.5rem; /* Este valor ajusta cuánto se "mete" el submenú */
-  }
-
-  /* Opcional: mejora el aspecto de los íconos de las páginas */
-  .nav-treeview .nav-icon {
-    font-size: 0.9rem;
-  }
-
-/* Color distinto para páginas */
-  .nav-treeview .nav-link {
-    background-color: #1f2d3d; /* Un azul más claro o diferente al principal */
-    color: #c2c7d0;
-  }
-
-  .nav-treeview .nav-link:hover {
-    background-color: #3c4b5a; /* Color al pasar el mouse */
-    color: #ffffff;
-  }
-  /* AUMENTAR ANCHO DEL ASIDE */
-  .main-sidebar {
-    width: 280px !important;
-  }
-
-  .main-header, .content-wrapper, .main-footer {
-    margin-left: 280px !important;
-  }
-
-  /* Opcional: ajustar texto del menú para que no se corte */
-  .nav-sidebar .nav-link {
-    white-space: normal;
-  }
-  
-</style>
 <body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed layout-footer-fixed">
   <div class="wrapper">
 
@@ -245,7 +207,7 @@ require_once "../auth.php";
                   </p>
                 </a>
                 <ul class="nav nav-treeview">
-                  <?php $paginas = paginas($modulo[0]);
+                  <?php $paginas = paginas($modulo[0],$modulo[3]);
                   foreach ($paginas as $pagina) { ?>
                     <li class="nav-item opciones" id="<?php echo $pagina[0] ?>">
                       <a href="#" class="nav-link opcion">
