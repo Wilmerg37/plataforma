@@ -111,7 +111,7 @@
     }
 
     function modulos($perfil){
-      $query = "SELECT m.id,m.icono,m.modulo
+      $query = "SELECT m.id,m.icono,m.modulo, a.perfil_id
                 FROM 	acceso a
 
                   INNER JOIN pagina p
@@ -123,7 +123,7 @@
       return consulta(1, $query);
     }
 
-  function paginas($modulo)
+  function paginas($modulo,$perfil)
   {
     $query = "SELECT CONCAT(m.id,'-',p.id), p.pagina, p.icono
               FROM 	acceso a
@@ -132,6 +132,7 @@
                 INNER JOIN modulo m
                   ON p.modulo_id = m.id
               WHERE m.id = $modulo
+              and a.perfil_id = $perfil
               GROUP BY CONCAT(m.id,'-',p.id), p.pagina, p.icono
                ORDER BY p.id
               "; //se agrega para agrupar listado de opciones en el menu HWG19062024

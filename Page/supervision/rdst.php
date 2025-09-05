@@ -42,87 +42,91 @@ sort($tiendas);
         $hora = 0
       );
 
-      $query = "select	   
-					   A.COD_VENDEDOR CODIGO, 
-                       A.VENDEDOR NOMBRE,
-                       A.PUESTO,
-                       NVL(META,0)META,
-                       ROUND(SUM(A.venta_SIN_IVA),2) VENTA,
-                       NVL(ROUND(SUM(A.venta_SIN_IVA) - (META),2),0) DIFERENCIA,
-					   SUM(A.TRANSACCIONES) FACTURAS,
-					   NVL(SUM(A.PAR_ROY),0) ROY,
-					   NVL(SUM(A.PAR_OTROS),0) OTROS,
-					   NVL(SUM(A.PAR_ROY),0) + NVL(SUM(A.PAR_OTROS),0)  PARES,
-					   NVL(SUM(A.PAR_ACCE),0) ACCESORIOS,
-					   ROUND(DECODE(SUM(A.CANTIDAD),0,SUM(A.VENTA_SIN_IVA),(SUM(A.VENTA_SIN_IVA) / SUM(A.CANTIDAD))),2) PPP,
-					   ROUND(DECODE(SUM(A.TRANSACCIONES),0,SUM(A.CANTIDAD),(SUM(A.CANTIDAD) / SUM(A.TRANSACCIONES))),2)UPT, 
-					   ROUND(DECODE(SUM(A.TRANSACCIONES),0,SUM(A.VENTA_SIN_IVA),(SUM(A.VENTA_SIN_IVA) / SUM(A.TRANSACCIONES))),2) QPT,
-					     NVL(ROUND(SUM(A.venta_SIN_IVA /case when HORA = 0 then 1 else A.HORA END),2),0) VH,
-                       CONTRATACION,
-                        HORA
-					   FROM (
-					   select  t1.store_code, trunc(t1.created_datetime) FECHA, t1.employee1_login_name COD_VENDEDOR,
-					  A.META,
-            A.HORA ,
-					   t1.employee1_full_name VENDEDOR,
-                       E.FECHA_INGRESO CONTRATACION,
-					   E.PUESTO,
-					   case when t1.receipt_type=0 then 1 when t1.receipt_type=1 then -1 end TRANSACCIONES, 
-					   
-					   sum(case when t1.receipt_type=0 and t2.vend_code='001' then (t2.qty)
-								when t1.receipt_type=1 and t2.vend_code='001' then (t2.qty)*-1 end) as par_roy, 
-					   
-					   sum(case when t1.receipt_type=0 and t2.vend_code <> 001 and SUBSTR(T2.DCS_CODE,1,3)not in ('ACC','SER','PRE','PRO')  then (t2.qty)
-								when t1.receipt_type=1 and t2.vend_code <> 001 and SUBSTR(T2.DCS_CODE,1,3)not in ('ACC','SER','PRE','PRO')  then (t2.qty)*-1 end) as par_otros, 
-					   
-					   sum(case when t1.receipt_type=0 and   SUBSTR(T2.DCS_CODE,1,3)= 'ACC' then (t2.qty)
-								when t1.receipt_type=1 and   SUBSTR(T2.DCS_CODE,1,3)= 'ACC' then (t2.qty)*-1 end) par_acce,
-								
-					   sum(case when t1.receipt_type=0  and SUBSTR(T2.DCS_CODE,1,3)not in ('SER','PRE','PRO')   then (T2.qty) 
-								when t1.receipt_type=1  and SUBSTR(T2.DCS_CODE,1,3)not in ('SER','PRE','PRO')  then (T2.qty)*-1 end ) as cantidad,           
-					   
-					   sum(case when t1.receipt_type=0 and SUBSTR(T2.DCS_CODE,1,3)= 'ACC' then (t2.qty*T2.PRICE)
-								when t1.receipt_type=1 and SUBSTR(T2.DCS_CODE,1,3)= 'ACC' then (t2.qty*T2.PRICE)*-1 end)venta_CON_IVA_ACC,
-					   
-						sum(case when t1.receipt_type=0 and   SUBSTR(T2.DCS_CODE,1,3)= 'ACC' then ((T2.price)/1.12*(T2.qty)) 
-								 when t1.receipt_type=1 and   SUBSTR(T2.DCS_CODE,1,3)= 'ACC' then ((T2.price)/1.12*(T2.qty))*-1 end ) as venta_sin_iva_ACC,    
-					   
-					   sum(case when t1.receipt_type=0 then (t2.qty*t2.cost) when t1.receipt_type=1 then (t2.qty*t2.cost)*-1 else 0 end) as costo, 
-					   
-					   sum(case WHEN t1.receipt_type=0 AND SUBSTR(T2.DCS_CODE,1,3)= 'ACC' then ((T2.COST)*(T2.qty))
-								when t1.receipt_type=1 AND SUBSTR(T2.DCS_CODE,1,3)= 'ACC' then ((T2.COST)*(T2.qty))*-1 end ) as COSTO_sin_iva_ACC ,
-							 
-					   NVL(sum(case when t1.receipt_type=0 then ((t2.price-( t2.price*NVL(t1.disc_perc,0)/100))*(t2.qty))
-									when t1.receipt_type=1 then ((t2.price-( t2.price*NVL(t1.disc_perc,0)/100))*(t2.qty))*-1 end ),0)- SUM(NVL( t2.lty_piece_of_tbr_disc_amt,0)) as venta_con_iva, 
-							 
-					   NVL(sum(case when t1.receipt_type=0 then ((t2.price-( t2.price*NVL(t1.disc_perc,0)/100))*(t2.qty))/1.12 
-									when t1.receipt_type=1 then ((t2.price-( t2.price*NVL(t1.disc_perc,0)/100))*(t2.qty))/1.12*-1 end ),0)- SUM(NVL( t2.lty_piece_of_tbr_disc_amt,0))/1.12  as venta_sin_iva   					   
-							 
-					   from rps.document t1 
-                       inner join rps.document_item t2 on (t1.sid = t2.doc_sid)
-					   inner JOIN ROY_META_SEM_X_VENDEDOR A ON  TO_CHAR(trunc(T1.CREATED_DATETIME,'d'),'IW')+1 = A.SEMANA 
-             AND TO_CHAR(T1.CREATED_DATETIME,'IYYY') = A.ANIO 
-             AND T1.STORE_NO = A.TIENDA
-              AND t1.employee1_login_name = A.CODIGO_EMPLEADO 
-              AND T1.SBS_NO = A.SBS
-					   inner join ROY_VENDEDORES_FRIED E on (E.CODIGO_VENDEDOR = t1.employee1_login_name)
-                       
-					   where 1=1
-					   and t1.status=4 
-                    and t1.employee1_full_name not in ('SYSADMIN')
-						and t1.receipt_type<>2
-                          AND T1.sbs_no = $sbs
-                          AND t1.STORE_NO in($tienda)
-                          and EXTRACT(YEAR FROM t1.CREATED_dATETIME)|| TO_CHAR(trunc(T1.CREATED_DATETIME,'d'),'IW')+1 = '$semana'
-                        --AND A.ANIO||A.SEMANA = '$semana' 
-                          $filtro
-                     --   and t1.CREATED_DATETIME between to_date('2024-05-26 00:00:00', 'YYYY-MM-DD HH24:MI:SS') ANd to_date('2024-06-01 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
-						
-						group by t1.store_code,  t1.employee1_login_name, t1.employee1_full_name, trunc(t1.created_datetime), T1.DOC_NO, t1.receipt_type, t1.disc_amt,  A.META, A.HORA,E.PUESTO,E.FECHA_INGRESO
-							  
-                 )A 
-							GROUP BY A.STORE_CODE, A.COD_VENDEDOR, A.VENDEDOR, META,  HORA, PUESTO, CONTRATACION
-                             ORDER BY DECODE(PUESTO, 'JEFE DE TIENDA', 1, 'SUB JEFE DE TIENDA', 2, 'ASESOR DE VENTAS', 3, 4),CONTRATACION ASC";
+      $query = "SELECT   
+    V.CODIGO_EMPLEADO AS CODIGO,
+    E.NOMBRE AS NOMBRE,
+    E.PUESTO,
+    NVL(V.META, 0) AS META,
+    ROUND(NVL(SUM(A.venta_SIN_IVA), 0), 2) AS VENTA,
+    NVL(ROUND(NVL(SUM(A.venta_SIN_IVA), 0) - NVL(V.META, 0), 2), 0) AS DIFERENCIA,
+    NVL(SUM(A.TRANSACCIONES), 0) AS FACTURAS,
+    NVL(SUM(A.PAR_ROY), 0) AS ROY,
+    NVL(SUM(A.PAR_OTROS), 0) AS OTROS,
+    NVL(SUM(A.PAR_ROY), 0) + NVL(SUM(A.PAR_OTROS), 0) AS PARES,
+    NVL(SUM(A.PAR_ACCE), 0) AS ACCESORIOS,
+    ROUND(DECODE(NVL(SUM(A.CANTIDAD), 0), 0, 0, (NVL(SUM(A.VENTA_SIN_IVA), 0) / SUM(A.CANTIDAD))), 2) AS PPP,
+    ROUND(DECODE(NVL(SUM(A.TRANSACCIONES), 0), 0, 0, (NVL(SUM(A.CANTIDAD), 0) / SUM(A.TRANSACCIONES))), 2) AS UPT,
+    ROUND(DECODE(NVL(SUM(A.TRANSACCIONES), 0), 0, 0, (NVL(SUM(A.VENTA_SIN_IVA), 0) / SUM(A.TRANSACCIONES))), 2) AS QPT,
+    NVL(ROUND(NVL(SUM(A.venta_SIN_IVA), 0) / CASE WHEN NVL(V.HORA, 0) = 0 THEN 1 ELSE V.HORA END, 2), 0) AS VH,
+    E.FECHA_INGRESO AS CONTRATACION,
+    NVL(V.HORA, 0) AS HORA
+FROM 
+    -- Tabla base: todos los vendedores con sus metas
+    ROY_META_SEM_X_VENDEDOR V
+    INNER JOIN ROY_VENDEDORES_FRIED E ON (E.CODIGO_VENDEDOR = V.CODIGO_EMPLEADO)
+    
+    -- LEFT JOIN con las ventas para incluir vendedores sin ventas
+    LEFT JOIN (
+        SELECT  
+            t1.store_code, 
+            trunc(t1.created_datetime) FECHA, 
+            t1.employee1_login_name COD_VENDEDOR,
+            CASE WHEN t1.receipt_type = 0 THEN 1 WHEN t1.receipt_type = 1 THEN -1 END TRANSACCIONES, 
+            
+            SUM(CASE WHEN t1.receipt_type = 0 AND t2.vend_code = '001' THEN (t2.qty)
+                     WHEN t1.receipt_type = 1 AND t2.vend_code = '001' THEN (t2.qty) * -1 END) AS par_roy, 
+            
+            SUM(CASE WHEN t1.receipt_type = 0 AND t2.vend_code <> '001' AND SUBSTR(T2.DCS_CODE, 1, 3) NOT IN ('ACC', 'SER', 'PRE', 'PRO') THEN (t2.qty)
+                     WHEN t1.receipt_type = 1 AND t2.vend_code <> '001' AND SUBSTR(T2.DCS_CODE, 1, 3) NOT IN ('ACC', 'SER', 'PRE', 'PRO') THEN (t2.qty) * -1 END) AS par_otros, 
+            
+            SUM(CASE WHEN t1.receipt_type = 0 AND SUBSTR(T2.DCS_CODE, 1, 3) = 'ACC' THEN (t2.qty)
+                     WHEN t1.receipt_type = 1 AND SUBSTR(T2.DCS_CODE, 1, 3) = 'ACC' THEN (t2.qty) * -1 END) par_acce,
+                     
+            SUM(CASE WHEN t1.receipt_type = 0 AND SUBSTR(T2.DCS_CODE, 1, 3) NOT IN ('SER', 'PRE', 'PRO') THEN (T2.qty) 
+                     WHEN t1.receipt_type = 1 AND SUBSTR(T2.DCS_CODE, 1, 3) NOT IN ('SER', 'PRE', 'PRO') THEN (T2.qty) * -1 END) AS cantidad,           
+            
+            SUM(CASE WHEN t1.receipt_type = 0 AND SUBSTR(T2.DCS_CODE, 1, 3) = 'ACC' THEN (t2.qty * T2.PRICE)
+                     WHEN t1.receipt_type = 1 AND SUBSTR(T2.DCS_CODE, 1, 3) = 'ACC' THEN (t2.qty * T2.PRICE) * -1 END) venta_CON_IVA_ACC,
+            
+            SUM(CASE WHEN t1.receipt_type = 0 AND SUBSTR(T2.DCS_CODE, 1, 3) = 'ACC' THEN ((T2.price) / 1.12 * (T2.qty)) 
+                     WHEN t1.receipt_type = 1 AND SUBSTR(T2.DCS_CODE, 1, 3) = 'ACC' THEN ((T2.price) / 1.12 * (T2.qty)) * -1 END) AS venta_sin_iva_ACC,    
+            
+            SUM(CASE WHEN t1.receipt_type = 0 THEN (t2.qty * t2.cost) 
+                     WHEN t1.receipt_type = 1 THEN (t2.qty * t2.cost) * -1 ELSE 0 END) AS costo, 
+            
+            SUM(CASE WHEN t1.receipt_type = 0 AND SUBSTR(T2.DCS_CODE, 1, 3) = 'ACC' THEN ((T2.COST) * (T2.qty))
+                     WHEN t1.receipt_type = 1 AND SUBSTR(T2.DCS_CODE, 1, 3) = 'ACC' THEN ((T2.COST) * (T2.qty)) * -1 END) AS COSTO_sin_iva_ACC,
+                     
+            NVL(SUM(CASE WHEN t1.receipt_type = 0 THEN ((t2.price - (t2.price * NVL(t1.disc_perc, 0) / 100)) * (t2.qty))
+                         WHEN t1.receipt_type = 1 THEN ((t2.price - (t2.price * NVL(t1.disc_perc, 0) / 100)) * (t2.qty)) * -1 END), 0) - SUM(NVL(t2.lty_piece_of_tbr_disc_amt, 0)) AS venta_con_iva, 
+                         
+            NVL(SUM(CASE WHEN t1.receipt_type = 0 THEN ((t2.price - (t2.price * NVL(t1.disc_perc, 0) / 100)) * (t2.qty)) / 1.12 
+                         WHEN t1.receipt_type = 1 THEN ((t2.price - (t2.price * NVL(t1.disc_perc, 0) / 100)) * (t2.qty)) / 1.12 * -1 END), 0) - SUM(NVL(t2.lty_piece_of_tbr_disc_amt, 0)) / 1.12 AS venta_sin_iva                      
+                         
+        FROM rps.document t1 
+        INNER JOIN rps.document_item t2 ON (t1.sid = t2.doc_sid)
+        
+        WHERE 1 = 1
+            AND t1.status = 4 
+            AND t1.employee1_full_name NOT IN ('SYSADMIN')
+            AND t1.receipt_type <> 2
+            AND T1.sbs_no = $sbs
+            AND t1.STORE_NO IN ($tienda)
+            AND EXTRACT(YEAR FROM t1.CREATED_dATETIME) || TO_CHAR(trunc(T1.CREATED_DATETIME, 'd'), 'IW') + 1 = '$semana'
+            
+        GROUP BY t1.store_code, t1.employee1_login_name, trunc(t1.created_datetime), T1.DOC_NO, t1.receipt_type, t1.disc_amt
+        
+    ) A ON (A.COD_VENDEDOR = V.CODIGO_EMPLEADO)
+    
+WHERE 1 = 1
+    AND TO_CHAR(trunc(SYSDATE, 'd'), 'IW') + 1 = V.SEMANA 
+    AND TO_CHAR(SYSDATE, 'IYYY') = V.ANIO 
+    AND 3 = V.TIENDA  -- Ajusta este valor según tu tienda
+    AND V.SBS = 1
+    -- Agrega aquí otros filtros necesarios para la tabla de metas
+    
+GROUP BY V.CODIGO_EMPLEADO, E.NOMBRE, V.META, V.HORA, E.PUESTO, E.FECHA_INGRESO
+ORDER BY DECODE(E.PUESTO, 'JEFE DE TIENDA', 1, 'SUB JEFE DE TIENDA', 2, 'ASESOR DE VENTAS', 3, 4), E.FECHA_INGRESO ASC";
       $resultado = consultaOracle(3, $query);
       $cnt = 1;
 

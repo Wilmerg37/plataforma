@@ -24,7 +24,7 @@ $resumen_extras_global = [];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Horarios - Sistema Profesional</title>
+    <title>Reporte de Horarios</title>
     
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -40,390 +40,7 @@ $resumen_extras_global = [];
     <!-- SheetJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <style>
-        :root {
-            --primary-color: #2563eb;
-            --secondary-color: #64748b;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --info-color: #06b6d4;
-            --dark-color: #1e293b;
-            --light-bg: #f8fafc;
-            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --border-radius: 12px;
-        }
-
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-            padding: 20px 0;
-        }
-
-        .main-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
-            box-shadow: var(--card-shadow);
-            margin: 0 auto;
-            padding: 30px;
-            max-width: 100%;
-            overflow-x: auto;
-        }
-
-        .header-section {
-            background: linear-gradient(135deg, var(--primary-color), #3b82f6);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            text-align: center;
-            box-shadow: var(--card-shadow);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-            opacity: 0.3;
-        }
-
-        .header-section > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        .header-section h1 {
-            margin: 0 0 10px 0;
-            font-size: 2.5rem;
-            font-weight: 700;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header-section .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            margin: 0;
-        }
-
-        .stats-row {
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            text-align: center;
-            box-shadow: var(--card-shadow);
-            border: none;
-            height: 100%;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            font-size: 1.5rem;
-            color: white;
-        }
-
-        .stat-value {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            line-height: 1;
-        }
-
-        .stat-label {
-            color: var(--secondary-color);
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-        }
-
-        .legend-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 12px;
-            margin: 25px 0;
-            padding: 25px;
-            background: var(--light-bg);
-            border-radius: var(--border-radius);
-            border: 2px dashed var(--secondary-color);
-        }
-
-        .legend-box {
-            padding: 12px 16px;
-            border-radius: 8px;
-            color: #000;
-            font-weight: 600;
-            text-align: center;
-            font-size: 0.85rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-
-        .legend-box:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-
-        .table-container {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 0;
-            box-shadow: var(--card-shadow);
-            overflow: hidden;
-            margin-bottom: 30px;
-        }
-
-        .table-header {
-            background: linear-gradient(135deg, var(--dark-color), #334155);
-            color: white;
-            padding: 20px 25px;
-            margin: 0;
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .table-title {
-            margin: 0;
-            font-size: 1.4rem;
-            font-weight: 600;
-        }
-
-        .export-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-export {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-export:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border-color: rgba(255, 255, 255, 0.5);
-            transform: translateY(-1px);
-        }
-
-        .table-modern {
-            margin: 0;
-            font-size: 0.9rem;
-            border: none;
-        }
-
-        .table-modern thead th {
-            background: linear-gradient(135deg, var(--primary-color), #3b82f6);
-            color: white;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.5px;
-            padding: 15px 8px;
-            border: 1px solid rgba(255,255,255,0.1);
-            text-align: center;
-            vertical-align: middle;
-            position: relative;
-        }
-
-        .table-modern tbody td {
-            padding: 12px 8px;
-            vertical-align: middle;
-            border: 1px solid #e2e8f0;
-            font-size: 0.85rem;
-            text-align: center;
-        }
-
-        .table-modern tbody tr:hover {
-            background-color: rgba(37, 99, 235, 0.05);
-            transform: scale(1.001);
-            transition: all 0.2s ease;
-        }
-
-        .celda-meta {
-            background: linear-gradient(135deg, var(--success-color), #059669) !important;
-            color: white !important;
-            font-weight: 700 !important;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-
-        .celda-fecha {
-            background: linear-gradient(135deg, #f97316, #ea580c) !important;
-            color: white !important;
-            font-weight: 600 !important;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-
-        .celda-inout {
-            background: linear-gradient(135deg, var(--dark-color), #334155) !important;
-            color: white !important;
-            font-weight: 600 !important;
-            font-size: 0.75rem !important;
-        }
-
-        .descanso {
-            background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
-            color: white !important;
-            font-style: italic;
-            font-weight: 600 !important;
-        }
-
-        /* Etiquetas con gradientes */
-        .etiqueta-1 { background: linear-gradient(135deg, rgb(158, 35, 240), rgb(138, 25, 220)) !important; color: white !important; }
-        .etiqueta-2 { background: linear-gradient(135deg, rgb(87, 244, 250), rgb(67, 224, 230)) !important; color: black !important; }
-        .etiqueta-3 { background: linear-gradient(135deg, rgb(55, 118, 255), rgb(35, 98, 235)) !important; color: white !important; }
-        .etiqueta-4 { background: linear-gradient(135deg, rgb(82, 247, 90), rgb(62, 227, 70)) !important; color: black !important; }
-        .etiqueta-5 { background: linear-gradient(135deg, rgb(252, 239, 62), rgb(232, 219, 42)) !important; color: black !important; }
-        .etiqueta-6 { background: linear-gradient(135deg, rgb(255, 124, 36), rgb(235, 104, 16)) !important; color: white !important; }
-        .etiqueta-7 { background: linear-gradient(135deg, rgb(141, 69, 1), rgb(121, 49, 1)) !important; color: white !important; }
-        .etiqueta-8 { background: linear-gradient(135deg, rgb(255, 104, 235), rgb(235, 84, 215)) !important; color: black !important; }
-        .etiqueta-9 { background: linear-gradient(135deg, rgb(148, 148, 148), rgb(128, 128, 128)) !important; color: white !important; }
-        .etiqueta-10 { background: linear-gradient(135deg, rgb(117, 71, 97), rgb(97, 51, 77)) !important; color: white !important; }
-        .etiqueta-11 { background: linear-gradient(135deg, rgb(68, 119, 66), rgb(48, 99, 46)) !important; color: white !important; }
-        .etiqueta-12 { background: linear-gradient(135deg, rgb(64, 68, 151), rgb(44, 48, 131)) !important; color: white !important; }
-        .etiqueta-13 { background: linear-gradient(135deg, rgb(209, 133, 203), rgb(189, 113, 183)) !important; color: black !important; }
-
-        .total-row {
-            background: linear-gradient(135deg, #f3f4f6, #e5e7eb) !important;
-            font-weight: 700 !important;
-            border-top: 2px solid var(--primary-color) !important;
-        }
-
-        .summary-card {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 25px;
-        }
-
-        .summary-title {
-            color: var(--primary-color);
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .loading-content {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: var(--card-shadow);
-        }
-
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .main-container {
-                margin: 10px;
-                padding: 20px;
-            }
-            
-            .header-section {
-                padding: 20px;
-            }
-            
-            .header-section h1 {
-                font-size: 1.8rem;
-            }
-            
-            .legend-container {
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            }
-            
-            .table-header {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .export-buttons {
-                justify-content: center;
-            }
-        }
-
-        .tooltip-custom {
-            position: relative;
-        }
-
-        .tooltip-custom:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.9);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            white-space: nowrap;
-            z-index: 1000;
-        }
-    </style>
+         <link rel="stylesheet" href="../css/estilohorarios.css">
 </head>
 <body>
     <!-- Loading Overlay -->
@@ -440,7 +57,7 @@ $resumen_extras_global = [];
             <!-- Header -->
             <div class="header-section">
                 <h1><i class="fas fa-chart-line"></i> Reporte de Horarios</h1>
-                <p class="subtitle">Sistema Profesional de Gestión de Horarios y Control de Personal</p>
+                <p class="subtitle">Sistema de Gestión de Horarios y Control de Personal</p>
             </div>
 
             <!-- Leyenda de etiquetas -->
@@ -824,53 +441,58 @@ $resumen_extras_global = [];
             }, $semanas));
             ?>
 
-            <!-- Resumen de horas extras -->
-            <?php foreach ($resumen_extras_global as $tienda => $empleados): ?>
-            <div class="summary-card">
-                <h4 class="summary-title">
-                    <i class="fas fa-clock"></i>
-                    Resumen de Horas Extras – Semanas <?php echo $semanas_texto; ?> – Tienda <?php echo $tienda; ?>
-                </h4>
+           <!-- Resumen de horas extras -->
+<?php foreach ($resumen_extras_global as $tienda => $empleados): ?>
+<div class="summary-card">
+    <h4 class="summary-title">
+        <i class="fas fa-clock"></i>
+        Resumen de Horas Extras – Semanas <?php echo $semanas_texto; ?> – Tienda <?php echo $tienda; ?>
+    </h4>
 
-                <div class="table-responsive">
-                    <table class="table table-modern">
-                        <thead>
-                            <tr>
-                                <th>Código</th>
-                                <th>Nombre</th>
-                                <th class="text-center">Horas Extras</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            $total_extras_resumen = 0;
-                            foreach ($empleados as $codigo => $info):
-                                if ($info['horas'] <= 0) continue; // omitir si no hay extras
-                                $total_extras_resumen += $info['horas'];
-                            ?>
-                            <tr>
-                                <td><strong><?php echo $codigo; ?></strong></td>
-                                <td><?php echo $info['nombre']; ?></td>
-                                <td class="text-center">
-                                    <span class="badge bg-warning text-dark fs-6">
-                                        <?php echo number_format($info['horas'], 0); ?>h
-                                    </span>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                            <tr class="total-row">
-                                <td colspan="2"><strong>Total Horas Extras Tienda:</strong></td>
-                                <td class="text-center">
-                                    <span class="badge bg-success fs-6">
-                                        <strong><?php echo number_format($total_extras_resumen, 0); ?>h</strong>
-                                    </span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <?php endforeach; ?>
+    <div class="table-responsive">
+        <table class="table table-modern">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th class="text-center">Horas Extras</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                $total_extras_resumen = 0;
+                foreach ($empleados as $codigo => $info):
+                    $total_extras_resumen += $info['horas'];
+                ?>
+                <tr>
+                    <td><strong><?php echo $codigo; ?></strong></td>
+                    <td><?php echo $info['nombre']; ?></td>
+                    <td class="text-center">
+                        <span class="badge 
+                            <?php 
+                                if ($info['horas'] > 0) echo 'bg-warning text-dark'; 
+                                elseif ($info['horas'] < 0) echo 'bg-danger'; 
+                                else echo 'bg-secondary'; 
+                            ?> fs-6">
+                            <?php echo number_format($info['horas'], 0); ?>h
+                        </span>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+                <tr class="total-row">
+                    <td colspan="2"><strong>Total Horas Extras Tienda:</strong></td>
+                    <td class="text-center">
+                        <span class="badge bg-success fs-6">
+                            <strong><?php echo number_format($total_extras_resumen, 0); ?>h</strong>
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php endforeach; ?>
+
 
         </div>
     </div>

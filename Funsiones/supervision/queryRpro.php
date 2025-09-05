@@ -209,7 +209,7 @@ function calcularPagoPorSemana($estatus, $puesto, &$semanasConsecutivas) {
       } elseif ($semanasConsecutivas == 2) {
           return 100.00; // Segunda semana consecutiva
       } elseif ($semanasConsecutivas == 3) {
-          return 175.00; // Tercera semana consecutiva
+          return 150.00; // Tercera semana consecutiva
       } elseif ($semanasConsecutivas == 4) {
           return 200.00; // Cuarta semana consecutiva
       }
@@ -323,52 +323,50 @@ function calcularPagoPorSemanaVend($estatus, $puesto, &$semanasConsecutivas) {
     return 0.00;
 }*/
 
-function calcularBonoPorTienda($promedio, &$semanasConsecutivasTienda, $porcentajeJef) {
-    // Verificamos que el JEF haya cumplido al menos el 100%
-    if ($porcentajeJef < 100) {
+function calcularBonoPorTienda($promedio, &$semanasConsecutivasTienda, $porcentajeJef, $bonoJefe) {
+    // Si el jefe no recibió bono, entonces no cumplió con el 100%
+    // Se reinicia la consecutividad de la tienda
+    if ($bonoJefe == 0.00) {
         $semanasConsecutivasTienda = 0;
-        return 0.00; // No se paga bono si el JEF no cumplió
+        return 0.00;
     }
 
+    // Si la tienda no cumplió el 100%
     if ($promedio < 100) {
         $semanasConsecutivasTienda = 0;
         return 0.00;
     }
 
-    if ($porcentajeJef >= 100 && $porcentajeJef <= 119 && $promedio >= 100 ) {
+    // Ambos cumplieron con al menos 100%, pero menos de 120%
+    if ($porcentajeJef >= 100 && $porcentajeJef < 120 && $promedio >= 100 && $promedio < 120) {
+        // Reiniciar o incrementar semanas consecutivas de la tienda
         if ($semanasConsecutivasTienda == 0) {
             $semanasConsecutivasTienda = 1;
-            return 25.00;
-        } elseif ($semanasConsecutivasTienda == 1) {
-            $semanasConsecutivasTienda = 2;
-            return 50.00;
-        } elseif ($semanasConsecutivasTienda == 2) {
-            $semanasConsecutivasTienda = 3;
-            return 100.00;
-        } elseif ($semanasConsecutivasTienda == 3) {
-            $semanasConsecutivasTienda = 4;
-            return 175.00;
+        } else {
+            $semanasConsecutivasTienda++;
         }
+
+        // La tienda gana lo mismo que el jefe esta semana
+        return $bonoJefe;
     }
 
-    if ($porcentajeJef >= 100 && $promedio >= 100) {
+    // Ambos cumplieron 120% o más
+    if ($porcentajeJef >= 120 && $promedio >= 120) {
         if ($semanasConsecutivasTienda == 0) {
             $semanasConsecutivasTienda = 1;
-            return 50.00;
-        } elseif ($semanasConsecutivasTienda == 1) {
-            $semanasConsecutivasTienda = 2;
-            return 100.00;
-        } elseif ($semanasConsecutivasTienda == 2) {
-            $semanasConsecutivasTienda = 3;
-            return 150.00;
-        } elseif ($semanasConsecutivasTienda == 3) {
-            $semanasConsecutivasTienda = 4;
-            return 200.00;
+        } else {
+            $semanasConsecutivasTienda++;
         }
+
+        // La tienda gana el doble del bono del jefe
+        return $bonoJefe ;
     }
 
+    // En cualquier otro caso
     return 0.00;
 }
+
+
 
 function calcularBonoPorTienda2nievo($promedioTienda, &$semanasConsecutivasTienda, $porcentajeJef) {
     // Si el jefe no cumple mínimo 100%, no hay bono

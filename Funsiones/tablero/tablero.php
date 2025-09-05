@@ -3,8 +3,8 @@
     date_default_timezone_set('America/Guatemala');
 
     $opcion = $_POST['opcion'];
-    $ai = 2023;
-    $af = 2024;
+    $ai = 2024;
+    $af = 2025;
 
     switch ($opcion) {
         case 1: #Comparativo de ventas por mes cadena
@@ -119,7 +119,7 @@
 
         case 4: #Top 5 Proveedores cadena semana 50
             $y = date('Y');
-            $w = date('W') + 1;
+            $w = date('W');
             $yw = $y.$w;
             $query = "select PROVEEDOR,  ROUND(SUM(VENTAS),2) VENTA FROM 
 						(select d.sbs_no,EXTRACT(YEAR FROM d.created_Datetime)ANIO,  v.vend_code CODIGO,v.vend_name PROVEEDOR, 
@@ -152,7 +152,7 @@
 					GROUP BY  PROVEEDOR
 					ORDER BY VENTA DESC
 FETCH FIRST 5 ROWS ONLY";
-            $consulta = oci_parse(Oracle(), $query);
+            $consulta = oci_parse(consultaOracle(), $query);
             oci_execute($consulta);
             $ventas = oci_fetch_all($consulta, $resultado);
             oci_free_statement($consulta);

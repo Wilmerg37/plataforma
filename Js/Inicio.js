@@ -1,3 +1,51 @@
+// Función para re-inicializar datepickers después de cargar contenido
+function inicializarDatepickers() {
+    // Destruir datepickers existentes para evitar duplicados
+    $('.fecha').each(function() {
+        if ($(this).data('daterangepicker')) {
+            $(this).data('daterangepicker').remove();
+            $(this).removeData('daterangepicker');
+        }
+    });
+    
+    // Re-inicializar daterangepicker
+    $('.fecha').daterangepicker({
+        showDropdowns: true,
+        autoApply: true,
+        locale: {
+            format: 'DD-MM-YYYY',
+            separator: ' a ',
+            weekLabel: 'Sm',
+            daysOfWeek: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'],
+            monthNames: [
+                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+            ],
+            firstDay: 0
+        }
+    });
+
+    // También re-inicializar otros elementos si los tienes
+    $('.fecha1').daterangepicker({
+        showDropdowns: true,
+        showISOWeekNumbers: true,
+        opens: "center",
+        autoApply: true,
+        locale: {
+            format: "DD-MM-YYYY",
+            separator: " a ",
+            weekLabel: "Sm",
+            daysOfWeek: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+            monthNames: [
+                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Deciembre"
+            ],
+            firstDay: 0
+        }
+    });
+}
+
+
 $(document).ready(function () {
 
   $('section.content').load('tablero.php');
@@ -13,6 +61,8 @@ $(document).ready(function () {
     $(this).addClass('active');
   });
 
+ 
+
     //----------------------------------------- MODULOS DEL SIDEBAR -----------------------------------------
 
     // TIENDAS
@@ -21,14 +71,20 @@ $(document).ready(function () {
 
  
     $('#8-71 a').on('click',function(){
-      $('section.content').load('filtro_t.php');
+      $('section.content').load('filtro_t.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
       $('#titulo').text('Resumen de desempeño semanal');
       sbs = $('#subsidiaria').val();
       pagina = 'rds';
     });
 
     $('#8-72 a').on('click',function(){
-      $('section.content').load('filtro_t.php');
+      $('section.content').load('filtro_t.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
       $('#titulo').text('Analisis Ventas X Vendedor');
       sbs = $('#subsidiaria').val();
       pagina = 'avxv';
@@ -41,14 +97,20 @@ $(document).ready(function () {
 
     
  $('#8-74 a').on('click', function () {
-      $('section.content').load('filtro_s.php');
+      $('section.content').load('filtro_st.php'), function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+};
       $('#titulo').text('Resumen Trimestral por Tienda');
       sbs = $('#subsidiaria').val();
       pagina = 'rtt';
     });
 
     $('#8-75 a').on('click', function () {
-      $('section.content').load('filtro_t.php');
+      $('section.content').load('filtro_t.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
       $('#titulo').text('Existencias Ventas Compras');
       sbs = $('#subsidiaria').val();
       pagina = 'evct';
@@ -56,7 +118,10 @@ $(document).ready(function () {
 
      //Reporte de HORARIOS TDS
    $('#8-76 a').on('click',function(){
-    $('section.content').load('filtro_st.php');
+    $('section.content').load('filtro_st.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
     $('#titulo').text('Reporte de Horarios Tiendas');
     sbs = $('#subsidiaria').val();
     pagina = 'rhts';
@@ -64,7 +129,10 @@ $(document).ready(function () {
 
 // reporte pares x vendedor y proveedor
     $('#8-77 a').on('click', function () {
-      $('section.content').load('filtro_t.php');
+      $('section.content').load('filtro_t.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
       $('#titulo').text('Venta Pares X Vendedor y Proveedor');
       sbs = $('#subsidiaria').val();
       pagina = 'vpxv';
@@ -73,7 +141,10 @@ $(document).ready(function () {
 
         //Reporte de VENTAS X CATEGORIA
    $('#8-78 a').on('click',function(){
-    $('section.content').load('filtro_st.php');
+    $('section.content').load('filtro_st.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
     $('#titulo').text('Reporte de VENTAS X CATEGORIA');
     sbs = $('#subsidiaria').val();
     pagina = 'rvc';
@@ -81,7 +152,10 @@ $(document).ready(function () {
 
  // reporte los 25 mas Vendidos
     $('#8-79 a').on('click', function () {
-      $('section.content').load('filtro_t3.php');
+      $('section.content').load('filtro_t3.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
       $('#titulo').text('Top 25 (Los 25 mas Vendidos)');
       sbs = $('#subsidiaria').val();
       pagina = 't25';
@@ -97,7 +171,10 @@ $(document).ready(function () {
 
  // reporte corte diario
     $('#8-111 a').on('click', function () {
-      $('section.content').load('filtro_t3.php');
+      $('section.content').load('filtro_t3.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
       $('#titulo').text('Corte Diario');
       sbs = $('#subsidiaria').val();
       pagina = 'diarioventas';
@@ -110,7 +187,10 @@ $(document).ready(function () {
 
 //VENTAS 14 Y 17 HRS
     $('#9-81 a').on('click',function(){
-      $('section.content').load('filtro_s.php');
+      $('section.content').load('filtro_s.php',function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
       $('#titulo').text('Ventas 14 Y 17 Horas Tiendas');
       sbs = $('#subsidiaria').val();
       pagina = 'vts14';
@@ -118,7 +198,10 @@ $(document).ready(function () {
 
  //RDS
     $('#9-82 a').on('click',function(){
-      $('section.content').load('filtro_st.php');
+      $('section.content').load('filtro_st.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
       $('#titulo').text('Resumen de Desempeño');
       sbs = $('#subsidiaria').val();
       pagina = 'rdst';
@@ -127,7 +210,10 @@ $(document).ready(function () {
 
 //RDSR
     $('#9-83 a').on('click',function(){
-      $('section.content').load('filtro_s.php');
+      $('section.content').load('filtro_s.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
       $('#titulo').text('Resumen de desempeño semanal Region');
       sbs = $('#subsidiaria').val();
       pagina = 'rdsr';
@@ -135,7 +221,10 @@ $(document).ready(function () {
 
    //RTT
     $('#9-84 a').on('click', function () {
-      $('section.content').load('filtro_st.php');
+      $('section.content').load('filtro_st.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
       $('#titulo').text('Resumen Trimestral por Tienda');
       sbs = $('#subsidiaria').val();
       pagina = 'rtt';
@@ -143,7 +232,10 @@ $(document).ready(function () {
 
  //RDSC RESUMEN DE DESEMPEÑO SEMANAL CADENA
     $('#9-85 a').on('click',function(){
-      $('section.content').load('filtro_s.php');
+      $('section.content').load('filtro_s.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
       $('#titulo').text('Resumen de desempeño semanal Cadena');
       sbs = $('#subsidiaria').val();
       pagina = 'rdsc';
@@ -159,7 +251,10 @@ $(document).ready(function () {
 
       //Reporte de marcaje tds
       $('#9-87 a').on('click',function(){
-        $('section.content').load('filtro_st.php');
+        $('section.content').load('filtro_st.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
         $('#titulo').text('Reporte de Marcajes por Tienda');
         sbs = $('#subsidiaria').val();
         pagina = 'rmt';
@@ -181,7 +276,10 @@ $(document).ready(function () {
 
    //REPORTE BONO ESTRELLA
    $('#9-90 a').on('click', function () {
-    $('section.content').load('filtro_st.php');
+    $('section.content').load('filtro_st.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
     $('#titulo').text('Bonificacion Estrella');
     sbs = $('#subsidiaria').val();
     pagina = 'rbet';
@@ -189,7 +287,10 @@ $(document).ready(function () {
 
    //Reporte de marcaje supervisor
    $('#9-181 a').on('click',function(){
-    $('section.content').load('filtro_gv.php');
+    $('section.content').load('filtro_gv.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
     $('#titulo').text('Reporte de Marcajes Supervisores');
     sbs = $('#subsidiaria').val();
     pagina = 'rms';
@@ -197,7 +298,10 @@ $(document).ready(function () {
 
     //Reporte de VENTAS X CATEGORIA
    $('#9-182 a').on('click',function(){
-    $('section.content').load('filtro_st.php');
+    $('section.content').load('filtro_st.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
     $('#titulo').text('Reporte de VENTAS X CATEGORIA');
     sbs = $('#subsidiaria').val();
     pagina = 'rvc';
@@ -205,7 +309,10 @@ $(document).ready(function () {
 
     //Reporte de HORARIOS TDS
    $('#9-183 a').on('click',function(){
-    $('section.content').load('filtro_st.php');
+    $('section.content').load('filtro_st.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
     $('#titulo').text('Reporte de Horarios Tiendas');
     sbs = $('#subsidiaria').val();
     pagina = 'rhts';
@@ -214,7 +321,10 @@ $(document).ready(function () {
   
   //CRUD DE HORARIOS TDS
       $('#9-184 a').on('click',function(){
-        $('section.content').load('filtro_st.php');
+        $('section.content').load('filtro_st.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
         $('#titulo').text('CRUD Horarios Tiendas');
         sbs = $('#subsidiaria').val();
         pagina = 'crudhts';
@@ -229,10 +339,13 @@ $(document).ready(function () {
 
       //Reporte de VENTAS X INVENTARIO
    $('#9-186 a').on('click',function(){
-    $('section.content').load('filtro_st.php');
-    $('#titulo').text('Reporte de VENTAS X INVENTARIO TDS');
+    $('section.content').load('filtro_st.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
+    $('#titulo').text('Reporte RDS y RTMT concatenado');
     sbs = $('#subsidiaria').val();
-    pagina = 'rvit';
+    pagina = 'rdsrtmt';
   });
 
 
@@ -242,7 +355,10 @@ $(document).ready(function () {
 
    //Reporte de marcaje
    $('#10-91 a').on('click',function(){
-    $('section.content').load('filtro_gv.php');
+    $('section.content').load('filtro_gv.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
     $('#titulo').text('Reporte de Marcajes Supervisores');
     sbs = $('#subsidiaria').val();
     pagina = 'rms';
@@ -259,7 +375,10 @@ $(document).ready(function () {
 
    //Reporte de marcaje
    $('#11-101 a').on('click',function(){
-    $('section.content').load('filtro_gh.php');
+    $('section.content').load('filtro_gh.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
     $('#titulo').text('Reporte de Marcajes Administracion');
     sbs = $('#subsidiaria').val();
     pagina = 'rma';
@@ -515,7 +634,10 @@ $(document).ready(function () {
 
 //Reporte de marcaje admon
 $('#1-2 a').on('click',function(){
-  $('section.content').load('filtro_gh.php');
+  $('section.content').load('filtro_gh.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
   $('#titulo').text('Reporte de Marcajes Administracion');
   sbs = $('#subsidiaria').val();
   pagina = 'rma';
@@ -523,7 +645,10 @@ $('#1-2 a').on('click',function(){
 
 //Reporte de marcaje supervisore
 $('#1-3 a').on('click',function(){
-  $('section.content').load('filtro_gv.php');
+  $('section.content').load('filtro_gv.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
   $('#titulo').text('Reporte de Marcajes Supervisores');
   sbs = $('#subsidiaria').val();
   pagina = 'rms';
@@ -531,7 +656,10 @@ $('#1-3 a').on('click',function(){
 
 //Reporte de marcaje tds
 $('#1-4 a').on('click',function(){
-  $('section.content').load('filtro_st.php');
+  $('section.content').load('filtro_st.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
   $('#titulo').text('Reporte de Marcajes por Tienda');
   sbs = $('#subsidiaria').val();
   pagina = 'rmt';
@@ -539,7 +667,10 @@ $('#1-4 a').on('click',function(){
 
  //REPORTE BONO ESTRELLA
    $('#1-5 a').on('click', function () {
-    $('section.content').load('filtro_st.php');
+    $('section.content').load('filtro_st.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
     $('#titulo').text('Bonificacion Estrella');
     sbs = $('#subsidiaria').val();
     pagina = 'rbet';
@@ -550,7 +681,10 @@ $('#1-4 a').on('click',function(){
     //******************************************************* */
 
         $('#19-191 a').on('click',function(){
-      $('section.content').load('filtro_t2.php');
+      $('section.content').load('filtro_t2.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
       $('#titulo').text('Aula Virtual Capacitaciones');
       sbs = $('#subsidiaria').val();
       pagina = 'videos';
@@ -565,7 +699,10 @@ $('#1-4 a').on('click',function(){
     //REPORTE RR3 
 
     $('#21-210 a').on('click', function () {
-      $('section.content').load('filtro_va.php');
+      $('section.content').load('filtro_va.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
       $('#titulo').text('RR3 Ventas vrs Stock');
       sbs = $('#subsidiaria').val();
       pagina = 'rr3';
@@ -573,8 +710,28 @@ $('#1-4 a').on('click',function(){
 
      //REPORTE RR4
         $('#21-211 a').on('click', function () {
-      $('section.content').load('filtro_va.php');
+      $('section.content').load('filtro_va.php', function() {
+    // Re-inicializar datepickers después de cargar el contenido
+    setTimeout(inicializarDatepickers, 100);
+});
       $('#titulo').text('RR4 Ventas Existencias Tienda y Estilo');
       sbs = $('#subsidiaria').val();
       pagina = 'rr4';
     });
+
+
+    // En tu función que carga contenido dinámico
+function cargarModulo(modulo, pagina) {
+    $.ajax({
+        url: 'tu_archivo.php',
+        type: 'POST',
+        data: { modulo: modulo, pagina: pagina },
+        success: function(response) {
+            $('.content section').html(response);
+            
+            // RE-INICIALIZAR DATEPICKERS DESPUÉS DE CARGAR CONTENIDO
+            inicializarDatepickers();
+        }
+    });
+}
+

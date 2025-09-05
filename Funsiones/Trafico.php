@@ -14,6 +14,7 @@
     }
 
     $fi = date("m/d/Y");
+    $ff = date("m/d/Y");
 
     print XmlToJson($fi,$fi);
 
