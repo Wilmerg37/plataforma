@@ -2843,7 +2843,7 @@ function mostrarModalSeleccionArchivos(archivos, idSolicitud) {
                         url: './supervision/crudsolicitudes.php?action=get_valid_supervisors',
                         method: 'GET',
                         dataType: 'json',
-                        timeout: 10000,
+                        timeout: 30000,
                         success: function(supervisors) {
                             if (!supervisors || supervisors.length === 0) {
                                 SupervisorModal.fire({

@@ -1605,7 +1605,13 @@ function descargarResumen(solicitudId) {
               });
             }
 
-
+// CÓDIGO TEMPORAL PARA DEBUG - Agregar antes de renderTable()
+console.log("DEBUG - Datos solicitud 397:", 
+    solicitudes.find(s => s.ID_SOLICITUD == 397)
+);
+console.log("DEBUG - Datos solicitud 398:", 
+    solicitudes.find(s => s.ID_SOLICITUD == 398)
+);
             // FUNCIÓN PARA RENDERIZAR LA TABLA
             function renderTable(data) {
               const tbody = $('#tblSolicitudes tbody');
@@ -1733,105 +1739,103 @@ function descargarResumen(solicitudId) {
                             title="Cambiar Estado">
                             <i class="fas fa-exchange-alt"></i> Cambiar Estado
                           </button>
-                              ${(() => {
-                                const estado = (item.ESTADO_SOLICITUD || '').toLowerCase();
-                                const tieneObs  = Number(item.TIENE_OBSERVACIONES_DIA_PRUEBA) === 1;
-                                const tieneSel  = Number(item.TIENE_SELECCION) === 1;
-                                const tieneArch = Number(item.TIENE_ARCHIVOS) === 1;
-
-                                // 🆕 CONDICIÓN ESPECÍFICA: Solo mostrar el botón de aval si está en "Pendiente Aval Gerencia"
-                                if (estado.includes('pendiente aval gerencia')) {
-                                  return `
-                                    <button class="btn btn-sm btn-warning btnVerResultadoAval"
-                                            data-id="${item.ID_SOLICITUD}"
-                                            data-tienda="${item.NUM_TIENDA}"
-                                            data-puesto="${item.PUESTO_SOLICITADO}"
-                                            data-supervisor="${item.SOLICITADO_POR}"
-                                            data-razon="${item.RAZON || ''}"
-                                            title="Ver y procesar resultado del aval gerencial">
-                                      <i class="fas fa-clock"></i> Procesar Aval
-                                    </button>
-                                  `;
-                                }
-
-                                // 🆕 CONDICIÓN: Si ya pasó del estado pendiente y tiene el aval procesado, mostrar resumen
-                                if (estado.includes('aval procesado') || estado.includes('aval confirmado')) {
-                                  return `
-                                    <button class="btn btn-sm btn-success btnVerResumenAprobacion"
-                                            data-id="${item.ID_SOLICITUD}"
-                                            data-solicitud-id="${item.ID_SOLICITUD}"
-                                            title="Ver resumen completo de la aprobación procesada">
-                                      <i class="fas fa-clipboard-check"></i> Ver Resumen Aval
-                                    </button>
-                                  `;
-                                }
-
-                                // 1) Observaciones del Día de Prueba (tiene prioridad)
-                                if (tieneObs && (estado.includes('día de prueba') || estado.includes('dia de prueba') || estado.includes('observaciones'))) {
-                                  const idObsReciente = item.ID_OBSERVACION_RECIENTE || '';
-                                  return `
-                                    <button class="btn btn-sm btn-primary btnVerObservacionesCompletasRRHH"
-                                            data-id="${item.ID_SOLICITUD}"
-                                            data-id-obs="${idObsReciente}"
-                                            data-tienda="${item.NUM_TIENDA}"
-                                            data-puesto="${item.PUESTO_SOLICITADO}"
-                                            data-supervisor="${item.SOLICITADO_POR}"
-                                            title="Ver observaciones (últimas primero)">
-                                      <i class="fas fa-clipboard-list"></i> Ver Resultados
-                                    </button>
-                                  `;
-                                }
-
-                                // 2) Selección de CVs (solo si NO hay observaciones)
-                                if (tieneSel && (estado.includes('cvs') || estado.includes('cv'))) {
-                                  return `
-                                    <button class="btn btn-sm btn-success btnVerResumen" data-id="${item.ID_SOLICITUD}">
-                                      <i class="fas fa-eye"></i> Ver Resumen
-                                    </button>
-                                  `;
-                                }
-
-                                // 3) Archivos (solo si NO hay observaciones ni selección)
-                                if (tieneArch) {
-                                  if (estado.includes('cvs')) {
-                                    return `
-                                      <button class="btn btn-sm btn-info btnVerArchivosRRHH" data-id="${item.ID_SOLICITUD}">
-                                        <i class="fas fa-folder-open"></i> Archivos
-                                      </button>
-                                    `;
-                                  } else if (estado.includes('psico')) {
-                                    return `
-                                      <button class="btn btn-sm btn-warning btnVerArchivosTipo" data-id="${item.ID_SOLICITUD}" data-tipo="PSICOMETRICA">
-                                        <i class="fas fa-brain"></i> Psicométricas
-                                      </button>
-                                    `;
-                                  } else if (estado.includes('poligrafo')) {
-                                    return `
-                                      <button class="btn btn-sm btn-secondary btnVerArchivosTipo" data-id="${item.ID_SOLICITUD}" data-tipo="POLIGRAFO">
-                                        <i class="fas fa-shield-alt"></i> Polígrafo
-                                      </button>
-                                    `;
-                                  }
-                                }
-
-                                // 🆕 PARA SOLICITUDES APROBADAS SIN ESTADO ESPECÍFICO: Mostrar resumen general
-                                const aprobacion = (item.ESTADO_APROBACION || '').toLowerCase();
-                                if ((aprobacion === 'aprobado' || aprobacion.includes('aprobado')) 
-                                    && (estado.includes('pendiente') || estado.includes('por aprobar'))) {
-                                    return `
-                                        <button class="btn btn-sm btn-outline-info btnVerResumenProcesamiento"
-                                                data-id="${item.ID_SOLICITUD}"
-                                                data-solicitud-id="${item.ID_SOLICITUD}"
-                                                title="Ver resumen completo de la aprobación">
-                                          <i class="fas fa-file-alt"></i> Ver Resumen
-                                        </button>
-                                      `;
-                                }
-
-                                // Nada que mostrar
-                                return '';
-                              })()}
-                      </div>
+${(() => {
+  const estado = (item.ESTADO_SOLICITUD || '').toLowerCase();
+  const tieneObs  = Number(item.TIENE_OBSERVACIONES_DIA_PRUEBA) === 1;
+  const tieneSel  = Number(item.TIENE_SELECCION) === 1;
+  const tieneArch = Number(item.TIENE_ARCHIVOS) === 1;
+  const aprobacion = (item.ESTADO_APROBACION || '').toLowerCase();
+  
+  let botones = []; // Array para almacenar los botones
+  
+  // 1) BOTÓN ESPECÍFICO DEL ESTADO (primer botón)
+  if (tieneObs && (estado.includes('día de prueba') || estado.includes('dia de prueba'))) {
+    // Observaciones del Día de Prueba
+    const idObsReciente = item.ID_OBSERVACION_RECIENTE || '';
+    botones.push(`
+      <button class="btn btn-sm btn-primary btnVerObservacionesCompletasRRHH"
+              data-id="${item.ID_SOLICITUD}"
+              data-id-obs="${idObsReciente}"
+              data-tienda="${item.NUM_TIENDA}"
+              data-puesto="${item.PUESTO_SOLICITADO}"
+              data-supervisor="${item.SOLICITADO_POR}"
+              title="Ver observaciones">
+        <i class="fas fa-clipboard-list"></i> Ver Resultados
+      </button>
+    `);
+  } else if (tieneSel && (estado.includes('cvs') || estado.includes('cv'))) {
+    // Selección de CVs
+    botones.push(`
+      <button class="btn btn-sm btn-success btnVerResumen" data-id="${item.ID_SOLICITUD}">
+        <i class="fas fa-eye"></i> Ver Resumen CVs
+      </button>
+    `);
+  } else if (tieneArch && (estado.includes('cvs') || estado.includes('cv'))) {
+    // Archivos CVs
+    botones.push(`
+      <button class="btn btn-sm btn-info btnVerArchivosRRHH" data-id="${item.ID_SOLICITUD}">
+        <i class="fas fa-folder-open"></i> Archivos CVs
+      </button>
+    `);
+  } else if (estado.includes('psico')) {
+    // Psicométricas
+    botones.push(`
+      <button class="btn btn-sm btn-warning btnVerArchivosTipo" 
+              data-id="${item.ID_SOLICITUD}" 
+              data-tipo="PSICOMETRICA">
+        <i class="fas fa-brain"></i> Psicométricas
+      </button>
+    `);
+  } else if (estado.includes('poligrafo')) {
+    // Polígrafo
+    botones.push(`
+      <button class="btn btn-sm btn-secondary btnVerArchivosTipo" 
+              data-id="${item.ID_SOLICITUD}" 
+              data-tipo="POLIGRAFO">
+        <i class="fas fa-shield-alt"></i> Polígrafo
+      </button>
+    `);
+  } else if (estado.includes('pendiente aval gerencia')) {
+    // Aval pendiente
+    botones.push(`
+      <button class="btn btn-sm btn-warning btnVerResultadoAval"
+              data-id="${item.ID_SOLICITUD}"
+              data-tienda="${item.NUM_TIENDA}"
+              data-puesto="${item.PUESTO_SOLICITADO}"
+              data-supervisor="${item.SOLICITADO_POR}"
+              data-razon="${item.RAZON || ''}"
+              title="Procesar aval gerencial">
+        <i class="fas fa-clock"></i> Procesar Aval
+      </button>
+    `);
+  } else if (estado.includes('aval procesado') || estado.includes('aval confirmado')) {
+    // Aval procesado
+    botones.push(`
+      <button class="btn btn-sm btn-success btnVerResumenAprobacion"
+              data-id="${item.ID_SOLICITUD}"
+              data-solicitud-id="${item.ID_SOLICITUD}"
+              title="Ver resumen del aval procesado">
+        <i class="fas fa-clipboard-check"></i> Ver Resumen Aval
+      </button>
+    `);
+  }
+  
+  // 2) BOTÓN DE APROBACIÓN (segundo botón - SIEMPRE para solicitudes aprobadas)
+  if (aprobacion === 'aprobado' || aprobacion.includes('aprobado')) {
+    botones.push(`
+      <button class="btn btn-sm btn-outline-success btnVerResumenProcesamiento"
+              data-id="${item.ID_SOLICITUD}"
+              data-solicitud-id="${item.ID_SOLICITUD}"
+              title="Ver resultado de la aprobación">
+        <i class="fas fa-check-circle"></i> Ver Resultado de Aprobación
+      </button>
+    `);
+  }
+  
+  // Devolver los botones unidos
+  return botones.join(' ');
+})()}
+                                                  </div>
                     </td>
                   </tr>
                 `;
