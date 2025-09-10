@@ -43,7 +43,7 @@ require_once "../auth.php";
 
   <link rel="stylesheet" href="../Css/EstilosGenerales.css">
   <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../Css/estiloinicio.css">
+ 
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed layout-footer-fixed">
@@ -504,6 +504,7 @@ require_once "../auth.php";
 
   <script src="../Js/Inicio.js"></script>
   <script src="../Js/tablero/Trafico.js"></script>
+ 
 </body>
 
 </html>

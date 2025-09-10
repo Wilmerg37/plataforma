@@ -109,33 +109,54 @@ require_once "../Funsiones/global.php";
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 
 <script>
-  $('.fecha').daterangepicker({
-    showDropdowns: true,
-    autoApply: true,
-    locale: {
-      format: 'DD-MM-YYYY',
-      separator: ' a ',
-      weekLabel: 'Sm',
-      daysOfWeek: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'],
-      monthNames: [
-        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-      ],
-      firstDay: 0
+function initDateRangePicker() {
+    if (typeof $ !== 'undefined' && 
+        typeof moment !== 'undefined' && 
+        $.fn.daterangepicker && 
+        $('.fecha').length > 0) {
+        
+        $('.fecha').daterangepicker({
+            showDropdowns: true,
+            autoApply: true,
+            locale: {
+                format: 'DD-MM-YYYY',
+                separator: ' a ',
+                weekLabel: 'Sm',
+                daysOfWeek: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'],
+                monthNames: [
+                    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+                ],
+                firstDay: 0
+            }
+        });
+        
+        return true;
     }
-  });
+    return false;
+}
 
-  // Efecto de loading en el botón
-  $('#frmfiltro').on('submit', function(e) {
-    const btn = $('.btn-outline-primary');
-    btn.addClass('btn-loading');
-    btn.html('<i class="fas fa-spinner fa-spin me-1"></i> Generando...');
-  });
+// Intentar inicializar múltiples veces si es necesario
+$(document).ready(function() {
+    let attempts = 0;
+    const maxAttempts = 50;
+    
+    const tryInit = setInterval(function() {
+        attempts++;
+        
+        if (initDateRangePicker()) {
+            clearInterval(tryInit);
+            console.log('DateRangePicker inicializado en intento:', attempts);
+        } else if (attempts >= maxAttempts) {
+            clearInterval(tryInit);
+            console.error('No se pudo inicializar DateRangePicker después de', maxAttempts, 'intentos');
+        }
+    }, 100);
+});
 
-  
-</script>
-
-<script>
-  var url = "../Js/supervision/filtro.js";
-  $.getScript(url);
+// Cargar filtro.js después de que daterangepicker esté listo
+setTimeout(function() {
+    var url = "../Js/supervision/filtro.js";
+    $.getScript(url);
+}, 1000);
 </script>
