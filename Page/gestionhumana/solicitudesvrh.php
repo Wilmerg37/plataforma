@@ -7,6 +7,7 @@
 
   <!-- ENLACES DE CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
@@ -14,459 +15,651 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- ✅ TU ARCHIVO JAVASCRIPT CORREGIDO -->
+  <script src="../Js/gestionhumana/solicitudesrh.js"></script>
+
+  <!-- ENLACES DE CSS LOCALES -->
+  <link rel="stylesheet" href="../Css/solicitudes-rh.css">
 
   <style>
-    /* ESTILOS MEJORADOS PARA VISTA PROFESIONAL */
-    body {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      min-height: 100vh;
-    }
+/* =====================================================================
+   ESTILOS CORPORATIVOS MODERNOS - RH (RECURSOS HUMANOS)
+   Paleta: Azul Corporativo + Grises Profesionales
+   Sin morado - Diseño profesional y elegante
+   ===================================================================== */
 
-    .main-container {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(10px);
-      margin: 20px;
-      padding: 30px;
-    }
+/* ======================================== 
+   BASE Y CONTENEDORES PRINCIPALES
+   ======================================== */
 
-    .header-section {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 25px;
-      border-radius: 15px;
-      margin-bottom: 30px;
-      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-    }
+body {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+}
 
-    .header-title {
-      font-size: 2.2rem;
-      font-weight: 700;
-      margin: 0;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
+.main-container {
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 24px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  margin: 20px;
+  padding: 35px;
+}
 
-    .header-subtitle {
-      font-size: 1.1rem;
-      opacity: 0.9;
-      margin: 5px 0 0 0;
-    }
+/* ======================================== 
+   HEADER SECTION
+   ======================================== */
 
-    .controls-section {
-      background: white;
-      padding: 25px;
-      border-radius: 15px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-      margin-bottom: 25px;
-      border: 1px solid #e9ecef;
-    }
+.header-section {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 18px;
+  margin-bottom: 35px;
+  box-shadow: 0 12px 30px rgba(30, 58, 138, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-    .btn-custom {
-      border-radius: 10px;
-      padding: 12px 25px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      transition: all 0.3s ease;
-      border: none;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    }
+.header-title {
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.5px;
+}
 
-    .btn-custom:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
+.header-subtitle {
+  font-size: 1.15rem;
+  opacity: 0.95;
+  margin: 8px 0 0 0;
+  font-weight: 400;
+}
 
-    .btn-create {
-      background: linear-gradient(135deg, #28a745, #20c997);
-      color: white;
-    }
+.badge-light {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 1rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
 
-    .btn-history {
-      background: linear-gradient(135deg, #007bff, #6610f2);
-      color: white;
-    }
+/* ======================================== 
+   CONTROLS SECTION
+   ======================================== */
 
-    .search-container {
-      background: #f8f9fa;
-      padding: 20px;
-      border-radius: 12px;
-      border: 2px solid #e9ecef;
-    }
+.controls-section {
+  background: white;
+  padding: 28px;
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 28px;
+  border: 1px solid #e5e7eb;
+}
 
-    .search-input {
-      border-radius: 10px;
-      border: 2px solid #dee2e6;
-      padding: 12px 20px;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-    }
+/* ======================================== 
+   BOTONES PERSONALIZADOS
+   ======================================== */
 
-    .search-input:focus {
-      border-color: #667eea;
-      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-    }
-
-    .table-container {
-      background: white;
-      border-radius: 15px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      border: 1px solid #e9ecef;
-    }
-
-    .table-modern {
-      margin: 0;
-      font-size: 0.95rem;
-    }
-
-    .table-modern thead {
-      background: linear-gradient(135deg, #495057, #6c757d);
-      color: white;
-    }
-
-    .table-modern thead th {
-      border: none;
-      padding: 18px 15px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-size: 0.85rem;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    .table-modern tbody tr {
-      transition: all 0.3s ease;
-      border-bottom: 1px solid #f1f3f4;
-    }
-
-    .table-modern tbody tr:hover {
-      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-      transform: scale(1.01);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .table-modern td {
-      padding: 15px;
-      vertical-align: middle;
-      border: none;
-    }
-
-    .status-badge {
-      display: inline-block;
-      white-space: nowrap; /* evita el salto de línea */
-      padding: 9px 12px;
-      border-radius: 20px;
-      font-weight: bold;
-      color: white;
-      font-size: 15px;
-      max-width: 100%; /* permite crecer dentro del contenedor */
-      text-align: center;
-    }
-
-    .btn-action {
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin: 2px;
-      border: none;
-      transition: all 0.3s ease;
-    }
-
-    .btn-action:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .btn-edit {
-      background: linear-gradient(135deg, #17a2b8, #6610f2);
-      color: white;
-    }
-
-    .btn-review {
-      background: linear-gradient(135deg, #fd7e14, #e83e8c);
-      color: white;
-    }
-
-    .btn-expand {
-      background: linear-gradient(135deg, #6c757d, #495057);
-      color: white;
-      border-radius: 50%;
-      width: 35px;
-      height: 35px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .actions-container {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .pagination {
-      justify-content: center;
-      margin-top: 25px;
-    }
-
-    .pagination .page-link {
-      border-radius: 8px;
-      margin: 0 3px;
-      border: 2px solid #dee2e6;
-      color: #667eea;
-      font-weight: 600;
-      padding: 10px 15px;
-    }
-
-    .pagination .page-item.active .page-link {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      border-color: #667eea;
-      color: white;
-    }
-
-    .pagination .page-link:hover {
-      background: #f8f9fa;
-      border-color: #667eea;
-      color: #495057;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: #6c757d;
-    }
-
-    .empty-state i {
-      font-size: 4rem;
-      margin-bottom: 20px;
-      opacity: 0.5;
-    }
-
-    .loading-state {
-      text-align: center;
-      padding: 40px;
-      color: #667eea;
-    }
-
-    .loading-state i {
-      font-size: 2rem;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .main-container {
-        margin: 10px;
-        padding: 20px;
-      }
-
-      .header-title {
-        font-size: 1.8rem;
-      }
-
-      .table-container {
-        overflow-x: auto;
-      }
-
-      .actions-container {
-        flex-direction: column;
-      }
-
-      .btn-custom {
-        width: 100%;
-        margin-bottom: 10px;
-      }
-    }
-
-    /* Mejoras adicionales */
-    .swal-wide { 
-      max-width: 90vw !important; 
-    }
-
-    .swal-wide-files {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-
-    .swal-wide-files .swal2-html-container {
-      padding: 0 !important;
-      margin: 0 !important;
-    }
-
-    .swal-wide-files .swal2-content {
-      text-align: left !important;
-    }
-
-    /* Scrollbar personalizado */
-    .swal-wide-files div[style*="overflow-y: auto"]::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .swal-wide-files div[style*="overflow-y: auto"]::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 4px;
-    }
-
-    .swal-wide-files div[style*="overflow-y: auto"]::-webkit-scrollbar-thumb {
-      background: #c1c1c1;
-      border-radius: 4px;
-    }
-
-    .swal-wide-files div[style*="overflow-y: auto"]::-webkit-scrollbar-thumb:hover {
-      background: #a8a8a8;
-    }
-
-  /* ESTILO DE SELECCION DE ESTADO */
-.select-estado {
-  border: none;
-  border-radius: 25px;
-  padding: 5px 18px;
-  font-weight: bold;
-  color: black !important;
-  text-align: center;
+.btn-custom {
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-weight: 600;
   text-transform: uppercase;
-  width: auto;
-  max-width: 300px;
-  min-width: 220px;
-  appearance: none;
-  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.4);
-  background-size: 100% 100%;
-  font-size: 13px;
+  letter-spacing: 0.8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+  font-size: 0.9rem;
 }
 
-/* Aplicar mismo degradado a los badges dentro de la tabla */
-/* Amarillo para Pendiente */
+.btn-custom:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.btn-custom:active {
+  transform: translateY(-1px);
+}
+ /*COLOR DE HISTORIAL*/ */
+.btn-history {
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  color: white;
+}
+
+.btn-history:hover {
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+}
+
+/* ======================================== 
+   SEARCH CONTAINER
+   ======================================== */
+
+.search-container {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
+}
+
+.input-group-text {
+  background: white;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+}
+
+.form-control {
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+}
+
+.input-group .form-control {
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+}
+
+.form-control:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
+
+/* ======================================== 
+   LOADING INDICATOR
+   ======================================== */
+
+.loading-indicator {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  background: rgba(255, 255, 255, 0.98);
+  padding: 50px 60px;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.spinner-border {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-width: 0.35rem;
+}
+
+.text-primary .spinner-border {
+  color: #3b82f6 !important;
+}
+
+/* ======================================== 
+   TABLE CONTAINER Y TABLA
+   ======================================== */
+
+.table-container {
+  background: white;
+  border-radius: 18px;
+  padding: 25px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 28px;
+  border: 1px solid #e5e7eb;
+}
+
+.table-responsive {
+  max-height: 600px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  border-radius: 12px;
+  position: relative;
+}
+
+.table {
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+.table th {
+  background: linear-gradient(135deg, #334155 0%, #475569 100%);
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 18px 15px;
+  border: none;
+  font-size: 0.85rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.table td {
+  border-color: #f1f5f9;
+  padding: 16px 15px;
+  vertical-align: middle;
+  color: #334155;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table tbody tr {
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table tbody tr:hover {
+  background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%);
+  transform: scale(1.01);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ======================================== 
+   BADGES Y ESTADOS
+   ======================================== */
+
+.badge {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.badge-primary {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border: none;
+  color: white;
+}
+
+.badge-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: none;
+  color: white;
+}
+
+.badge-custom {
+  font-size: 0.85rem;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.status-badge {
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: inline-block;
+  letter-spacing: 0.3px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
+}
+
+.status-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.18);
+}
+
+/* Estados específicos */
+.estado-pendiente,
 .status-badge.estado-pendiente {
-  background: linear-gradient(to right, #FFB300, #FFD54F);
-  color: #1c1c1c; /* Texto oscuro para mejor contraste */
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: white;
 }
 
-/* Azul para Activa */
+.estado-activa,
 .status-badge.estado-activa {
-  background: linear-gradient(to right, #1976D2, #64B5F6);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   color: white;
 }
 
-/* Verde azulado (Teal) para CVs */
-.status-badge.estado-cvs {
-  background: linear-gradient(to right, #00897B, #4DB6AC);
+/* CANDIDATOS EN SELECCIÓN - ROJO URGENTE */
+.estado-candidatos-seleccion,
+.status-badge.estado-candidatos-seleccion {
+  background: linear-gradient(45deg, #DC143C, #FF4500);
+  background-size: 400% 400%;
+  animation: gradient-alert 3s ease-in-out infinite;
+  color: white !important;
+  font-weight: bold;
+  box-shadow: 0 0 15px rgba(220, 20, 60, 0.8);
+  border: 2px solid #FF0000;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  text-transform: uppercase;
+}
+
+@keyframes gradient-alert {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.estado-candidatos-enviados,
+.status-badge.estado-candidatos-enviados {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
   color: white;
 }
 
-/* Morado para Psicométricas */
-.status-badge.estado-psico {
-  background: linear-gradient(to right, #8E24AA, #BA68C8);
+.estado-plaza-cubierta,
+.status-badge.estado-plaza-cubierta {
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
 }
 
-/* Cian para RH */
-.status-badge.estado-rh {
-  background: linear-gradient(to right, #00ACC1, #4DD0E1);
-  color: white;
-}
-
-/* Índigo para Técnica */
-.status-badge.estado-tecnica {
-  background: linear-gradient(to right, #3949AB, #7986CB);
-  color: white;
-}
-
-/* Naranja intenso para Prueba */
-.status-badge.estado-prueba {
-  background: linear-gradient(to right, #E64A19, #FF8A65);
-  color: white;
-}
-
-/* Café para Polígrafo */
-.status-badge.estado-poligrafo {
-  background: linear-gradient(to right, #6D4C41, #A1887F);
-  color: white;
-}
-
-/* Violeta para Expediente */
-.status-badge.estado-expediente {
-  background: linear-gradient(to right, #512DA8, #9575CD);
-  color: white;
-}
-
-/* Gris azulado para Confirmación */
-.status-badge.estado-confirmacion {
-  background: linear-gradient(to right, #546E7A, #90A4AE);
-  color: white;
-}
-
-/* Verde para Contratada (éxito) */
+.estado-contratada,
 .status-badge.estado-contratada {
-  background: linear-gradient(to right, #388E3C, #81C784);
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
 }
 
+.estado-cvs {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+  color: white;
+}
 
-/*ESTILOS DEL COMENTARIO*/
-.comentario-cell {
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.estado-psico {
+  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  color: white;
+}
+
+.estado-rh {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+}
+
+.estado-expediente {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+}
+
+.estado-tecnica {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+}
+
+.estado-prueba {
+  background: linear-gradient(135deg, #ec4899, #db2777);
+  color: white;
+}
+
+.estado-poligrafo {
+  background: linear-gradient(135deg, #64748b, #475569);
+  color: white;
+}
+
+.estado-confirmacion {
+  background: linear-gradient(135deg, #14b8a6, #0d9488);
+  color: white;
+}
+
+/* ======================================== 
+   BOTONES DE ACCIÓN
+   ======================================== */
+
+.btn-action {
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: none;
+  font-size: 0.85rem;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+  margin: 2px;
+}
+
+.btn-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-action:active {
+  transform: translateY(0);
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+  color: white;
+}
+
+.btn-edit:hover {
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+}
+
+.btn-comment {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+  color: white;
+}
+
+.btn-comment:hover {
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+}
+
+.btn-history-individual {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+}
+
+.btn-history-individual:hover {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+}
+
+.btn-delete {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+.btn-delete:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.btn-expand {
+  background: linear-gradient(135deg, #64748b, #475569);
+  color: white;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.btn-expand:hover {
+  background: linear-gradient(135deg, #475569, #334155);
 }
 
 .btn-Ver-Comentario-Rh {
-    padding: 3px 8px;
-    font-size: 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-    display: inline-block;
-}
-
-/*CHAT EMERGENTE*/
-#chat-contenedor {
-  max-height: 300px;
-  overflow-y: auto;
-  background: #1e1e1e;
-  padding: 10px;
-  border-radius: 8px;
-}
-
-.chat-burbuja {
-  max-width: 80%;
-  padding: 8px 12px;
-  border-radius: 15px;
-  margin: 6px 0;
-  word-wrap: break-word;
-  font-size: 14px;
-}
-
-.chat-burbuja.izquierda {
-  background: #3a3a3a;
+  background: linear-gradient(135deg, #64748b, #475569);
   color: white;
-  align-self: flex-start;
-  border-bottom-left-radius: 0;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
 }
 
-.chat-burbuja.derecha {
-  background: #007bff;
+.btn-Ver-Comentario-Rh:hover {
+  background: linear-gradient(135deg, #475569, #334155);
+}
+
+/* ======================================== 
+   EMPTY STATE
+   ======================================== */
+
+.empty-state {
+  text-align: center;
+  padding: 80px 40px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  margin: 25px 0;
+  border: 2px dashed #cbd5e1;
+}
+
+.empty-state i {
+  font-size: 5rem;
+  color: #cbd5e1;
+  margin-bottom: 25px;
+}
+
+.empty-state h4 {
+  color: #475569;
+  font-weight: 700;
+  margin-bottom: 12px;
+  font-size: 1.5rem;
+}
+
+.empty-state p {
+  color: #64748b;
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+/* ======================================== 
+   PAGINACIÓN
+   ======================================== */
+
+.pagination {
+  justify-content: center;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+.page-item {
+  margin: 0 4px;
+}
+
+.page-link {
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 18px;
+  color: #334155;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.page-link:hover {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   color: white;
-  align-self: flex-end;
-  text-align: right;
-  margin-left: auto;
-  border-bottom-right-radius: 0;
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-/* CSS mejorado para el badge de notificaciones */
+.page-item.active .page-link {
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  border-color: #1e3a8a;
+  color: white;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+}
+
+.page-item.disabled .page-link {
+  background: #f8fafc;
+  border-color: #e5e7eb;
+  color: #94a3b8;
+}
+
+/* ======================================== 
+   SCROLLBAR PERSONALIZADO
+   ======================================== */
+
+.table-responsive::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #64748b, #475569);
+  border-radius: 10px;
+  border: 2px solid #f1f5f9;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #475569, #334155);
+}
+
+/* ======================================== 
+   MODALES
+   ======================================== */
+
+.modal-content {
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  border-radius: 20px 20px 0 0;
+  padding: 25px 30px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.modal-body {
+  padding: 30px;
+}
+
+.modal-footer {
+  padding: 20px 30px;
+  border-top: 2px solid #e5e7eb;
+  border-radius: 0 0 20px 20px;
+}
+
+.bg-dark {
+  background: linear-gradient(135deg, #1e293b, #334155) !important;
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6) !important;
+}
+
+/* Arreglo para inputs bloqueados en modales */
+.modal input[type="text"],
+.modal input[type="file"], 
+.modal input[type="number"],
+.modal textarea,
+.modal select,
+.swal2-popup input,
+.swal2-popup textarea,
+.swal2-popup select {
+  pointer-events: auto !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  background-color: #fff !important;
+  border: 1px solid #cbd5e1 !important;
+  z-index: 9999 !important;
+  position: relative !important;
+  border-radius: 8px !important;
+}
+
+.modal input:focus,
+.modal textarea:focus,
+.modal select:focus,
+.swal2-popup input:focus,
+.swal2-popup textarea:focus,
+.swal2-popup select:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+
+/* ======================================== 
+   COMENTARIOS Y NOTIFICACIONES
+   ======================================== */
+
 .badge-container {
   position: relative;
   display: inline-block;
@@ -474,111 +667,711 @@
 
 .notification-badge {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  background-color: red;
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
   color: white;
-  font-size: 10px;
-  padding: 3px 6px;
   border-radius: 50%;
-  font-weight: bold;
-  z-index: 1000;
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: 0 3px 8px rgba(239, 68, 68, 0.4);
+  animation: pulse-notification 2s ease-in-out infinite;
 }
 
 .notification-badge.wide {
-  padding: 3px 8px;
+  border-radius: 12px;
+  width: auto;
+  min-width: 22px;
+  padding: 0 6px;
 }
 
-.status-badge.estado-contratada {
-  background: linear-gradient(to right, #388E3C, #81C784);
+@keyframes pulse-notification {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+/* ======================================== 
+   CANDIDATOS - LISTA Y CARDS
+   ======================================== */
+
+#listaCandidatos {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 15px !important;
+  padding: 15px !important;
+}
+
+#listaCandidatos .candidate-card {
+  width: 100% !important;
+  margin: 0 !important;
+  position: relative !important;
+  flex-shrink: 0 !important;
+}
+
+#listaCandidatos .candidate-card.rh-hidden {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+#listaCandidatos .card {
+  margin: 0 !important;
+  width: 100% !important;
+  position: relative !important;
+}
+
+.candidate-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 0.5rem;
+  border-radius: 12px;
+}
+
+.candidate-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Candidatos activos */
+.candidato-activo {
+  border-left: 4px solid #10b981 !important;
+  background-color: white !important;
+  position: relative;
+}
+
+.candidato-activo .card {
+  background-color: white !important;
+  border-color: #d1fae5 !important;
+}
+
+.candidato-activo::before {
+  content: "ACTIVO";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 6px;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+  letter-spacing: 0.5px;
 }
 
-.status-badge.estado-prueba {
-  background: linear-gradient(to right, #E64A19, #FF8A65);
+/* Candidatos descartados */
+.candidato-descartado {
+  border-left: 4px solid #ef4444 !important;
+  background-color: #fee2e2 !important;
+  border: 1px solid #fecaca !important;
+  position: relative;
+}
+
+.candidato-descartado .card {
+  background-color: #fee2e2 !important;
+  border-color: #fecaca !important;
+}
+
+.candidato-descartado .card-body {
+  background-color: #fee2e2 !important;
+}
+
+.candidato-descartado::before {
+  content: "DESCARTADO";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
   color: white;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 6px;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+  letter-spacing: 0.5px;
 }
 
-.status-badge.estado-pendiente {
-  background: linear-gradient(to right, #FFB300, #FFD54F);
-  color: #1c1c1c;
+.candidato-descartado h6 {
+  color: #991b1b !important;
 }
 
-/* =======================
-   RESPONSIVE TABLE → CARDS
-   ======================= */
-@media (max-width: 991.98px) { /* < LG */
-  /* layout general */
-  .header-section .d-flex { flex-wrap: wrap; }
-  #filtroDirigidoA { width:100% !important; display:block !important; margin:12px 0 0 !important; }
-  .btn-expand { width:32px; height:32px; }
-
-  /* convierte tabla en bloques */
-  .table-container { overflow: visible; } /* dejamos que crezca vertical */
-  table.table-modern thead { display: none; }
-  table.table-modern { border: 0 !important; }
-  table.table-modern tbody, 
-  table.table-modern tr, 
-  table.table-modern td { display: block; width: 100%; }
-
-  table.table-modern tbody tr {
-    margin: 10px 0 16px;
-    border: 1px solid #e9ecef;
-    border-radius: 12px;
-    box-shadow: 0 6px 16px rgba(0,0,0,.06);
-    background: #fff;
-    padding: 10px 10px 6px;
-  }
-
-  table.table-modern td {
-    /* cada "celda" es una línea con etiqueta a la izquierda y valor a la derecha */
-    position: relative;
-    padding: 10px 12px 10px 46%;
-    text-align: right;         /* valor a la derecha */
-    border: 0;
-    border-bottom: 1px dashed #f0f2f4;
-    font-size: 0.95rem;
-  }
-  table.table-modern td:last-child {
-    border-bottom: 0;
-    padding-bottom: 4px;
-  }
-
-  /* etiqueta (nombre de la columna) tomada de data-label */
-  table.table-modern td::before {
-    content: attr(data-label);
-    position: absolute;
-    left: 12px;
-    top: 10px;
-    width: 41%;
-    text-align: left;
-    font-weight: 700;
-    color: #6c757d;
-    text-transform: uppercase;
-    font-size: .72rem;
-    letter-spacing: .3px;
-    white-space: normal;
-  }
-
-  /* acomodos */
-  .actions-container { justify-content: flex-start; gap: 6px; }
-  .status-badge { width: 100%; max-width: none; margin-top: 6px; }
-  .comentario-cell { max-width: none; white-space: normal; }
+.candidato-descartado .text-danger {
+  color: #991b1b !important;
 }
 
-/* gap para Bootstrap 4 (no soporta gap en flex) */
-.d-flex.gap-3 > * { margin-right: 12px; }
-.d-flex.gap-3 > *:last-child { margin-right: 0; }
+.candidato-descartado .badge-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  color: white !important;
+}
+
+.candidato-descartado .text-muted {
+  color: #6b7280 !important;
+}
+
+.candidato-descartado .fa-times-circle {
+  color: #ef4444 !important;
+}
+
+/* Candidatos contratados */
+.candidato-contratado .card {
+  border-left: 4px solid #10b981 !important;
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0) !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.candidato-contratado .card:hover {
+  background: linear-gradient(135deg, #a7f3d0, #6ee7b7) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+}
+
+.candidate-card.rh-hidden {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+/* ======================================== 
+   UTILIDADES ADICIONALES
+   ======================================== */
+
+.text-primary {
+  color: #3b82f6 !important;
+}
+
+.text-success {
+  color: #10b981 !important;
+}
+
+.text-warning {
+  color: #f59e0b !important;
+}
+
+.text-danger {
+  color: #ef4444 !important;
+}
+
+.text-info {
+  color: #06b6d4 !important;
+}
+
+.text-muted {
+  color: #64748b !important;
+}
+
+/* ======================================== 
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 992px) {
+  .main-container {
+    margin: 15px;
+    padding: 25px;
+  }
+  
+  .header-title {
+    font-size: 2rem;
+  }
+  
+  .table-responsive {
+    max-height: 500px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-container {
+    margin: 10px;
+    padding: 20px;
+  }
+  
+  .header-section {
+    padding: 20px;
+  }
+  
+  .header-title {
+    font-size: 1.8rem;
+  }
+  
+  .header-subtitle {
+    font-size: 1rem;
+  }
+  
+  .controls-section {
+    padding: 20px;
+  }
+  
+  .btn-custom {
+    padding: 12px 20px;
+    font-size: 0.85rem;
+  }
+  
+  .table-container {
+    padding: 15px;
+  }
+  
+  .table-responsive {
+    max-height: 450px !important;
+  }
+}
 
 @media (max-width: 576px) {
-  .main-container { margin: 8px; padding: 16px; }
-  .header-title { font-size: 1.6rem; }
-  .search-container .input-group + .input-group { margin-top: 8px; }
-  .btn-custom { width:100%; margin-bottom:10px; }
-  .badge.badge-light.p-3 { display:block; margin-top:10px; }
+  .main-container {
+    margin: 5px;
+    padding: 15px;
+  }
+  
+  .header-title {
+    font-size: 1.5rem;
+  }
+  
+  .btn-action {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
 }
 
+/* ======================================== 
+   FIN DE ESTILOS CORPORATIVOS RH
+   ======================================== */
+
+/*estilos del historial*/ 
+/* Estilos para el historial de proceso de solicitudes */
+.swal2-html-container {
+    overflow-x: hidden !important;
+}
+
+.swal2-html-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.swal2-html-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.swal2-html-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.swal2-html-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Animación para los cards */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hover effect para los filtros rápidos */
+.btn-filtro-rapido {
+    transition: all 0.3s ease;
+}
+
+.btn-filtro-rapido:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.btn-filtro-rapido.active {
+    background-color: #007bff !important;
+    color: white !important;
+    border-color: #007bff !important;
+}
+
+/* ======================================== 
+   PESTAÑAS PREMIUM - RH CARDS
+   ======================================== */
+
+.tabs-container {
+  margin: 30px 0;
+  padding: 0 10px;
+}
+
+.tabs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tab-card {
+  background: white;
+  border-radius: 18px;
+  padding: 28px 20px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid #e5e7eb;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Barra superior de color */
+.tab-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #cbd5e1, #94a3b8);
+  transition: all 0.3s ease;
+}
+
+/* Efecto hover */
+.tab-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  border-color: #3b82f6;
+}
+
+.tab-card:hover::before {
+  height: 6px;
+}
+
+/* Estado activo */
+.tab-card.active {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  color: white;
+  border-color: #1e3a8a;
+  box-shadow: 0 8px 20px rgba(30, 58, 138, 0.3);
+  transform: translateY(-4px);
+}
+
+.tab-card.active::before {
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+  height: 6px;
+}
+
+/* Icono de la pestaña */
+.tab-icon {
+  font-size: 2.8rem;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.tab-card:not(.active) .tab-icon {
+  color: #64748b;
+}
+
+.tab-card.active .tab-icon {
+  color: white;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Contenido de la pestaña */
+.tab-content {
+  flex: 1;
+  text-align: left;
+}
+
+/* Contador de solicitudes */
+.tab-count {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 8px;
+  letter-spacing: -1px;
+}
+
+.tab-card:not(.active) .tab-count {
+  color: #1e293b;
+}
+
+.tab-card.active .tab-count {
+  color: white;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Etiqueta de la pestaña */
+.tab-label {
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+}
+
+.tab-card:not(.active) .tab-label {
+  color: #64748b;
+}
+
+.tab-card.active .tab-label {
+  color: white;
+}
+
+/* Colores específicos para cada pestaña */
+.tab-card[data-filter="todas"]:not(.active):hover {
+  border-color: #3b82f6;
+}
+
+.tab-card[data-filter="todas"]:not(.active):hover::before {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+
+.tab-card[data-filter="pendientes"]:not(.active):hover {
+  border-color: #f59e0b;
+}
+
+.tab-card[data-filter="pendientes"]:not(.active):hover::before {
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+}
+
+.tab-card[data-filter="en-proceso"]:not(.active):hover {
+  border-color: #8b5cf6;
+}
+
+.tab-card[data-filter="en-proceso"]:not(.active):hover::before {
+  background: linear-gradient(90deg, #a78bfa, #8b5cf6);
+}
+
+.tab-card[data-filter="plaza-cubierta"]:not(.active):hover {
+  border-color: #10b981;
+}
+
+.tab-card[data-filter="plaza-cubierta"]:not(.active):hover::before {
+  background: linear-gradient(90deg, #34d399, #10b981);
+}
+
+/* Animación de pulso para contador activo */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Responsive para tablets */
+@media (max-width: 992px) {
+  .tabs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Responsive para móviles */
+@media (max-width: 576px) {
+  .tabs-container {
+    padding: 0 5px;
+  }
+  
+  .tabs-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .tab-card {
+    padding: 20px 16px;
+  }
+  
+  .tab-icon {
+    font-size: 2.2rem;
+  }
+  
+  .tab-count {
+    font-size: 2rem;
+  }
+  
+  .tab-label {
+    font-size: 0.9rem;
+  }
+}
+
+/* ======================================== 
+   CORRECCIONES FINALES PARA IGUALAR SUPERVISIÓN
+   ======================================== */
+
+/* Botón Cambiar Estado - CYAN/TURQUESA */
+.btnCambiarEstado,
+button.btnCambiarEstado {
+  background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+  color: white !important;
+}
+
+.btnCambiarEstado:hover,
+button.btnCambiarEstado:hover {
+  background: linear-gradient(135deg, #0891b2, #0e7490) !important;
+}
+
+/* Botón Ver Comentario - GRIS */
+.btn-Ver-Comentario-Rh,
+button.btn-Ver-Comentario-Rh {
+  background: linear-gradient(135deg, #64748b, #475569) !important;
+  color: white !important;
+}
+
+.btn-Ver-Comentario-Rh:hover,
+button.btn-Ver-Comentario-Rh:hover {
+  background: linear-gradient(135deg, #475569, #334155) !important;
+}
+
+/* Botón Ver Resumen - VERDE */
+.btn-history-individual,
+button[class*="Resumen"] {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  color: white !important;
+}
+
+.btn-history-individual:hover,
+button[class*="Resumen"]:hover {
+  background: linear-gradient(135deg, #059669, #047857) !important;
+}
+
+/* Botón Ver Candidatos - VERDE */
+button[class*="Candidatos"] {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  color: white !important;
+}
+
+button[class*="Candidatos"]:hover {
+  background: linear-gradient(135deg, #059669, #047857) !important;
+}
+
+/* Asegurar que todos los botones de acción tengan el estilo correcto */
+.btn-action {
+  padding: 10px 18px !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  margin: 3px !important;
+}
+
+/* ======================================== 
+   CORRECCIÓN PARA LABELS EN MODALES
+   ======================================== */
+
+.modal .form-label,
+.modal label {
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  color: white !important;
+  margin-bottom: 8px !important;
+  display: block !important;
+}
+
+.modal .form-group label {
+  font-size: 0.9rem !important;
+}
+
+/* SELECT EN MODALES */
+.modal select.form-control,
+#nuevoEstado {
+  width: 100% !important;
+  padding: 12px 16px !important;
+  font-size: 0.95rem !important;
+  height: auto !important;
+  min-height: 48px !important;
+}
+
+/* TEXTAREA EN MODALES */
+.modal textarea.form-control {
+  width: 100% !important;
+  padding: 12px 16px !important;
+  font-size: 0.95rem !important;
+  min-height: 100px !important;
+}
+/* ======================================== 
+   CORRECCIÓN PARA MODAL DE HISTORIAL (SWAL)
+   ======================================== */
+
+/* Títulos y encabezados del SweetAlert */
+.swal2-title {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+}
+
+/* Contenedor del contenido */
+.swal2-html-container {
+  font-size: 0.9rem !important;
+  line-height: 1.5 !important;
+}
+
+/* Labels y texto dentro del modal */
+.swal2-html-container label,
+.swal2-html-container .form-label {
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 6px !important;
+}
+
+/* Inputs y selects dentro del SweetAlert */
+.swal2-html-container input,
+.swal2-html-container select {
+  font-size: 0.9rem !important;
+  padding: 10px 14px !important;
+  height: auto !important;
+  min-height: 42px !important;
+}
+
+/* Texto de descripción/ayuda */
+.swal2-html-container small,
+.swal2-html-container .text-muted {
+  font-size: 0.8rem !important;
+}
+
+/* Sección de configuración */
+.swal2-html-container h4,
+.swal2-html-container h5 {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+}
+
+/* Botones dentro del modal */
+.swal2-confirm,
+.swal2-cancel {
+  font-size: 0.9rem !important;
+  padding: 10px 24px !important;
+}
+
+/* Filtros adicionales */
+.swal2-html-container .alert {
+  font-size: 0.85rem !important;
+  padding: 12px !important;
+}
+
+/* Ajustar ancho del modal si es necesario */
+.swal2-popup {
+  width: 50em !important;
+  max-width: 90% !important;
+}
+
+/* Select con opciones */
+.swal2-html-container select option {
+  font-size: 0.9rem !important;
+  padding: 8px !important;
+}
   </style>
 </head>
 
@@ -604,67 +1397,120 @@
         </div>
       </div>
 
+
+        <!-- PESTAÑAS DE FILTRADO PREMIUM -->
+        <div class="tabs-container">
+          <div class="tabs-grid">
+            <div class="tab-card active" data-filter="todas">
+              <div class="tab-icon">
+                <i class="fas fa-clipboard-list"></i>
+              </div>
+              <div class="tab-content">
+                <div class="tab-count" id="count-todas">0</div>
+                <div class="tab-label">Todas</div>
+              </div>
+            </div>
+
+            <div class="tab-card" data-filter="pendientes">
+              <div class="tab-icon">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="tab-content">
+                <div class="tab-count" id="count-pendientes">0</div>
+                <div class="tab-label">Pendientes</div>
+              </div>
+            </div>
+
+            <div class="tab-card" data-filter="en-proceso">
+              <div class="tab-icon">
+                <i class="fas fa-users-cog"></i>
+              </div>
+              <div class="tab-content">
+                <div class="tab-count" id="count-en-proceso">0</div>
+                <div class="tab-label">En Proceso</div>
+              </div>
+            </div>
+
+            <div class="tab-card" data-filter="plaza-cubierta">
+              <div class="tab-icon">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <div class="tab-content">
+                <div class="tab-count" id="count-plaza-cubierta">0</div>
+                <div class="tab-label">Plaza Cubierta</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       <!-- Controls Section -->
       <div class="controls-section">
         <div class="row align-items-center">
           <div class="col-md-6">
             <div class="d-flex gap-3">
-              <button class="btn btn-custom btn-history btnVerHistorial">
+              <button class="btn btn-custom btn-history btnVerHistorialRh">
                 <i class="fas fa-history mr-2"></i>
-                Historial General
+                Historial De Solicitudes
               </button>
             </div>
           </div>
           <div class="col-md-6">
             <div class="search-container">
               <div class="row">
-                <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-search"></i></span>
-                <input type="text" id="searchInput" class="form-control" placeholder="Buscar en solicitudes...">
+                <div class="col-md-6">
+                  <div class="input-group mb-2">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Buscar en solicitudes...">
+                  </div>
                 </div>
-                <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-store"></i></span>
-                <input type="text" id="searchTienda" class="form-control" placeholder="Buscar por tienda...">
+                <div class="col-md-6">
+                  <div class="input-group mb-2">
+                    <span class="input-group-text"><i class="fas fa-store"></i></span>
+                    <input type="text" id="searchTienda" class="form-control" placeholder="Filtrar por tienda...">
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <select id="filtroDirigidoA" class="form-control" style="width: 200px; display: inline-block; margin-right: 10px;">
-            <option value="">Todos</option>
-            <option value="Keisha Davila">Keisha Davila</option>
-            <option value="Cristy Garcia">Cristy Garcia</option>
-            <option value="Emma de Cea">Emma de Cea</option>
-          </select>
+        </div>
+      </div>
+
+      <!-- Loading Indicator -->
+      <div id="loading-indicator" class="loading-indicator" style="display: none;">
+        <div class="text-center">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Cargando...</span>
+          </div>
+          <p class="mt-3 mb-0">Cargando solicitudes...</p>
         </div>
       </div>
 
       <!-- Table Section -->
       <div class="table-container">
-        <div id="loading-indicator" class="loading-state">
-          <i class="fas fa-spinner fa-spin"></i>
-          <p class="mt-3">Cargando solicitudes...</p>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0" id="tblSolicitudes">
+            <thead>
+              <tr>
+                <th width="20">
+                  <input type="checkbox" id="selectAll" class="form-check-input">
+                </th>
+                <th width="80">Tienda</th>
+                <th width="120">Puesto</th>
+                <th width="120">Supervisor</th>
+                <th width="120">Aprobado Por</th>
+                <th width="120">Asignado A</th>
+                <th width="100">Fecha Solicitud</th>
+                <th width="100">Modificación Registrada</th>
+                <th width="100">Estado</th>
+                <th width="80">Estado de Aprobación</th>
+                <th width="150">Razón</th>
+                <th width="20">Comentario</th>
+                <th width="350">Acciones</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
         </div>
-        
-        <table id="tblSolicitudes" class="table table-modern" style="display: none;">
-          <thead>
-            <tr>
-              <th width="40"><i class="fas fa-expand-alt"></i></th>
-              <th width="50">Tienda</th>
-              <th width="160">Puesto</th>
-              <th width="155">Supervisor</th>
-              <th width="155">Aprobado por</th>
-              <th width="155">Asignado a</th>
-              <th width="120">Fecha Solicitud</th>
-              <th width="150">Modificación registrada</th>
-              <th width="160">Estado</th>
-              <th width="130">Estado de Aprobacion</th>
-              <th width="150">Razón</th>
-              <th width="20">Comentario</th>
-              <th width="350">Acciones</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
 
         <div id="empty-state" class="empty-state" style="display: none;">
           <i class="fas fa-inbox"></i>
@@ -711,827 +1557,220 @@
     </div>
   </div>
 
-  <!--MODAL DE CAMBIAR ESTADO DE LA SOLICITUD-->
-  <div class="modal fade" id="modalCambiarEstado" tabindex="-1" aria-labelledby="tituloEstadoModal" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+<!-- MODAL DE CAMBIAR ESTADO DE LA SOLICITUD - CON SECCIÓN DE CANDIDATOS -->
+<div class="modal fade" id="modalCambiarEstado" tabindex="-1" aria-labelledby="tituloEstadoModal" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content text-white bg-dark">
       <div class="modal-header">
-        <h5 class="modal-title" id="tituloEstadoModal"><i class="fas fa-exchange-alt"></i> Cambiar Estado de Solicitud</h5>
-        <button type="button" class="btn-close bg-light" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <h5 class="modal-title" id="tituloEstadoModal">
+          <i class="fas fa-exchange-alt"></i> Cambiar Estado de Solicitud
+        </h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
       <div class="modal-body">
         
-        <!-- Información de la solicitud (no editable) -->
-        <div id="infoSolicitudCambio" class="mb-3">
-          <!-- Aquí se carga la info por JS -->
+        <!-- Información de la solicitud -->
+        <div id="infoSolicitudCambio" class="mb-4">
+          <!-- Se carga por JavaScript -->
         </div>
 
         <!-- Selección de nuevo estado -->
-        <div class="form-group">
-          <label for="nuevoEstado"><strong>Nuevo Estado:</strong></label>
-          <select id="nuevoEstado" class="form-control select-estado">
+        <div class="form-group mb-4">
+          <label for="nuevoEstado" class="form-label">
+            <strong><i class="fas fa-clipboard-list mr-2"></i>Nuevo Estado:</strong>
+          </label>
+          <select id="nuevoEstado" class="form-control form-control-lg">
             <option value="">Seleccione estado...</option>
             <option value="Pendiente">Pendiente</option>
             <option value="Vacante Activa">Vacante Activa</option>
-            <option value="Cvs Enviados">Cvs Enviados</option>
-            <option value="P. Psicometrica">P. Psicometrica</option>
-            <option value="Entrevista RH">Entrevista RH</option>
-            <option value="Entrevista Tecnica">Entrevista Tecnica</option>
-            <option value="Dia de Prueba">Dia de prueba</option>
-            <option value="Prueba de Poligrafo">Prueba de Poligrafo</option>
-            <option value="Expediente RH">Expediente RH</option>
-            <option value="Confirmacion Candidato">Confirmacion Candidato</option>
-            <option value="Contratada">Contratada</option>
+            <option value="Candidatos en Seleccion">Candidatos en Selección</option>
           </select>
         </div>
 
-        <!-- Comentario o razón -->
-        <div class="mb-3">
-          <label for="razonCambio" class="form-label">Comentario:</label>
-          <textarea id="comentarioCambio" class="form-control" rows="3" placeholder="Escribe un comentario del cambio de estado..."></textarea>
+        <!-- Comentario obligatorio -->
+        <div class="form-group mb-4">
+          <label for="comentarioCambio" class="form-label">
+            <strong><i class="fas fa-comment mr-2"></i>Comentario:</strong> 
+            <span class="text-danger">*</span>
+          </label>
+          <textarea id="comentarioCambio" 
+                    class="form-control" 
+                    rows="4" 
+                    placeholder="Escriba un comentario detallado sobre el cambio de estado..." 
+                    required></textarea>
+          <small class="text-warning mt-2 d-block">
+            <i class="fas fa-exclamation-triangle mr-1"></i>
+            El comentario es obligatorio para continuar
+          </small>
         </div>
 
-        <!-- Subida de archivos (solo si estado == CVS Enviados) -->
-        <div class="mb-3" id="seccionArchivos" style="display: none;">
-          <label for="archivosCVS" class="form-label">Archivos de CVS:</label>
-          <input type="file" id="archivosCVS" class="form-control" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-          <small class="text-muted">Máximo 50MB por archivo.</small>
-          <div id="vistaPreviaArchivos" class="mt-2"></div>
+        <!-- Sección de candidatos (aparece solo cuando selecciona "Candidatos en Selección") -->
+        <div id="seccionCandidatos" style="display: none;">
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle mr-2"></i>
+            <strong>Registro de Candidatos en Selección</strong><br>
+            Especifique cuántos candidatos están en proceso de selección.
+          </div>
+          
+          <div class="form-group">
+            <label for="cantidadCandidatos" class="form-label">
+              <strong>Cantidad de candidatos:</strong>
+            </label>
+            <div class="input-group">
+              <input type="number" id="cantidadCandidatos" class="form-control" 
+                     min="1" max="10" placeholder="Ej: 3">
+              <div class="input-group-append">
+                <button type="button" id="btnConfirmarCandidatos" class="btn btn-primary">
+                  <i class="fas fa-arrow-right"></i> Continuar
+                </button>
+              </div>
+            </div>
+            <small class="text-muted">Máximo 10 candidatos por solicitud</small>
+          </div>
         </div>
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" id="btnCancelarCambioEstado" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="btnGuardarCambioEstado">Guardar Cambios</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          <i class="fas fa-times mr-2"></i>Cancelar
+        </button>
+        <button type="button" class="btn btn-primary" id="btnGuardarCambioEstado">
+          <i class="fas fa-save mr-2"></i>Guardar Cambios
+        </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal Comentario -->
-<div class="modal fade" id="modalComentario" tabindex="-1" aria-labelledby="comentarioLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content bg-dark text-white">
-      <div class="modal-header">
-        <h5 class="modal-title" id="comentarioLabel"><i class="fas fa-comment-dots"></i> Comentario</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body">
-        <p id="textoComentario"></p>
+  <!-- Modal de Expedientes de Candidatos - VERSIÓN MEJORADA -->
+  <div class="modal fade" id="modalExpedientes" tabindex="-1" aria-labelledby="expedientesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-width: 95%; width: 1400px;">
+      <div class="modal-content">
+        <div class="modal-header bg-gradient-primary text-white">
+          <h4 class="modal-title" id="expedientesLabel">
+            <i class="fas fa-folder-open mr-3"></i>Sistema de Expedientes de Candidatos
+          </h4>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body p-0" style="background: #f8f9fa;">
+          <div class="row no-gutters h-100">
+            <!-- Panel izquierdo - Lista de candidatos -->
+            <div class="col-md-4" style="background: white; border-right: 2px solid #dee2e6;">
+              <div class="p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                  <h5 class="mb-0 text-primary">
+                    <i class="fas fa-users mr-2"></i>Lista de Candidatos
+                  </h5>
+                  <span class="badge badge-primary" id="totalCandidatos">0</span>
+                </div>
+                
+                <div id="listaCandidatos" style="max-height: calc(100vh - 300px); overflow-y: auto;">
+                  <!-- Se carga dinámicamente -->
+                </div>
+                
+                <div class="mt-4 text-center">
+                  <button class="btn btn-success btn-lg" id="btnCargarCandidatos">
+                    <i class="fas fa-plus-circle mr-2"></i>Agregar Candidatos
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Panel derecho - Expediente del candidato seleccionado -->
+            <div class="col-md-8" style="background: #f8f9fa;">
+              <div class="p-4">
+                <div id="expedienteCandidato">
+                  <div class="text-center py-5" style="margin-top: 100px;">
+                    <div style="font-size: 4rem; color: #dee2e6; margin-bottom: 20px;">
+                      <i class="fas fa-user-circle"></i>
+                    </div>
+                    <h5 class="text-muted">Selecciona un candidato</h5>
+                    <p class="text-muted">Haz clic en un candidato de la lista para ver su expediente completo</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary btn-lg" data-dismiss="modal">
+            <i class="fas fa-times mr-2"></i>Cerrar Sistema
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>
+
+  <!-- Modal Comentario -->
+  <div class="modal fade" id="modalComentario" tabindex="-1" aria-labelledby="comentarioLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header">
+          <h5 class="modal-title" id="comentarioLabel">
+            <i class="fas fa-comment-dots"></i> Comentario
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p id="textoComentario"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- JavaScript Principal -->
   <script>
-            // ✅ FUNCIÓN PARA GENERAR PDF
-                        function generarReportePDF(idSolicitud) {
-                            console.log('Generando PDF para solicitud:', idSolicitud);
-                            
-                            Swal.fire({
-                                title: '<i class="fas fa-spinner fa-spin"></i> Generando PDF...',
-                                text: 'Creando reporte de observaciones',
-                                allowOutsideClick: false,
-                                showConfirmButton: false
-                            });
-                            
-                            // Crear URL para generar PDF
-                            const urlPDF = `./gestionhumana/reporte_observaciones_pdf.php?id_solicitud=${idSolicitud}`;
-                            
-                            // Abrir en nueva ventana
-                            setTimeout(() => {
-                                window.open(urlPDF, '_blank');
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: '<i class="fas fa-file-pdf"></i> PDF Generado',
-                                    text: 'El reporte se ha abierto en una nueva ventana',
-                                    timer: 2000,
-                                    showConfirmButton: false
-                                });
-                            }, 1000);
-                        }
-
-                        // FUNCIÓN PARA ENVIAR AVAL A GERENCIA
-
-function enviarAvalGerencia(idSolicitud) {
-    console.log('🚀 Iniciando envío de aval para solicitud:', idSolicitud);
+//=================================================================================
+// INICIALIZACIÓN DE TODO EL PROGRAMA
+//=================================================================================
+$(document).ready(function() {
+    window.ROL_USUARIO = 'RRHH';
+    window.CANDIDATOS_INDEX = {};
     
-    // ✅ EXTRAER NOMBRE DE RRHH USANDO MÉTODO DIRECTO (como en supervisión)
-    let nombreRRHH = '';
+    console.log('=== INICIALIZACIÓN RH ===');
     
-    try {
-        // Método 1: Buscar el botón que llamó esta función y extraer de su fila
-        const filaActual = $(`button[onclick*="enviarAvalGerencia(${idSolicitud})"]`).closest('tr');
+    // LIMPIAR COMPLETAMENTE ELEMENTOS DE SUPERVISIÓN
+    $('#modalExpedientesSupervisor').remove();
+    $('#expedienteCandidatoSupervisor').empty();
+    $('#modal-backdrop-supervisor').remove();
+    $('.modal-backdrop').remove(); // Limpiar cualquier backdrop residual
+    
+    // LIMPIAR TODOS LOS EVENT HANDLERS PREVIOS
+    $(document).off('click', '.btnVerCandidatos');
+    $(document).off('click', '.candidate-item-supervisor');
+    $(document).off('click', '.candidate-card .card');
+    
+    // FORZAR LIMPIEZA DE FUNCIONES GLOBALES DE SUPERVISIÓN
+    if (window.mostrarModalExpedientesSupervisor) {
+        delete window.mostrarModalExpedientesSupervisor;
+    }
+    if (window.seleccionarCandidatoSupervisior) {
+        delete window.seleccionarCandidatoSupervisior;
+    }
+    
+    // ESTABLECER EVENT HANDLERS ESPECÍFICOS DE RH
+    $(document).on('click', '.btnVerCandidatosrh', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         
-        if (filaActual.length > 0) {
-            console.log('✅ Fila encontrada con método 1');
-            nombreRRHH = filaActual.find('td:nth-child(6)').text().trim() || 'RRHH';
-            console.log('👤 Nombre RRHH extraído:', nombreRRHH);
+        const idSolicitud = $(this).data('id');
+        console.log('=== CLICK RH - Ver candidatos para solicitud:', idSolicitud);
+        
+        if (idSolicitud) {
+            // LLAMAR DIRECTAMENTE A LA FUNCIÓN DE RH
+            mostrarCandidatosEnviadosrh(idSolicitud);
         } else {
-            console.log('⚠️ Método 1 falló, intentando método 2...');
-            
-            // Método 2: Buscar en toda la tabla por ID de solicitud
-            $('tbody tr').each(function() {
-                const filaTexto = $(this).text();
-                if (filaTexto.includes(idSolicitud.toString())) {
-                    nombreRRHH = $(this).find('td:nth-child(6)').text().trim() || 'RRHH';
-                    console.log('👤 Nombre RRHH extraído (método 2):', nombreRRHH);
-                    return false; // break del each
-                }
-            });
-        }
-        
-        // Método 3: Si aún no encuentra, buscar usando event.target
-        if (!nombreRRHH || nombreRRHH === '' || nombreRRHH === 'RRHH') {
-            console.log('⚠️ Intentando método 3 con event...');
-            
-            // Buscar cualquier botón relacionado con esta solicitud
-            $(`button[onclick*="${idSolicitud}"]`).each(function() {
-                const fila = $(this).closest('tr');
-                if (fila.length > 0) {
-                    const nombre = fila.find('td:nth-child(6)').text().trim();
-                    if (nombre && nombre !== '' && nombre !== 'RRHH') {
-                        nombreRRHH = nombre;
-                        console.log('👤 Nombre RRHH extraído (método 3):', nombreRRHH);
-                        return false; // break
-                    }
-                }
-            });
-        }
-        
-    } catch (error) {
-        console.error('❌ Error extrayendo nombre RRHH:', error);
-    }
-    
-    // Fallback si no encuentra el nombre
-    if (!nombreRRHH || nombreRRHH === '' || nombreRRHH === 'RRHH') {
-        nombreRRHH = 'Emma de Cea'; // Nombre por defecto o el que tú uses
-        console.log('⚠️ Usando nombre fallback:', nombreRRHH);
-    }
-    
-    console.log('👤 Nombre RRHH final:', nombreRRHH);
-    
-    // ✅ CERRAR CUALQUIER MODAL EXISTENTE PRIMERO
-    if (Swal.isVisible()) {
-        Swal.close();
-    }
-    
-    setTimeout(() => {
-        Swal.fire({
-            title: '<i class="fas fa-user-tie"></i> Enviar a Aval Gerencia',
-            html: `
-                <div style="text-align: left; font-family: 'Segoe UI', sans-serif;">
-                    <!-- Header informativo -->
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
-                        <h4 style="margin: 0 0 10px 0; font-weight: 600;">
-                            <i class="fas fa-info-circle mr-2"></i>Completar información para aprobación gerencial
-                        </h4>
-                        <div style="opacity: 0.9; font-size: 14px;">
-                            Esta solicitud será enviada al gerente para su aval final
-                        </div>
-                        <div style="opacity: 0.8; font-size: 13px; margin-top: 8px;">
-                            <i class="fas fa-user mr-1"></i> Enviado por: <strong>${nombreRRHH}</strong>
-                        </div>
-                    </div>
-
-                    <!-- Información de la solicitud -->
-                    <div style="background: #f8f9fa; border-left: 4px solid #28a745; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
-                        <div style="margin-bottom: 8px;">
-                            <strong style="color: #495057;">Solicitud:</strong> 
-                            <span style="color: #28a745; font-weight: 600;">#${idSolicitud}</span>
-                        </div>
-                        <div style="margin-bottom: 8px;">
-                            <strong style="color: #495057;">Acción:</strong> 
-                            <span style="color: #6c757d;">Se notificará al gerente para aprobación final</span>
-                        </div>
-                        <div>
-                            <strong style="color: #495057;">Estado tras envío:</strong> 
-                            <span style="background: #fff3cd; color: #856404; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
-                                PENDIENTE AVAL GERENCIA
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Documentos requeridos -->
-                    <div style="margin-bottom: 25px;">
-                        <h5 style="margin: 0 0 15px 0; color: #495057; font-weight: 600;">
-                            <i class="fas fa-file-upload mr-2" style="color: #007bff;"></i>
-                            Documentos Requeridos
-                        </h5>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                            <!-- PDF Reporte -->
-                            <div>
-                                <label style="display: block; font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 14px;">
-                                    <i class="fas fa-file-pdf mr-1" style="color: #dc3545;"></i>
-                                    Reporte del Día de Prueba (PDF)
-                                </label>
-                                <div style="border: 2px dashed #dee2e6; border-radius: 8px; padding: 15px; text-align: center; background: #f8f9fa; cursor: pointer;" onclick="document.getElementById('pdfFileAval').click()">
-                                    <input type="file" id="pdfFileAval" accept=".pdf" style="display: none;" onchange="previewFile('pdf')">
-                                    <i class="fas fa-cloud-upload-alt" style="font-size: 24px; color: #6c757d; margin-bottom: 8px;"></i>
-                                    <div style="color: #6c757d; font-size: 14px;">Subir PDF</div>
-                                    <div style="color: #adb5bd; font-size: 12px;">Clic para seleccionar</div>
-                                </div>
-                                <div id="pdfPreviewAval" style="margin-top: 8px; padding: 8px; background: #d1ecf1; border-radius: 5px; display: none;">
-                                    <small style="color: #0c5460;"><i class="fas fa-file-pdf mr-1"></i><span id="pdfNameAval"></span></small>
-                                </div>
-                            </div>
-                            
-                            <!-- CV -->
-                            <div>
-                                <label style="display: block; font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 14px;">
-                                    <i class="fas fa-file-alt mr-1" style="color: #007bff;"></i>
-                                    Curriculum Vitae (PDF)
-                                </label>
-                                <div style="border: 2px dashed #dee2e6; border-radius: 8px; padding: 15px; text-align: center; background: #f8f9fa; cursor: pointer;" onclick="document.getElementById('cvFileAval').click()">
-                                    <input type="file" id="cvFileAval" accept=".pdf" style="display: none;" onchange="previewFile('cv')">
-                                    <i class="fas fa-cloud-upload-alt" style="font-size: 24px; color: #6c757d; margin-bottom: 8px;"></i>
-                                    <div style="color: #6c757d; font-size: 14px;">Subir CV</div>
-                                    <div style="color: #adb5bd; font-size: 12px;">Formato PDF únicamente</div>
-                                </div>
-                                <div id="cvPreviewAval" style="margin-top: 8px; padding: 8px; background: #d1ecf1; border-radius: 5px; display: none;">
-                                    <small style="color: #0c5460;"><i class="fas fa-file-alt mr-1"></i><span id="cvNameAval"></span></small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Comentarios -->
-                    <div style="margin-bottom: 20px;">
-                        <label style="display: block; font-weight: 600; color: #495057; margin-bottom: 8px;">
-                            <i class="fas fa-comment-alt mr-2" style="color: #ffc107;"></i>
-                            Comentarios para Gerencia (Obligatorio)
-                        </label>
-                        <textarea 
-                            id="comentarioAval" 
-                            placeholder="Agregar información adicional que considere relevante para la evaluación gerencial..."
-                            style="
-                                width: 100%; 
-                                min-height: 100px; 
-                                padding: 12px 16px; 
-                                border: 2px solid #dee2e6; 
-                                border-radius: 8px; 
-                                font-family: inherit;
-                                font-size: 14px;
-                                resize: vertical;
-                                transition: border-color 0.3s ease;
-                            "
-                            onfocus="this.style.borderColor='#007bff'"
-                            onblur="this.style.borderColor='#dee2e6'"
-                            maxlength="500"
-                            oninput="updateCharCount()"
-                        ></textarea>
-                        <div style="text-align: right; margin-top: 5px;">
-                            <small style="color: #6c757d;">
-                                <span id="charCountAval">0</span>/500 caracteres
-                            </small>
-                        </div>
-                    </div>
-
-                    <!-- Advertencia -->
-                    <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin-top: 20px;">
-                        <div style="display: flex; align-items: flex-start;">
-                            <i class="fas fa-exclamation-triangle" style="color: #856404; margin-right: 10px; margin-top: 2px;"></i>
-                            <div style="color: #856404; font-size: 13px; line-height: 1.4;">
-                                <strong>Importante:</strong> Una vez enviada, la solicitud quedará pendiente de aval gerencial y no podrá ser modificada hasta recibir respuesta.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `,
-            width: '800px',
-            showCancelButton: true,
-            confirmButtonText: '<i class="fas fa-paper-plane"></i> Enviar a Gerencia',
-            cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
-            confirmButtonColor: '#28a745',
-            cancelButtonColor: '#6c757d',
-            allowOutsideClick: false,
-            allowEscapeKey: true,
-            preConfirm: () => {
-                const comentario = document.getElementById('comentarioAval').value.trim();
-                const pdfFile = document.getElementById('pdfFileAval').files[0];
-                const cvFile = document.getElementById('cvFileAval').files[0];
-                
-                // ✅ VALIDACIONES
-                if (!pdfFile) {
-                    Swal.showValidationMessage('Debe adjuntar el reporte PDF del día de prueba');
-                    return false;
-                }
-                
-                if (!cvFile) {
-                    Swal.showValidationMessage('Debe adjuntar el CV del candidato');
-                    return false;
-                }
-                
-                if (pdfFile.type !== 'application/pdf') {
-                    Swal.showValidationMessage('El reporte debe ser un archivo PDF');
-                    return false;
-                }
-                
-                if (cvFile.type !== 'application/pdf') {
-                    Swal.showValidationMessage('El CV debe ser un archivo PDF');
-                    return false;
-                }
-                
-                if (pdfFile.size > 10 * 1024 * 1024) {
-                    Swal.showValidationMessage('El archivo PDF del reporte es demasiado grande (máx 10MB)');
-                    return false;
-                }
-                
-                if (cvFile.size > 10 * 1024 * 1024) {
-                    Swal.showValidationMessage('El archivo CV es demasiado grande (máx 10MB)');
-                    return false;
-                }
-                
-                return { 
-                    comentario, 
-                    pdfFile, 
-                    cvFile,
-                    nombreRRHH: nombreRRHH
-                };
-            },
-            didOpen: () => {
-                // Funciones auxiliares
-                window.previewFile = function(type) {
-                    const fileInput = document.getElementById(type + 'FileAval');
-                    const preview = document.getElementById(type + 'PreviewAval');
-                    const nameSpan = document.getElementById(type + 'NameAval');
-                    
-                    if (fileInput.files.length > 0) {
-                        const file = fileInput.files[0];
-                        nameSpan.textContent = file.name;
-                        preview.style.display = 'block';
-                    } else {
-                        preview.style.display = 'none';
-                    }
-                };
-                
-                window.updateCharCount = function() {
-                    const textarea = document.getElementById('comentarioAval');
-                    const counter = document.getElementById('charCountAval');
-                    const count = textarea.value.length;
-                    counter.textContent = count;
-                    
-                    if (count > 450) {
-                        counter.style.color = '#dc3545';
-                    } else if (count > 400) {
-                        counter.style.color = '#ffc107';
-                    } else {
-                        counter.style.color = '#6c757d';
-                    }
-                };
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const { comentario, pdfFile, cvFile, nombreRRHH } = result.value;
-                
-                console.log('🚀 Iniciando envío AJAX...');
-                console.log('👤 Nombre RRHH final a enviar:', nombreRRHH);
-                
-                // ✅ CREAR FORMDATA PARA ENVÍO
-                const formData = new FormData();
-                formData.append('id_solicitud', idSolicitud);
-                formData.append('comentario', comentario);
-                formData.append('pdf_reporte', pdfFile);
-                formData.append('cv_candidato', cvFile);
-                formData.append('enviado_por', nombreRRHH); // ← AQUÍ VA EL NOMBRE REAL
-                
-                // ✅ MOSTRAR LOADING
-                Swal.fire({
-                    title: '<i class="fas fa-spinner fa-spin"></i> Enviando a Gerencia...',
-                    html: `
-                        <div style="text-align: center; padding: 20px;">
-                            <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                                <strong>Solicitud:</strong> #${idSolicitud}<br>
-                                <strong>Documentos:</strong> ${pdfFile.name}, ${cvFile.name}<br>
-                                <strong>Enviado por:</strong> ${nombreRRHH}
-                            </div>
-                            <div style="color: #6c757d; font-size: 14px;">
-                                Procesando documentos y notificando al gerente...
-                            </div>
-                        </div>
-                    `,
-                    allowOutsideClick: false,
-                    showConfirmButton: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-                
-                // AJAX
-                $.ajax({
-                    url: './gestionhumana/crudsolicitudesrh.php?action=enviar_aval_gerencia',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        console.log('✅ Response:', response);
-                        
-                        let parsedResponse;
-                        try {
-                            parsedResponse = typeof response === 'string' ? JSON.parse(response) : response;
-                            
-                            if (parsedResponse.success) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: '¡Enviado a Gerencia!',
-                                    html: `
-                                        <div style="background: #d4edda; padding: 15px; border-radius: 8px;">
-                                            <strong>Solicitud #${idSolicitud} enviada exitosamente</strong><br>
-                                            <strong>Enviado por:</strong> ${nombreRRHH}<br>
-                                            <strong>Candidato:</strong> ${parsedResponse.data?.candidato || 'No especificado'}
-                                        </div>
-                                    `,
-                                    timer: 4000,
-                                    confirmButtonText: 'Entendido'
-                                }).then(() => {
-                                    if (typeof cargarSolicitudes === 'function') {
-                                        cargarSolicitudes();
-                                    } else {
-                                        location.reload();
-                                    }
-                                });
-                            } else {
-                                Swal.fire('Error', parsedResponse.error, 'error');
-                            }
-                        } catch (parseError) {
-                            console.error('Error parseando JSON:', parseError);
-                            Swal.fire('Error', 'Respuesta inválida del servidor', 'error');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error AJAX:', error);
-                        Swal.fire('Error', `Error de conexión: ${error}`, 'error');
-                    }
-                });
-            }
-        });
-    }, 300);
-}
-
-//VER RESULTADO DE AVAL GERENCIA OPERACIONAL 
-
-// 🎯 FUNCIÓN PARA CARGAR Y MOSTRAR RESULTADO DEL AVAL
-function cargarResultadoAvalRH(idSolicitud, tienda, puesto, supervisor, razon) {
-  // Mostrar loading
-  Swal.fire({
-    title: '<i class="fas fa-spinner fa-spin"></i> Cargando resultado...',
-    text: 'Obteniendo información de la decisión gerencial',
-    allowOutsideClick: false,
-    didOpen: () => Swal.showLoading()
-  });
-
-  // Obtener datos del backend
-  $.ajax({
-    url: './gestionhumana/crudsolicitudesrh.php',
-    method: 'GET',
-    data: {
-      action: 'obtener_resultado_aval_recursos',
-      id_solicitud: idSolicitud
-    },
-    dataType: 'json',
-    success: function(response) {
-      Swal.close(); // Cerrar loading
-      
-      if (response.success) {
-        mostrarModalResultadoAvalRH(response.data, idSolicitud, tienda, puesto, supervisor, razon);
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: response.error || 'No se pudo cargar el resultado del aval'
-        });
-      }
-    },
-    error: function(xhr, status, error) {
-      Swal.close(); // Cerrar loading
-      
-      console.error('Error AJAX:', xhr.responseText);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error de conexión',
-        text: 'No se pudo conectar al servidor para obtener el resultado'
-      });
-    }
-  });
-}
-
-// 🎯 FUNCIÓN PARA MOSTRAR EL MODAL DEL RESULTADO
-function mostrarModalResultadoAvalRH(data, idSolicitud, tienda, puesto, supervisor, razon) {
-  const solicitud = data.solicitud || {};
-  const aval = data.aval || {};
-  
-  // Determinar si fue aprobado o rechazado
-  const esAprobado = aval.decision === 'APROBADO';
-  const decision = esAprobado ? 'APROBADO' : 'RECHAZADO';
-  
-  // Configurar colores y textos según la decisión
-  const config = esAprobado ? {
-    color: '#2ecc71',
-    bgColor: '#d4edda',
-    borderColor: '#c3e6cb',
-    textColor: '#155724',
-    icon: 'fas fa-check-circle',
-    titulo: 'Solicitud Aprobada',
-    subtitulo: 'Su solicitud ha sido revisada por el gerente y ha sido aprobada',
-    estadoBadge: 'APROBADA',
-    badgeClass: 'badge-success'
-  } : {
-    color: '#e74c3c',
-    bgColor: '#f8d7da',
-    borderColor: '#f1b0b7',
-    textColor: '#721c24',
-    icon: 'fas fa-times-circle',
-    titulo: 'Solicitud Rechazada',
-    subtitulo: 'Su solicitud ha sido revisada por el gerente y no ha sido aprobada',
-    estadoBadge: 'RECHAZADA',
-    badgeClass: 'badge-danger'
-  };
-
-  // Próximos pasos según la decisión
-  const proximosPasos = esAprobado ? [
-    '<i class="fas fa-check-circle"></i> La solicitud continuará con el proceso normal de contratación',
-    '<i class="fas fa-arrow-right"></i> RH procederá con los siguientes pasos del proceso',
-    '<i class="fas fa-bell"></i> Se notificará cuando haya actualizaciones del estado'
-  ] : [
-    '<i class="fas fa-clipboard-list"></i> Puede revisar el motivo del rechazo para entender las razones de la decisión',
-    '<i class="fas fa-redo"></i> Si considera necesario, puede crear una nueva solicitud corrigiendo los aspectos mencionados',
-    '<i class="fas fa-comments"></i> Para dudas adicionales, puede contactar directamente con el gerente para aclaraciones'
-  ];
-
-  Swal.fire({
-    title: `
-      <div class="resultado-header" style="background: ${config.bgColor}; border: 2px solid ${config.borderColor}; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-          <div style="width: 60px; height: 60px; background: ${config.color}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
-            <i class="${config.icon}"></i>
-          </div>
-          <div style="text-align: left;">
-            <h3 style="margin: 0; color: ${config.textColor}; font-weight: 600;">${config.titulo}</h3>
-            <p style="margin: 5px 0 0 0; color: ${config.textColor}; font-size: 14px;">${config.subtitulo}</p>
-          </div>
-        </div>
-      </div>
-    `,
-    html: `
-      <style>
-        .info-section {
-          background: #f8f9fa;
-          border-radius: 10px;
-          padding: 20px;
-          margin-bottom: 20px;
-          border-left: 4px solid #007bff;
-        }
-        .info-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 15px;
-          margin-bottom: 15px;
-        }
-        .info-item {
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-        }
-        .info-label {
-          font-weight: 600;
-          color: #495057;
-          font-size: 12px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .info-value {
-          color: #212529;
-          font-size: 14px;
-          font-weight: 500;
-        }
-        .decision-section {
-          background: ${config.bgColor};
-          border: 2px solid ${config.borderColor};
-          border-radius: 10px;
-          padding: 20px;
-          margin-bottom: 20px;
-        }
-        .decision-badge {
-          display: inline-block;
-          padding: 8px 20px;
-          border-radius: 25px;
-          font-weight: 600;
-          font-size: 14px;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-        }
-        .badge-success {
-          background: #2ecc71;
-          color: white;
-        }
-        .badge-danger {
-          background: #e74c3c;
-          color: white;
-        }
-        .motivo-section {
-          background: #fff3cd;
-          border: 2px solid #ffc107;
-          border-radius: 10px;
-          padding: 20px;
-          margin-bottom: 20px;
-        }
-        .motivo-content {
-          background: white;
-          padding: 15px;
-          border-radius: 8px;
-          border-left: 4px solid #ffc107;
-          font-style: italic;
-          line-height: 1.6;
-          color: #856404;
-        }
-        .pasos-section {
-          background: #e8f4f8;
-          border: 2px solid #17a2b8;
-          border-radius: 10px;
-          padding: 20px;
-        }
-        .paso-item {
-          display: flex;
-          align-items: flex-start;
-          gap: 10px;
-          margin-bottom: 10px;
-          padding: 8px;
-          background: white;
-          border-radius: 6px;
-        }
-        .paso-item:last-child {
-          margin-bottom: 0;
-        }
-        .section-title {
-          font-weight: 600;
-          color: #2c3e50;
-          margin-bottom: 15px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        .fecha-decision {
-          text-align: center;
-          color: #6c757d;
-          font-size: 12px;
-          margin-top: 15px;
-          padding-top: 15px;
-          border-top: 1px solid #dee2e6;
-        }
-      </style>
-      
-      <div style="text-align: left; max-height: 600px; overflow-y: auto; padding: 0 10px;">
-        
-        <!-- INFORMACIÓN DE LA SOLICITUD -->
-        <div class="info-section">
-          <h6 class="section-title">
-            <i class="fas fa-info-circle"></i> Información de la Solicitud
-          </h6>
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label"><i class="fas fa-hashtag"></i> ID Solicitud</span>
-              <span class="info-value">#${solicitud.id}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label"><i class="fas fa-store"></i> Tienda</span>
-              <span class="info-value">Tienda ${solicitud.tienda}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label"><i class="fas fa-briefcase"></i> Puesto Solicitado</span>
-              <span class="info-value">${solicitud.puesto}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label"><i class="fas fa-calendar-alt"></i> Fecha de Solicitud</span>
-              <span class="info-value">${solicitud.fecha_solicitud}</span>
-            </div>
-          </div>
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label"><i class="fas fa-user-tie"></i> Supervisor</span>
-              <span class="info-value">${solicitud.supervisor}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label"><i class="fas fa-edit"></i> Razón de la Vacante</span>
-              <span class="info-value">${solicitud.razon}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- ESTADO DE APROBACIÓN -->
-        <div class="decision-section">
-          <h6 class="section-title" style="color: ${config.textColor};">
-            <i class="fas fa-gavel"></i> Estado de Aprobación
-          </h6>
-          <div style="text-align: center; margin-bottom: 15px;">
-            <span class="decision-badge ${config.badgeClass}">${config.estadoBadge}</span>
-          </div>
-          <div style="text-align: center; color: ${config.textColor};">
-            <strong>Revisado por:</strong> ${aval.gerente}<br>
-            <small>Fecha de decisión: ${aval.fecha_decision}</small>
-          </div>
-        </div>
-
-        <!-- MOTIVO DE LA DECISIÓN -->
-        <div class="motivo-section">
-          <h6 class="section-title" style="color: #856404;">
-            <i class="fas fa-comment-alt"></i> ${esAprobado ? 'Comentarios del Gerente' : 'Motivo del Rechazo'}
-          </h6>
-          <div class="motivo-content">
-            ${aval.comentario || 'Sin comentarios adicionales'}
-          </div>
-        </div>
-
-        <!-- PRÓXIMOS PASOS -->
-        <div class="pasos-section">
-          <h6 class="section-title" style="color: #17a2b8;">
-            <i class="fas fa-route"></i> Próximos Pasos
-          </h6>
-          ${proximosPasos.map(paso => `
-            <div class="paso-item">
-              <span style="flex: 1; color: #495057;">${paso}</span>
-            </div>
-          `).join('')}
-        </div>
-
-        <div class="fecha-decision">
-          <i class="fas fa-clock"></i> Última actualización: ${aval.fecha_decision}
-        </div>
-
-      </div>
-    `,
-    width: '800px',
-    showCancelButton: false,
-    confirmButtonText: '<i class="fas fa-check"></i> Entendido',
-    confirmButtonColor: config.color,
-    customClass: {
-      popup: 'resultado-aval-popup'
-    }
-  });
-}
-
-// 🎯 FUNCIÓN PARA AGREGAR EL BOTÓN EN LAS TABLAS
-function agregarBotonResultadoAval(idSolicitud, tienda, puesto, supervisor, razon) {
-  return `
-    <button class="btn btn-info btn-sm btnVerResultadoAval" 
-            data-id="${idSolicitud}"
-            data-tienda="${tienda}"
-            data-puesto="${puesto}"
-            data-supervisor="${supervisor}"
-            data-razon="${razon}"
-            title="Ver resultado del aval gerencial">
-      <i class="fas fa-clipboard-check"></i> Ver Resultado
-    </button>
-  `;
-}
-
-// 🆕 FUNCIONES AUXILIARES PARA LAS ACCIONES DE RRHH
-function iniciarProcesamiento(solicitudId) {
-    Swal.fire({
-        title: '¿Iniciar procesamiento?',
-        text: 'Esto marcará la solicitud como "En Proceso" por RRHH',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, iniciar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Aquí iría la lógica para marcar como "En Proceso"
-            console.log("Iniciando procesamiento para solicitud:", solicitudId);
+            Swal.fire('Error', 'ID de solicitud no encontrado', 'error');
         }
     });
-}
+    
+    console.log('Vista RH configurada correctamente - ROL:', window.ROL_USUARIO);
+    
 
-function verHistorialCompleto(solicitudId) {
-    // Aquí iría la lógica para mostrar el historial completo
-    console.log("Mostrando historial para solicitud:", solicitudId);
-    Swal.fire({
-        title: 'Historial Completo',
-        text: 'Aquí se mostraría el historial completo de la solicitud',
-        icon: 'info'
-    });
-}
-
-function descargarResumen(solicitudId) {
-    // Aquí iría la lógica para generar y descargar un PDF o documento
-    console.log("Descargando resumen para solicitud:", solicitudId);
-    Swal.fire({
-        title: 'Generando documento...',
-        text: 'Se está preparando el resumen para descarga',
-        icon: 'info',
-        timer: 2000,
-        showConfirmButton: false
-    });
-}
-
-
-
-
-//=================================================================================
-// INICIALIZACION DE TODO EL PROGRAMA
-//=================================================================================
-    $(document).ready(function () {
       let solicitudes = [];
       let rowsPerPage = 10;
       let currentPage = 1;
@@ -1539,6 +1778,7 @@ function descargarResumen(solicitudId) {
       let modalArchivosAbierto = false;
       let modalResumenAbierto = false;
       let allSolicitudes = [];
+      
       // Mostrar fecha actual
       $('#current-date').text(new Date().toLocaleDateString('es-ES', {
         weekday: 'long',
@@ -1547,327 +1787,440 @@ function descargarResumen(solicitudId) {
         day: 'numeric'
       }));
 
-                // FUNCIÓN PARA CARGAR SOLICITUDES
-                  function cargarSolicitudes() {
-              $('#loading-indicator').show();
-              $('#tblSolicitudes').hide();
-              $('#empty-state').hide();
 
-              $.ajax({
-                url: './gestionhumana/crudsolicitudesrh.php?action=get_solicitudes',
-                type: 'GET',
-                dataType: 'json',
-                success: function (data) {
-                  allSolicitudes = data; // ✅ ASIGNAR A VARIABLE GLOBAL
-                  solicitudes = data; // ✅ MANTENER PARA COMPATIBILIDAD
 
-                  // Cargar opciones únicas del campo DIRIGIDO_A
-                  const nombresUnicos = [...new Set(allSolicitudes.map(item => item.DIRIGIDO_RH).filter(Boolean))];
+      // =====================================================================
+// SISTEMA DE PESTAÑAS DE FILTRADO PARA RH
+// =====================================================================
+let filtroActual = 'todas';
 
-                  const select = $('#filtroDirigidoA');
-                  select.empty();
-                  select.append('<option value="">Todos</option>');
+// Función para actualizar contadores de pestañas
+function actualizarContadoresPestanas() {
+  if (!allSolicitudes || allSolicitudes.length === 0) return;
+  
+  const contadores = {
+    todas: 0,
+    pendientes: 0,
+    'en-proceso': 0,
+    'plaza-cubierta': 0
+  };
+  
+  allSolicitudes.forEach(solicitud => {
+    const estado = (solicitud.ESTADO_SOLICITUD || '').toLowerCase().trim();
+    
+    // Contar todas
+    contadores.todas++;
+    
+    // Contar pendientes (Pendiente o Vacante Activa)
+    if (estado.includes('pendiente') || estado.includes('vacante activa')) {
+      contadores.pendientes++;
+    }
+    
+    // Contar en proceso (Candidatos en Selección)
+    if (estado.includes('candidatos en seleccion') || estado.includes('candidatos seleccion')) {
+      contadores['en-proceso']++;
+    }
+    
+    // Contar plaza cubierta
+    if (estado.includes('plaza cubierta')) {
+      contadores['plaza-cubierta']++;
+    }
+  });
+  
+  // Actualizar los números en las pestañas
+  $('#count-todas').text(contadores.todas);
+  $('#count-pendientes').text(contadores.pendientes);
+  $('#count-en-proceso').text(contadores['en-proceso']);
+  $('#count-plaza-cubierta').text(contadores['plaza-cubierta']);
+  
+  console.log('📊 Contadores actualizados:', contadores);
+}
 
-                  nombresUnicos.forEach(nombre => {
-                    select.append(`<option value="${nombre}">${nombre}</option>`);
-                  });
+// Función para filtrar solicitudes según la pestaña activa
+function filtrarPorPestana() {
+  if (!allSolicitudes || allSolicitudes.length === 0) {
+    solicitudes = [];
+    return;
+  }
+  
+  let solicitudesFiltradas = [];
+  
+  switch(filtroActual) {
+    case 'todas':
+      solicitudesFiltradas = [...allSolicitudes];
+      break;
+      
+    case 'pendientes':
+      // Pendiente o Vacante Activa
+      solicitudesFiltradas = allSolicitudes.filter(s => {
+        const estado = (s.ESTADO_SOLICITUD || '').toLowerCase().trim();
+        return estado.includes('pendiente') || estado.includes('vacante activa');
+      });
+      break;
+      
+    case 'en-proceso':
+      // Candidatos en Selección
+      solicitudesFiltradas = allSolicitudes.filter(s => {
+        const estado = (s.ESTADO_SOLICITUD || '').toLowerCase().trim();
+        return estado.includes('candidatos en seleccion') || estado.includes('candidatos seleccion');
+      });
+      break;
+      
+    case 'plaza-cubierta':
+      // Plaza Cubierta
+      solicitudesFiltradas = allSolicitudes.filter(s => {
+        const estado = (s.ESTADO_SOLICITUD || '').toLowerCase().trim();
+        return estado.includes('plaza cubierta');
+      });
+      break;
+      
+    default:
+      solicitudesFiltradas = [...allSolicitudes];
+  }
+  
+  solicitudes = solicitudesFiltradas;
+  console.log(`🔍 Filtro "${filtroActual}": ${solicitudesFiltradas.length} solicitudes`);
+}
 
-                  // Aplicar filtro si ya se había seleccionado uno
-                  const filtroGuardado = localStorage.getItem('filtroDirigidoA') || '';
-                  $('#filtroDirigidoA').val(filtroGuardado);
+// Event listener para cambio de pestañas
+$(document).on('click', '.tab-card', function() {
+  const nuevoFiltro = $(this).data('filter');
+  
+  if (nuevoFiltro === filtroActual) return; // No hacer nada si ya está activo
+  
+  // Actualizar estado visual
+  $('.tab-card').removeClass('active');
+  $(this).addClass('active');
+  
+  // Actualizar filtro actual
+  filtroActual = nuevoFiltro;
+  
+  // Aplicar filtro
+  filtrarPorPestana();
+  
+  // Aplicar también el filtro de búsqueda si existe
+  const textoBusqueda = $('#searchInput').val().toLowerCase().trim();
+  const tiendaBusqueda = $('#searchTienda').val().toLowerCase().trim();
+  
+  if (textoBusqueda || tiendaBusqueda) {
+    solicitudes = solicitudes.filter(s => {
+      const cumpleBusqueda = !textoBusqueda || 
+        (s.PUESTO_SOLICITADO || '').toLowerCase().includes(textoBusqueda) ||
+        (s.SOLICITADO_POR || '').toLowerCase().includes(textoBusqueda) ||
+        (s.ESTADO_SOLICITUD || '').toLowerCase().includes(textoBusqueda);
+      
+      const cumpleTienda = !tiendaBusqueda || 
+        (s.NUM_TIENDA || '').toString().toLowerCase().includes(tiendaBusqueda);
+      
+      return cumpleBusqueda && cumpleTienda;
+    });
+  }
+  
+  // Resetear a página 1
+  currentPage = 1;
+  
+  // Renderizar tabla
+  if (solicitudes.length === 0) {
+    $('#tblSolicitudes').hide();
+    $('#empty-state').show();
+  } else {
+    renderizarTabla(solicitudes);
+    renderizarPaginacion(solicitudes);
+    $('#tblSolicitudes').show();
+    $('#empty-state').hide();
+  }
+  
+  console.log(`✅ Filtro cambiado a: ${nuevoFiltro}`);
+});
 
-                  const datosFiltrados = filtroGuardado
-                    ? allSolicitudes.filter(item => item.DIRIGIDO_RH === filtroGuardado)
-                    : allSolicitudes;
-
-                  if (datosFiltrados.length === 0) {
-                    $('#loading-indicator').hide();
-                    $('#empty-state').show();
-                  } else {
-                    renderTable(datosFiltrados);
-                    setupPagination(datosFiltrados);
-                    $('#loading-indicator').hide();
-                    $('#tblSolicitudes').show();
-                  }
-                },
-                error: function (xhr, status, error) {
-                  console.error('Error cargando solicitudes:', error);
-                  $('#loading-indicator').hide();
-                  Swal.fire({
-                    icon: 'error',
-                    title: 'Error de Conexión',
-                    text: 'No se pudieron cargar las solicitudes. Verifica tu conexión.',
-                    confirmButtonText: 'Reintentar'
-                  }).then(() => {
-                    cargarSolicitudes();
-                  });
-                }
-              });
-            }
-
-// CÓDIGO TEMPORAL PARA DEBUG - Agregar antes de renderTable()
-console.log("DEBUG - Datos solicitud 397:", 
-    solicitudes.find(s => s.ID_SOLICITUD == 397)
-);
-console.log("DEBUG - Datos solicitud 398:", 
-    solicitudes.find(s => s.ID_SOLICITUD == 398)
-);
-            // FUNCIÓN PARA RENDERIZAR LA TABLA
-            function renderTable(data) {
-              const tbody = $('#tblSolicitudes tbody');
-              const thead = $('#tblSolicitudes thead');
-              console.log("Datos recibidos:", data);
-              tbody.empty();
-
-              // Debugging
-              if (data.length > 0) {
-                console.log("Primer item:", data[0]);
-                console.log("Comentario del primer item:", data[0].COMENTARIO_SOLICITUD);
-                console.log("Estado Aprobación del primer item:", data[0].ESTADO_APROBACION);
-                console.log("Dirigido RH del primer item:", data[0].DIRIGIDO_RH); // ✅ NUEVO DEBUG
-              }
-              console.log("DEBUG FULL JSON", JSON.stringify(data, null, 2));
-
-              const start = (currentPage - 1) * rowsPerPage;
-              const end = start + rowsPerPage;
-              const pageData = data.slice(start, end);
-
-              pageData.forEach((item, index) => {
-                const globalIndex = start + index;
-                
-                let statusClass = '';
-                const estado = (item.ESTADO_SOLICITUD || '').toLowerCase();
-
-                if (estado.includes('pendiente')) {
-                  statusClass = 'estado-pendiente';
-                } else if (estado.includes('activa')) {
-                  statusClass = 'estado-activa';
-                } else if (estado.includes('cvs')) {
-                  statusClass = 'estado-cvs';
-                } else if (estado.includes('psico') || estado.includes('psicometrica')) {
-                  statusClass = 'estado-psico';
-                } else if (estado.includes('entrevista rh')) {
-                  statusClass = 'estado-rh';
-                } else if (estado.includes('expediente')) {
-                  statusClass = 'estado-expediente';
-                } else if (estado.includes('tecnica')) {
-                  statusClass = 'estado-tecnica';
-                } else if (estado.includes('prueba')) {
-                  statusClass = 'estado-prueba';
-                } else if (estado.includes('poligrafo')) {
-                  statusClass = 'estado-poligrafo';
-                } else if (estado.includes('confirmacion')) {
-                  statusClass = 'estado-confirmacion';
-                } else if (estado.includes('contratada')) {
-                  statusClass = 'estado-contratada';
-                } else {
-                  statusClass = 'estado-pendiente'; // default
-                }
-
-                // Estados del badge de aprobación
-                let aprobacionClass = '';
-                const aprobacion = (item.ESTADO_APROBACION || 'Por Aprobar').toLowerCase();
-                if (aprobacion.includes('por aprobar')) aprobacionClass = 'estado-pendiente';
-                else if (aprobacion === 'aprobado' || (aprobacion.includes('aprobado') && !aprobacion.includes('no'))) aprobacionClass = 'estado-contratada';
-                else if (aprobacion.includes('no aprobado')) aprobacionClass = 'estado-prueba';
-                else aprobacionClass = 'estado-contratada'; // Por defecto verde porque RRHH solo ve aprobadas
-
-                const fechaModificacion = item.FECHA_MODIFICACION || '—';
-                const comentario = item.COMENTARIO_SOLICITUD || '-';
-                const idHistorico = item.ID_HISTORICO;
-                const estadoAprobacionMostrar = item.ESTADO_APROBACION || 'Aprobado';
-
-                // ✅ AGREGAR LÓGICA PARA DIRIGIDO_RH
-                const dirigidoRH = item.DIRIGIDO_RH || null;
-                const mostrarDirigidoRH = dirigidoRH 
-                  ? `<span class="text-success"><i class="fas fa-user-check mr-1"></i><strong>${dirigidoRH}</strong></span>`
-                  : '<span class="text-muted"><i class="fas fa-user-times mr-1"></i>Sin asignación</span>';
+      // FUNCIÓN PARA CARGAR SOLICITUDES
+        function cargarSolicitudes() {
+          console.log('Iniciando carga de solicitudes...');
+          
+          $('#loading-indicator').show();
+          $('#tblSolicitudes').hide();
+          $('#empty-state').hide();
+          
+          $.ajax({
+            url: './gestionhumana/crudsolicitudesrh.php?action=listar_solicitudes_rh',
+            type: 'GET',
+            dataType: 'json',
+            timeout: 30000,
+            success: function (data) {
+              // ❌ ELIMINAR ESTA LÍNEA PROBLEMÁTICA:
+              // console.error('Error en la respuesta:', data);
               
-                // Formatea el comentario para mostrar
-                const noLeidos = parseInt(item.NO_LEIDOS) || 0;
-                console.log('ID:', idHistorico, 'Comentario:', comentario, 'NO_LEIDOS:', item.NO_LEIDOS);
-                console.log('Dirigido RH:', item.ID_SOLICITUD, dirigidoRH); // ✅ NUEVO DEBUG
+              // ✅ REEMPLAZAR POR ESTA LÓGICA CORRECTA:
+              console.log('Datos recibidos:', data);
+              
+              // Verificar si son datos válidos (array)
+              if (Array.isArray(data)) {
+                console.log('Procesando', data.length, 'solicitudes');
                 
-                const comentarioMostrar = comentario !== '-' && idHistorico
-                  ? `<div class="badge-container">
-                        <button class="btn btn-sm btn-info btn-Ver-Comentario-Rh"
-                                data-id="${idHistorico}"
-                                title="Ver comentario">
-                            <i class="fas fa-comment"></i> Ver
-                        </button>
-                        ${noLeidos > 0 ? `<span class="notification-badge ${noLeidos > 9 ? 'wide' : ''}">${noLeidos}</span>` : ''}
-                    </div>`
-                  : '<span class="text-muted">—</span>';
+                allSolicitudes = data;
+                solicitudes = data;
 
-                  const row = `
-                    <tr data-id="${item.ID_SOLICITUD}">
-                      <td data-label="Abrir">
-                        <button class="btn btn-expand btn-ver-historial" data-id="${item.ID_SOLICITUD}" title="Ver historial">
-                          <i class="fas fa-plus"></i>
-                        </button>
-                      </td>
+                // Cargar opciones únicas del campo DIRIGIDO_A
+                const nombresUnicos = [...new Set(data.map(item => item.DIRIGIDO_RH).filter(Boolean))];
 
-                      <td data-label="Tienda"><span class="badge badge-primary">${item.NUM_TIENDA}</span></td>
-                      <td data-label="Puesto"><strong>${item.PUESTO_SOLICITADO}</strong></td>
-                      <td data-label="Supervisor"><small class="text-muted">${item.SOLICITADO_POR}</small></td>
-                      <td data-label="Aprobado por"><small>${item.DIRIGIDO_A || '—'}</small></td>
-                      <td data-label="Asignado a"><small class="text-info">${mostrarDirigidoRH}</small></td>
-                      <td data-label="Fecha Solicitud"><small>${item.FECHA_SOLICITUD}</small></td>
-                      <td data-label="Modificación registrada"><small class="text-muted">${fechaModificacion}</small></td>
+                const select = $('#filtroDirigidoA');
+                select.empty();
+                select.append('<option value="">Todos</option>');
 
-                      <td data-label="Estado">
-                        <span class="status-badge ${statusClass}">${item.ESTADO_SOLICITUD}</span>
-                      </td>
-
-                      <td data-label="Estado de Aprobación">
-                        <span class="status-badge ${aprobacionClass}" title="Estado de Aprobación por Gerencia">
-                          <i class="fas fa-check-circle"></i> ${estadoAprobacionMostrar}
-                        </span>
-                      </td>
-
-                      <td data-label="Razón"><small>${item.RAZON || '—'}</small></td>
-                      <td data-label="Comentario" class="comentario-cell">${comentarioMostrar}</td>
-
-                      <td data-label="Acciones">
-                        <div class="actions-container">
-                          <button class="btn btn-action btn-edit btnCambiarEstado"
-                            data-id="${item.ID_SOLICITUD}"
-                            data-tienda="${item.NUM_TIENDA || ''}"
-                            data-puesto="${item.PUESTO_SOLICITADO || ''}"
-                            data-razon="${item.RAZON || ''}"
-                            data-solicitado="${item.SOLICITADO_POR || ''}"
-                            title="Cambiar Estado">
-                            <i class="fas fa-exchange-alt"></i> Cambiar Estado
-                          </button>
-${(() => {
-  const estado = (item.ESTADO_SOLICITUD || '').toLowerCase();
-  const tieneObs  = Number(item.TIENE_OBSERVACIONES_DIA_PRUEBA) === 1;
-  const tieneSel  = Number(item.TIENE_SELECCION) === 1;
-  const tieneArch = Number(item.TIENE_ARCHIVOS) === 1;
-  const aprobacion = (item.ESTADO_APROBACION || '').toLowerCase();
-  
-  let botones = []; // Array para almacenar los botones
-  
-  // 1) BOTÓN ESPECÍFICO DEL ESTADO (primer botón)
-  if (tieneObs && (estado.includes('día de prueba') || estado.includes('dia de prueba'))) {
-    // Observaciones del Día de Prueba
-    const idObsReciente = item.ID_OBSERVACION_RECIENTE || '';
-    botones.push(`
-      <button class="btn btn-sm btn-primary btnVerObservacionesCompletasRRHH"
-              data-id="${item.ID_SOLICITUD}"
-              data-id-obs="${idObsReciente}"
-              data-tienda="${item.NUM_TIENDA}"
-              data-puesto="${item.PUESTO_SOLICITADO}"
-              data-supervisor="${item.SOLICITADO_POR}"
-              title="Ver observaciones">
-        <i class="fas fa-clipboard-list"></i> Ver Resultados
-      </button>
-    `);
-  } else if (tieneSel && (estado.includes('cvs') || estado.includes('cv'))) {
-    // Selección de CVs
-    botones.push(`
-      <button class="btn btn-sm btn-success btnVerResumen" data-id="${item.ID_SOLICITUD}">
-        <i class="fas fa-eye"></i> Ver Resumen CVs
-      </button>
-    `);
-  } else if (tieneArch && (estado.includes('cvs') || estado.includes('cv'))) {
-    // Archivos CVs
-    botones.push(`
-      <button class="btn btn-sm btn-info btnVerArchivosRRHH" data-id="${item.ID_SOLICITUD}">
-        <i class="fas fa-folder-open"></i> Archivos CVs
-      </button>
-    `);
-  } else if (estado.includes('psico')) {
-    // Psicométricas
-    botones.push(`
-      <button class="btn btn-sm btn-warning btnVerArchivosTipo" 
-              data-id="${item.ID_SOLICITUD}" 
-              data-tipo="PSICOMETRICA">
-        <i class="fas fa-brain"></i> Psicométricas
-      </button>
-    `);
-  } else if (estado.includes('poligrafo')) {
-    // Polígrafo
-    botones.push(`
-      <button class="btn btn-sm btn-secondary btnVerArchivosTipo" 
-              data-id="${item.ID_SOLICITUD}" 
-              data-tipo="POLIGRAFO">
-        <i class="fas fa-shield-alt"></i> Polígrafo
-      </button>
-    `);
-  } else if (estado.includes('pendiente aval gerencia')) {
-    // Aval pendiente
-    botones.push(`
-      <button class="btn btn-sm btn-warning btnVerResultadoAval"
-              data-id="${item.ID_SOLICITUD}"
-              data-tienda="${item.NUM_TIENDA}"
-              data-puesto="${item.PUESTO_SOLICITADO}"
-              data-supervisor="${item.SOLICITADO_POR}"
-              data-razon="${item.RAZON || ''}"
-              title="Procesar aval gerencial">
-        <i class="fas fa-clock"></i> Procesar Aval
-      </button>
-    `);
-  } else if (estado.includes('aval procesado') || estado.includes('aval confirmado')) {
-    // Aval procesado
-    botones.push(`
-      <button class="btn btn-sm btn-success btnVerResumenAprobacion"
-              data-id="${item.ID_SOLICITUD}"
-              data-solicitud-id="${item.ID_SOLICITUD}"
-              title="Ver resumen del aval procesado">
-        <i class="fas fa-clipboard-check"></i> Ver Resumen Aval
-      </button>
-    `);
-  }
-  
-  // 2) BOTÓN DE APROBACIÓN (segundo botón - SIEMPRE para solicitudes aprobadas)
-  if (aprobacion === 'aprobado' || aprobacion.includes('aprobado')) {
-    botones.push(`
-      <button class="btn btn-sm btn-outline-success btnVerResumenProcesamiento"
-              data-id="${item.ID_SOLICITUD}"
-              data-solicitud-id="${item.ID_SOLICITUD}"
-              title="Ver resultado de la aprobación">
-        <i class="fas fa-check-circle"></i> Ver Resultado de Aprobación
-      </button>
-    `);
-  }
-  
-  // Devolver los botones unidos
-  return botones.join(' ');
-})()}
-                                                  </div>
-                    </td>
-                  </tr>
-                `;
-                
-                console.log("Comentario de solicitud:", item.ID_SOLICITUD, item.COMENTARIO_SOLICITUD);
-                console.log("Estado Aprobación:", item.ID_SOLICITUD, item.ESTADO_APROBACION);
-                console.log("Dirigido RH:", item.ID_SOLICITUD, item.DIRIGIDO_RH); // ✅ NUEVO DEBUG
-                tbody.append(row);
-              });
-
-              setTimeout(() => {
-                $('.estado-selector').each(function () {
-                  aplicarColorEstado(this);
+                nombresUnicos.forEach(nombre => {
+                  select.append(`<option value="${nombre}">${nombre}</option>`);
                 });
-              }, 0);
+
+                // Aplicar filtro guardado
+                const filtroGuardado = localStorage.getItem('filtroDirigidoA') || '';
+                $('#filtroDirigidoA').val(filtroGuardado);
+
+                const datosFiltrados = filtroGuardado
+                  ? data.filter(item => item.DIRIGIDO_RH === filtroGuardado)
+                  : data;
+
+                if (datosFiltrados.length === 0) {
+                  $('#loading-indicator').hide();
+                  $('#empty-state').show();
+                } else {
+                  renderizarTabla(datosFiltrados);
+                  renderizarPaginacion(datosFiltrados);
+                  actualizarContadoresPestanas();
+                  $('#loading-indicator').hide();
+                  $('#tblSolicitudes').show();
+                }
+                
+              } else if (data && data.success === false) {
+                // Error del servidor
+                console.error('Error del servidor:', data.error);
+                $('#loading-indicator').hide();
+                Swal.fire('Error', data.error, 'error');
+                
+              } else {
+                // Formato inesperado
+                console.error('Formato inesperado:', data);
+                $('#loading-indicator').hide();
+                Swal.fire('Error', 'Formato de respuesta no válido', 'error');
+              }
+            },
+            error: function (xhr, status, error) {
+              console.error('Error AJAX:', error);
+              $('#loading-indicator').hide();
+              Swal.fire('Error', 'No se pudieron cargar las solicitudes', 'error');
             }
+          });
+        }
 
-                  //FUNCION PARA FILTRO POR ASESORA DE RRHH
-            $('#filtroDirigidoA').on('change', function () {
-              const filtro = $(this).val();
-              localStorage.setItem('filtroDirigidoA', filtro);
+      // FUNCIÓN PARA RENDERIZAR LA TABLA
+      function renderizarTabla(data) {
+        const tbody = $('#tblSolicitudes tbody');
+        const thead = $('#tblSolicitudes thead');
+        console.log("Datos recibidos:", data);
+        tbody.empty();
 
-              const datosFiltrados = filtro
-                ? allSolicitudes.filter(item => item.DIRIGIDO_RH === filtro)
-                : allSolicitudes;
+        // Debugging
+        if (data.length > 0) {
+          console.log("Primer item:", data[0]);
+          console.log("Comentario del primer item:", data[0].COMENTARIO_SOLICITUD);
+          console.log("Estado Aprobación del primer item:", data[0].ESTADO_APROBACION);
+          console.log("Dirigido RH del primer item:", data[0].DIRIGIDO_RH);
+        }
+        console.log("DEBUG FULL JSON", JSON.stringify(data, null, 2));
 
-              currentPage = 1;
-              renderTable(datosFiltrados);
-            });
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const pageData = data.slice(start, end);
 
-            // FUNCIÓN PARA CONFIGURAR PAGINACIÓN
-            function setupPagination(data) {
+        pageData.forEach((item, index) => {
+          const globalIndex = start + index;
+          
+          let statusClass = '';
+          const estado = (item.ESTADO_SOLICITUD || '').toLowerCase();
+
+          if (estado.includes('pendiente')) {
+            statusClass = 'estado-pendiente';
+          } 
+          else if (estado.includes('contratada')) {
+            statusClass = 'estado-contratada';
+          } else if (estado.includes('plaza cubierta') || estado.includes('plaza cubierta')) {
+            statusClass = 'estado-plaza-cubierta';
+          }
+            else if (estado.includes('activa')) {
+            statusClass = 'estado-activa';
+          } else if (estado.includes('candidatos en seleccion') || estado.includes('candidatos seleccion')) {
+            statusClass = 'estado-candidatos-seleccion';
+          } else if (estado.includes('candidatos enviados')) {
+          statusClass = 'estado-candidatos-enviados';
+          } else if (estado.includes('cvs')) {
+            statusClass = 'estado-cvs';
+          } else if (estado.includes('psico') || estado.includes('psicometrica')) {
+            statusClass = 'estado-psico';
+          } else if (estado.includes('entrevista rh')) {
+            statusClass = 'estado-rh';
+          } else if (estado.includes('expediente')) {
+            statusClass = 'estado-expediente';
+          } else if (estado.includes('tecnica')) {
+            statusClass = 'estado-tecnica';
+          } else if (estado.includes('prueba')) {
+            statusClass = 'estado-prueba';
+          } else if (estado.includes('poligrafo')) {
+            statusClass = 'estado-poligrafo';
+          } else if (estado.includes('confirmacion')) {
+            statusClass = 'estado-confirmacion';
+          } else if (estado.includes('contratada')) {
+            statusClass = 'estado-contratada';
+          } else {
+            statusClass = 'estado-pendiente'; // default
+          }
+
+          // Estados del badge de aprobación
+          let aprobacionClass = '';
+          const aprobacion = (item.ESTADO_APROBACION || 'Por Aprobar').toLowerCase();
+          if (aprobacion.includes('por aprobar')) aprobacionClass = 'estado-pendiente';
+          else if (aprobacion === 'aprobado' || (aprobacion.includes('aprobado') && !aprobacion.includes('no'))) aprobacionClass = 'estado-contratada';
+          else if (aprobacion.includes('no aprobado')) aprobacionClass = 'estado-prueba';
+          else aprobacionClass = 'estado-contratada'; // Por defecto verde porque RRHH solo ve aprobadas
+
+          const fechaModificacion = item.FECHA_MODIFICACION || '—';
+          const comentario = item.COMENTARIO_SOLICITUD || '-';
+          const idHistorico = item.ID_HISTORICO;
+          const estadoAprobacionMostrar = item.ESTADO_APROBACION || 'Aprobado';
+
+          // Lógica para DIRIGIDO_RH
+          const dirigidoRH = item.DIRIGIDO_RH || null;
+          const mostrarDirigidoRH = dirigidoRH 
+            ? `<span class="text-success"><i class="fas fa-user-check mr-1"></i><strong>${dirigidoRH}</strong></span>`
+            : '<span class="text-muted"><i class="fas fa-user-times mr-1"></i>Sin asignación</span>';
+        
+          // Formatea el comentario para mostrar
+          const noLeidos = parseInt(item.NO_LEIDOS) || 0;
+          console.log('ID:', idHistorico, 'Comentario:', comentario, 'NO_LEIDOS:', item.NO_LEIDOS);
+          console.log('Dirigido RH:', item.ID_SOLICITUD, dirigidoRH);
+          
+          const comentarioMostrar = comentario !== '-' && idHistorico
+            ? `<div class="badge-container">
+                  <button class="btn btn-sm btn-info btn-Ver-Comentario-Rh"
+                          data-id="${idHistorico}"
+                          title="Ver comentario">
+                      <i class="fas fa-comment"></i> Ver
+                  </button>
+                  ${noLeidos > 0 ? `<span class="notification-badge ${noLeidos > 9 ? 'wide' : ''}">${noLeidos}</span>` : ''}
+              </div>`
+            : '<span class="text-muted">—</span>';
+
+          const row = `
+            <tr data-id="${item.ID_SOLICITUD}">
+              <td data-label="Abrir">
+                <button class="btn btn-expand btn-ver-historial" data-id="${item.ID_SOLICITUD}" title="Ver historial">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </td>
+
+              <td data-label="Tienda"><span class="badge badge-primary">${item.NUM_TIENDA}</span></td>
+              <td data-label="Puesto"><strong>${item.PUESTO_SOLICITADO}</strong></td>
+              <td data-label="Supervisor"><small class="text-muted">${item.SOLICITADO_POR}</small></td>
+              <td data-label="Aprobado por"><small>${item.DIRIGIDO_A || '—'}</small></td>
+              <td data-label="Asignado a"><small class="text-info">${mostrarDirigidoRH}</small></td>
+              <td data-label="Fecha Solicitud"><small>${item.FECHA_SOLICITUD}</small></td>
+              <td data-label="Modificación registrada"><small class="text-muted">${fechaModificacion}</small></td>
+
+              <td data-label="Estado">
+                ${(() => {
+                  const estado = (item.ESTADO_SOLICITUD || '').toLowerCase();
+                  const cantidadCandidatos = item.TOTAL_CANDIDATOS || 0;
+                  if (estado.includes('candidatos en seleccion') || estado.includes('candidatos seleccion')) {
+                    return `<span class="status-badge estado-candidatos-seleccion">${item.ESTADO_SOLICITUD}</span>`;
+                  } else if (estado.includes('candidatos enviados') && cantidadCandidatos > 0) {
+                    return `
+                      <div style="text-align: center;">
+                        <span class="status-badge estado-candidatos-enviados">${item.ESTADO_SOLICITUD}</span>
+                        <div style="margin-top: 5px;">
+                          <span class="badge badge-success">
+                            <i class="fas fa-users"></i> ${cantidadCandidatos} Candidatos
+                          </span>
+                        </div>
+                      </div>
+                    `;
+                  } else {
+                    return `<span class="status-badge ${statusClass}">${item.ESTADO_SOLICITUD}</span>`;
+                  }
+                })()}
+              </td>
+
+              <td data-label="Estado de Aprobación">
+                <span class="status-badge ${aprobacionClass}" title="Estado de Aprobación por Gerencia">
+                  <i class="fas fa-check-circle"></i> ${estadoAprobacionMostrar}
+                </span>
+              </td>
+
+              <td data-label="Razón"><small>${item.RAZON || '—'}</small></td>
+              <td data-label="Comentario" class="comentario-cell">${comentarioMostrar}</td>
+
+              <td data-label="Acciones">
+                <div class="actions-container">
+                  ${(() => {
+                    const estado = (item.ESTADO_SOLICITUD || '').toLowerCase();
+                    
+                    // BOTÓN PRINCIPAL: Cambiar Estado
+                    let botonesHTML = `
+                      <button class="btn btn-action btn-edit btnCambiarEstado"
+                        data-id="${item.ID_SOLICITUD}"
+                        data-tienda="${item.NUM_TIENDA || ''}"
+                        data-puesto="${item.PUESTO_SOLICITADO || ''}"
+                        data-razon="${item.RAZON || ''}"
+                        data-solicitado-por="${item.SOLICITADO_POR || ''}"
+                        title="Cambiar Estado">
+                        <i class="fas fa-exchange-alt"></i> Cambiar Estado
+                      </button>
+                    `;
+                    
+                    // MOSTRAR BOTÓN DE CANDIDATOS SOLO SI ESTÁN EN "CANDIDATOS ENVIADOS"
+                    if (estado.includes('candidatos enviados') || estado.includes('candidatos en seleccion') || estado.includes('plaza cubierta')) {
+                      const cantidadCandidatos = item.TOTAL_CANDIDATOS || 0;
+                      
+                      if (cantidadCandidatos > 0) {
+                        botonesHTML += `
+                          <button class="btn btn-sm btn-success btnVerCandidatosrh"
+                                  data-id="${item.ID_SOLICITUD}"
+                                  title="Ver candidatos enviados y sus expedientes">
+                            <i class="fas fa-users"></i> Ver Candidatos (${cantidadCandidatos})
+                          </button>
+                        `;
+                      }
+                    }
+                    
+                    // Botón para ver resumen de aprobación gerencial
+                      if ((aprobacion === 'aprobado' || (aprobacion.includes('aprobado') && !aprobacion.includes('no')))) {
+                          botonesHTML += `
+                              <button class="btn btn-success btn-sm btnVerResumenProcesamiento" 
+                                      data-id="${item.ID_SOLICITUD}"
+                                      title="Ver resumen de aprobación gerencial">
+                                  <i class="fas fa-clipboard-check"></i> Ver Resumen
+                              </button>`;
+                      }
+                    
+                    return botonesHTML;
+                  })()}
+                </div>
+              </td>
+            </tr>
+          `;
+          
+          console.log("Comentario de solicitud:", item.ID_SOLICITUD, item.COMENTARIO_SOLICITUD);
+          console.log("Estado Aprobación:", item.ID_SOLICITUD, item.ESTADO_APROBACION);
+          console.log("Dirigido RH:", item.ID_SOLICITUD, item.DIRIGIDO_RH);
+          tbody.append(row);
+        });
+
+        setTimeout(() => {
+          $('.estado-selector').each(function () {
+            aplicarColorEstado(this);
+          });
+        }, 0);
+      }
+
+      // FUNCIÓN PARA PAGINACIÓN
+      function renderizarPaginacion(data) {
               const totalPages = Math.ceil(data.length / rowsPerPage);
               const pagination = $('.pagination');
               
@@ -1919,2340 +2272,14 @@ ${(() => {
                 
                 if (page && page !== currentPage && page >= 1 && page <= totalPages) {
                   currentPage = page;
-                  renderTable(data); // ← CAMBIAR: usar 'data' en lugar de 'solicitudes'
-                  setupPagination(data); // ← CAMBIAR: usar 'data' en lugar de 'solicitudes'
+                  renderizarTabla(data); // ← CAMBIAR: usar 'data' en lugar de 'solicitudes'
+                  renderizarPaginacion(data); // ← CAMBIAR: usar 'data' en lugar de 'solicitudes'
                 }
               });
             }
 
-                  // FILTROS DE BÚSQUEDA
-            $('#searchInput, #searchTienda').on('input', function () {
-                const searchValueGeneral = $('#searchInput').val().toLowerCase();
-                const searchValueTienda = $('#searchTienda').val().toLowerCase();
-
-                // ✅ USAR allSolicitudes EN LUGAR DE solicitudes
-                const filteredData = allSolicitudes.filter(item => {
-                  const matchGeneral = !searchValueGeneral || Object.values(item).some(value =>
-                    value && value.toString().toLowerCase().includes(searchValueGeneral)
-                  );
-
-                  const matchTienda = !searchValueTienda || 
-                    (item.NUM_TIENDA && item.NUM_TIENDA.toString().toLowerCase().includes(searchValueTienda));
-
-                  return matchGeneral && matchTienda;
-                });
-
-                currentPage = 1; // ✅ RESETEAR PÁGINA AL FILTRAR
-                renderTable(filteredData);
-                setupPagination(filteredData);
-              });
-
-            //FUNCION CAMBIAR ESTADO DE LA SOLICITUD
-            // FUNCIÓN PARA CAMBIAR ESTADO - VERSIÓN COMPLETA CORREGIDA
-            $(document).on('click', '.btnCambiarEstado', function() {
-              const $btn = $(this);
-              const id = $btn.data('id');
-              const tienda = $btn.data('tienda') || 'Sin tienda';
-              const puesto = $btn.data('puesto') || 'Sin puesto';
-              const razon = $btn.data('razon') || 'Sin razón';
-              const solicitado = $btn.data('solicitado') || 'Desconocido';
-
-              if (!id || isNaN(id)) {
-                Swal.fire('Error', 'ID de solicitud no válido.', 'error');
-                return;
-              }
-
-              $('#infoSolicitudCambio').html(`
-                <div class="border p-3 rounded bg-light">
-                  <p class="mb-1"><strong>ID Solicitud:</strong> ${id}</p>
-                  <p class="mb-1"><strong>Tienda:</strong> ${tienda}</p>
-                  <p class="mb-1"><strong>Puesto:</strong> ${puesto}</p>
-                  <p class="mb-1"><strong>Razón:</strong> ${razon}</p>
-                  <p class="mb-0"><strong>Solicitado Por:</strong> ${solicitado}</p> 
-                </div>
-              `);
-
-              $('#nuevoEstado').val('').trigger('change');
-              $('#comentarioCambio').val('');
-              $('#archivosCVS').val('');
-              $('#seccionArchivos').hide();
-              $('#vistaPreviaArchivos').html('');
-
-              $('#modalCambiarEstado').data('id', id).modal('show');
-            });
-
-            // Mostrar/ocultar sección de archivos según estado seleccionado
-            $('#nuevoEstado').on('change', function () {
-              const estado = $(this).val().toLowerCase();
-              const mostrarArchivos =
-                estado.includes('cvs') ||
-                estado.includes('psico') ||
-                estado.includes('poligrafo');
-
-              $('#seccionArchivos').toggle(mostrarArchivos);
-
-              if (mostrarArchivos) {
-                if (estado.includes('psicometrica')) {
-                  $('#label_archivos').text('Archivos de Pruebas Psicométricas:');
-                } else if (estado.includes('poligrafo')) {
-                  $('#label_archivos').text('Archivos de Prueba de Polígrafo:');
-                } else {
-                  $('#label_archivos').text('Archivos de CVS:');
-                }
-              }
-
-              if (!mostrarArchivos) {
-                $('#vistaPreviaArchivos').html('');
-                $('#archivosCVS').val('');
-              }
-            });
-
-            // Vista previa de archivos con validación
-            $('#archivosCVS').on('change', function() {
-              const files = this.files;
-              let preview = '';
-              let archivosValidos = true;
-
-              const tiposPermitidos = [
-                'application/pdf', 
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'image/jpeg',
-                'image/png'
-              ];
-              
-              const maxSizeMB = 50;
-
-              for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-                let status = '';
-                
-                if (!tiposPermitidos.includes(file.type)) {
-                  status = `Tipo no permitido (${file.type || 'desconocido'})`;
-                  archivosValidos = false;
-                } else if (file.size > maxSizeMB * 1024 * 1024) {
-                  status = `Excede ${maxSizeMB}MB (${sizeMB}MB)`;
-                  archivosValidos = false;
-                } else {
-                  status = `OK (${sizeMB}MB)`;
-                }
-                
-                preview += `<div class="${!archivosValidos ? 'text-danger' : ''}">${status} - ${file.name}</div>`;
-              }
-
-              $('#vistaPreviaArchivos').html(preview);
-              $('#btnGuardarCambioEstado').prop('disabled', !archivosValidos && files.length > 0);
-            });
-
-            // Guardar cambios en el estado
-            $('#btnGuardarCambioEstado').on('click', function() {
-              const $btn = $(this);
-              const id = $('#modalCambiarEstado').data('id');
-              const estado = $('#nuevoEstado').val();
-              const comentario = $('#comentarioCambio').val().trim();
-              const archivos = $('#archivosCVS')[0].files;
-
-              if (!id || isNaN(id)) {
-                Swal.fire('Error', 'ID de solicitud inválido.', 'error');
-                return;
-              }
-
-              if (!estado) {
-                Swal.fire('Error', 'Debes seleccionar un estado.', 'warning');
-                return $('#nuevoEstado').focus();
-              }
-
-              if (!comentario) {
-                Swal.fire('Error', 'Debes ingresar un comentario.', 'warning');
-                return $('#comentarioCambio').focus();
-              }
-
-              const formData = new FormData();
-              formData.append('id_solicitud', id);
-              formData.append('nuevo_estado', estado);
-              formData.append('comentario', comentario);
-
-              const requiereArchivos = estado.toLowerCase().includes('cvs') || estado.toLowerCase().includes('psico') || estado.toLowerCase().includes('poligrafo');
-              if (requiereArchivos && archivos.length === 0) {
-                Swal.fire('Advertencia', 'Este estado requiere adjuntar archivos.', 'warning');
-                return;
-              }
-
-              for (let i = 0; i < archivos.length; i++) {
-                formData.append('archivos[]', archivos[i]);
-              }
-
-              // NUEVO: detectar tipo de archivo y enviarlo
-              let tipoArchivo = '';
-              if (estado.toLowerCase().includes('psico')) {
-                tipoArchivo = 'PSICOMETRICA';
-              } else if (estado.toLowerCase().includes('poligrafo')) {
-                tipoArchivo = 'POLIGRAFO';
-              } else if (estado.toLowerCase().includes('cvs')) {
-                tipoArchivo = 'CVS';
-              }
-              formData.append('tipo_archivo', tipoArchivo);
-
-              $btn.prop('disabled', true);
-              const swalLoading = Swal.fire({
-                title: 'Procesando...',
-                html: 'Por favor espera mientras se guardan los cambios',
-                allowOutsideClick: false,
-                didOpen: () => Swal.showLoading()
-              });
-
-              $.ajax({
-                url: './gestionhumana/crudsolicitudesrh.php?action=toggle_solicitud_status',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                  let res;
-                  try {
-                    res = typeof response === 'string' ? JSON.parse(response) : response;
-                  } catch (e) {
-                    console.error('Error parsing response:', response);
-                    Swal.fire('Error', 'Respuesta del servidor no válida', 'error');
-                    return;
-                  }
-
-                  if (res.success) {
-                    Swal.fire({
-                      icon: 'success',
-                      title: 'Éxito',
-                      text: res.mensaje || 'Estado actualizado correctamente',
-                      timer: 2000,
-                      showConfirmButton: false
-                    });
-                    $('#modalCambiarEstado').modal('hide');
-
-                    if (typeof cargarSolicitudes === 'function') {
-                      cargarSolicitudes();
-                    }
-                  } else {
-                    Swal.fire('Error', res.error || 'Error al actualizar el estado', 'error');
-                  }
-                },
-                error: function(xhr, status, error) {
-                  let errorMsg = 'Error en la solicitud: ' + error;
-                  if (status === 'timeout') {
-                    errorMsg = 'La solicitud tardó demasiado tiempo. Intenta nuevamente.';
-                  }
-                  Swal.fire('Error', errorMsg, 'error');
-                  console.error('Error:', xhr.responseText);
-                },
-                complete: function() {
-                  $btn.prop('disabled', false);
-                  swalLoading.close();
-                }
-              });
-            });
-
-            $(document).on('click', '#btnCancelarCambioEstado', function () {
-              $('#modalCambiarEstado').modal('hide');
-            });
-
-            //FUNCION PARA VER LOS CVS SELECCIONADOR POR EL SUPERVISOR
-            $(document).off('click', '.btnVerResumen').on('click', '.btnVerResumen', function(e) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                
-                console.log("🎯 INICIANDO btnVerResumen - Estructura basada en tu código");
-                
-                if (modalResumenAbierto) {
-                    console.warn("🔁 Modal ya abierto, cancelando");
-                    return;
-                }
-                
-                if (Swal.isVisible()) {
-                    Swal.close();
-                }
-                
-                modalResumenAbierto = true;
-                
-                const idSolicitud = $(this).data('id');
-                console.log("📋 ID Solicitud:", idSolicitud);
-                
-                if (!idSolicitud) {
-                    console.error("❌ No se encontró ID de solicitud");
-                    modalResumenAbierto = false;
-                    Swal.fire('Error', 'No se encontró el ID de la solicitud', 'error');
-                    return;
-                }
-                
-                // ✅ LOADING IGUAL QUE EN TU CÓDIGO
-                Swal.fire({
-                    title: '<div style="color: #667eea;"><i class="fas fa-spinner fa-spin"></i></div>',
-                    html: `
-                        <div style="text-align: center; padding: 20px;">
-                            <h5 style="color: #333; margin-bottom: 15px;">Cargando Resumen de CVs</h5>
-                            <p style="color: #666;">Solicitud #${idSolicitud}</p>
-                            <div style="margin-top: 15px; font-size: 12px; color: #999;">
-                                Conectando con servidor...
-                            </div>
-                        </div>
-                    `,
-                    showConfirmButton: false,
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    didOpen: () => Swal.showLoading()
-                });
-                
-                // ✅ AJAX EXACTAMENTE IGUAL QUE TU get_historial_filtrado QUE SÍ FUNCIONA
-                console.log("🌐 Iniciando petición AJAX...");
-                
-                $.ajax({
-                    url: './gestionhumana/crudsolicitudesrh.php?action=ver_resumen_cvs',
-                    type: 'GET',
-                    dataType: 'json',
-                    data: {
-                        id_solicitud: idSolicitud
-                    },
-                    timeout: 30000,
-                    success: function(response) {
-                        console.log("✅ Respuesta exitosa:", response);
-                        
-                        // ✅ CERRAR LOADING
-                        if (Swal.isVisible()) {
-                            Swal.close();
-                        }
-                        
-                        // ✅ VALIDAR RESPUESTA
-                        if (!response) {
-                            modalResumenAbierto = false;
-                            Swal.fire({
-                                icon: 'error',
-                                title: '❌ Sin Respuesta',
-                                text: 'El servidor no devolvió datos',
-                                confirmButtonText: 'Entendido'
-                            });
-                            return;
-                        }
-                        
-                        if (response.success === false) {
-                            modalResumenAbierto = false;
-                            Swal.fire({
-                                icon: 'error',
-                                title: '⚠️ Error del Servidor',
-                                text: response.error || 'Error no especificado',
-                                confirmButtonText: 'Entendido'
-                            });
-                            return;
-                        }
-                        
-                        // ✅ PROCESAR RESPUESTA EXITOSA
-                        setTimeout(() => {
-                            procesarRespuestaResumen(response, idSolicitud);
-                        }, 200);
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("❌ Error AJAX:", {
-                            status: xhr.status,
-                            statusText: xhr.statusText,
-                            responseText: xhr.responseText,
-                            error: error
-                        });
-                        
-                        modalResumenAbierto = false;
-                        
-                        if (Swal.isVisible()) {
-                            Swal.close();
-                        }
-                        
-                        setTimeout(() => {
-                            Swal.fire({
-                                icon: 'error',
-                                title: '❌ Error de Conexión',
-                                html: `
-                                    <div style="text-align: left;">
-                                        <p><strong>No se pudo conectar con el servidor</strong></p>
-                                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin: 15px 0;">
-                                            <strong>Status HTTP:</strong> ${xhr.status}<br>
-                                            <strong>Error:</strong> ${error}<br>
-                                            <strong>Estado:</strong> ${status}<br>
-                                            <strong>Solicitud:</strong> #${idSolicitud}
-                                        </div>
-                                        <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 15px;">
-                                            <strong>Respuesta del servidor:</strong><br>
-                                            <pre style="max-height: 150px; overflow-y: auto; font-size: 11px;">${xhr.responseText || 'Sin contenido'}</pre>
-                                        </div>
-                                    </div>
-                                `,
-                                confirmButtonText: 'Entendido',
-                                width: '600px'
-                            });
-                        }, 200);
-                    }
-                });
-            });
-
-
-            // ✅ FUNCIÓN SEPARADA PARA PROCESAR LA RESPUESTA
-            function procesarRespuestaResumen(response, idSolicitud) {
-                console.log("🎨 Construyendo modal con respuesta:", response);
-                
-                // ✅ EXTRAER DATOS DE LA RESPUESTA
-                const archivos = response.archivos || [];
-                const supervisor = response.supervisor || 'No especificado';
-                const fecha = response.fecha || 'No disponible';
-                const total = response.total || archivos.length;
-                
-                console.log("📁 Archivos a mostrar:", archivos.length);
-                
-                // ✅ CONSTRUIR HTML DEL MODAL
-                let modalContent = `
-                    <div style="text-align: left; padding: 0; font-family: 'Segoe UI', sans-serif;">
-                        
-                        <!-- 🎨 HEADER PRINCIPAL -->
-                        <div style="
-                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                            color: white;
-                            padding: 25px;
-                            margin: -20px -20px 0 -20px;
-                            border-radius: 12px 12px 0 0;
-                        ">
-                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
-                                <div>
-                                    <h3 style="margin: 0 0 8px 0; font-weight: 700; font-size: 24px;">
-                                        <i class="fas fa-star text-warning mr-2"></i>
-                                        CVs Seleccionados por el Supervisor
-                                    </h3>
-                                    <p style="margin: 0; opacity: 0.9; font-size: 16px;">
-                                        Solicitud #${idSolicitud} - Vista para RRHH
-                                    </p>
-                                </div>
-                                <div style="
-                                    background: rgba(255,255,255,0.2);
-                                    padding: 15px 20px;
-                                    border-radius: 12px;
-                                    text-align: center;
-                                    backdrop-filter: blur(10px);
-                                    min-width: 80px;
-                                ">
-                                    <div style="font-size: 14px; opacity: 0.9; margin-bottom: 5px;">Total CVs</div>
-                                    <div style="font-size: 28px; font-weight: 700;">${total}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 📋 INFORMACIÓN DEL SUPERVISOR -->
-                        <div style="
-                            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-                            border: 1px solid #dee2e6;
-                            border-radius: 0;
-                            padding: 20px;
-                            margin: 0 -20px;
-                            border-left: 5px solid #28a745;
-                        ">
-                            <h5 style="margin: 0 0 15px 0; color: #495057; font-weight: 600;">
-                                <i class="fas fa-user-tie mr-2 text-primary"></i>
-                                Información de la Selección
-                            </h5>
-                            <div style="display: flex; gap: 30px; flex-wrap: wrap;">
-                                <div>
-                                    <strong style="color: #666;">Supervisor que seleccionó:</strong>
-                                    <div style="color: #333; font-size: 16px; font-weight: 600;">${supervisor}</div>
-                                </div>
-                                <div>
-                                    <strong style="color: #666;">Fecha de la solicitud:</strong>
-                                    <div style="color: #333; font-size: 16px;">${fecha}</div>
-                                </div>
-                                <div>
-                                    <strong style="color: #666;">Estado:</strong>
-                                    <span style="
-                                        background: #28a745;
-                                        color: white;
-                                        padding: 4px 12px;
-                                        border-radius: 15px;
-                                        font-size: 12px;
-                                        font-weight: 600;
-                                    ">
-                                        <i class="fas fa-check mr-1"></i>SELECCIONADOS PARA REVISIÓN
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 📁 LISTA DE ARCHIVOS -->
-                        <div style="
-                            padding: 25px 20px;
-                            margin: 0 -20px;
-                            max-height: 450px;
-                            overflow-y: auto;
-                            background: white;
-                        ">
-                `;
-                
-                // ✅ GENERAR LISTA DE ARCHIVOS
-                if (archivos.length > 0) {
-                    archivos.forEach((archivo, index) => {
-                        const nombreArchivo = archivo.NOMBRE_ARCHIVO || `CV ${index + 1}`;
-                        const rutaArchivo = archivo.RUTA || '';
-                        const tipoArchivo = archivo.TIPO || 'PDF';
-                        
-                        // ✅ ESCAPAR CARACTERES ESPECIALES
-                        const rutaEscapada = rutaArchivo.replace(/'/g, "\\'").replace(/"/g, '\\"');
-                        const nombreEscapado = nombreArchivo.replace(/'/g, "\\'").replace(/"/g, '\\"');
-                        
-                        modalContent += `
-                            <div style="
-                                background: white;
-                                border: 2px solid #28a745;
-                                border-radius: 12px;
-                                padding: 20px;
-                                margin-bottom: 15px;
-                                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.15);
-                                transition: all 0.3s ease;
-                                position: relative;
-                            " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(40, 167, 69, 0.25)'" 
-                              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(40, 167, 69, 0.15)'">
-                                
-                                <!-- Badge de número -->
-                                <div style="
-                                    position: absolute;
-                                    top: -8px;
-                                    left: -8px;
-                                    background: #28a745;
-                                    color: white;
-                                    width: 30px;
-                                    height: 30px;
-                                    border-radius: 50%;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                    font-weight: 700;
-                                    font-size: 14px;
-                                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-                                ">${index + 1}</div>
-                                
-                                <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
-                                    
-                                    <!-- Icono del archivo -->
-                                    <div style="
-                                        background: linear-gradient(135deg, #dc3545, #e74c3c);
-                                        color: white;
-                                        width: 60px;
-                                        height: 60px;
-                                        border-radius: 50%;
-                                        display: flex;
-                                        align-items: center;
-                                        justify-content: center;
-                                        font-size: 24px;
-                                        flex-shrink: 0;
-                                        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-                                    ">
-                                        <i class="fas fa-file-pdf"></i>
-                                    </div>
-                                    
-                                    <!-- Información del archivo -->
-                                    <div style="flex: 1; min-width: 200px;">
-                                        <h6 style="
-                                            margin: 0 0 8px 0;
-                                            color: #333;
-                                            font-weight: 600;
-                                            font-size: 16px;
-                                            word-break: break-word;
-                                            line-height: 1.3;
-                                        ">${nombreArchivo}</h6>
-                                        
-                                        <div style="display: flex; gap: 15px; flex-wrap: wrap; font-size: 13px; color: #666;">
-                                            <span style="display: flex; align-items: center;">
-                                                <i class="fas fa-file mr-1" style="color: #007bff;"></i>
-                                                Tipo: ${tipoArchivo}
-                                            </span>
-                                            <span style="
-                                                background: #28a745;
-                                                color: white;
-                                                padding: 3px 10px;
-                                                border-radius: 12px;
-                                                font-size: 11px;
-                                                font-weight: 600;
-                                                display: flex;
-                                                align-items: center;
-                                            ">
-                                                <i class="fas fa-check-circle mr-1"></i>
-                                                SELECCIONADO POR SUPERVISOR
-                                            </span>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Botones de acción -->
-                                    <div style="display: flex; gap: 10px; flex-direction: column; min-width: 120px;">
-                                        <button 
-                                            onclick="abrirArchivoRRHH('${rutaEscapada}')"
-                                            style="
-                                                background: linear-gradient(135deg, #007bff, #0056b3);
-                                                color: white;
-                                                border: none;
-                                                padding: 10px 16px;
-                                                border-radius: 8px;
-                                                font-size: 14px;
-                                                font-weight: 600;
-                                                cursor: pointer;
-                                                transition: all 0.2s;
-                                                white-space: nowrap;
-                                                box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
-                                            "
-                                            onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0, 123, 255, 0.4)'"
-                                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0, 123, 255, 0.3)'"
-                                        >
-                                            <i class="fas fa-eye mr-1"></i> Ver CV
-                                        </button>
-                                        
-                                        <button 
-                                            onclick="descargarArchivoRRHH('${rutaEscapada}', '${nombreEscapado}')"
-                                            style="
-                                                background: linear-gradient(135deg, #28a745, #20c997);
-                                                color: white;
-                                                border: none;
-                                                padding: 10px 16px;
-                                                border-radius: 8px;
-                                                font-size: 14px;
-                                                font-weight: 600;
-                                                cursor: pointer;
-                                                transition: all 0.2s;
-                                                white-space: nowrap;
-                                                box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
-                                            "
-                                            onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(40, 167, 69, 0.4)'"
-                                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(40, 167, 69, 0.3)'"
-                                        >
-                                            <i class="fas fa-download mr-1"></i> Descargar
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                } else {
-                    modalContent += `
-                        <div style="
-                            text-align: center;
-                            padding: 60px 20px;
-                            color: #6c757d;
-                            background: #f8f9fa;
-                            border-radius: 12px;
-                            border: 2px dashed #dee2e6;
-                        ">
-                            <i class="fas fa-folder-open" style="font-size: 4rem; color: #dee2e6; margin-bottom: 20px;"></i>
-                            <h5 style="color: #6c757d; margin-bottom: 10px;">No hay documentos seleccionados</h5>
-                            <p style="color: #adb5bd; margin: 0; font-size: 14px;">
-                                El supervisor aún no ha seleccionado ningún CV para esta solicitud
-                            </p>
-                            <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px;">
-                                <small style="color: #856404;">
-                                    <i class="fas fa-info-circle mr-1"></i>
-                                    Solicitud #${idSolicitud} - Esperando selección del supervisor
-                                </small>
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                modalContent += `
-                        </div>
-                    </div>
-                `;
-                
-                // ✅ MOSTRAR MODAL CON SWAL
-                Swal.fire({
-                    html: modalContent,
-                    width: '1100px',
-                    showConfirmButton: true,
-                    showCloseButton: true,
-                    confirmButtonText: '<i class="fas fa-times"></i> Cerrar Vista',
-                    confirmButtonColor: '#6c757d',
-                    allowOutsideClick: true,
-                    allowEscapeKey: true,
-                    customClass: {
-                        popup: 'resumen-cvs-modal-rrhh',
-                        container: 'swal2-container-max-z'
-                    },
-                    didOpen: () => {
-                        console.log("✅ Modal mostrado exitosamente");
-                        
-                        // ✅ AGREGAR ESTILOS CSS
-                        if (!document.getElementById('resumen-cvs-styles')) {
-                            const styles = document.createElement('style');
-                            styles.id = 'resumen-cvs-styles';
-                            styles.textContent = `
-                                .swal2-container-max-z {
-                                    z-index: 99999 !important;
-                                }
-                                .resumen-cvs-modal-rrhh {
-                                    border-radius: 16px !important;
-                                    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2) !important;
-                                    overflow: hidden !important;
-                                }
-                                .resumen-cvs-modal-rrhh .swal2-html-container {
-                                    padding: 20px !important;
-                                    max-height: 75vh !important;
-                                    overflow-y: auto !important;
-                                }
-                                @media (max-width: 768px) {
-                                    .resumen-cvs-modal-rrhh {
-                                        width: 95% !important;
-                                        margin: 10px !important;
-                                    }
-                                }
-                            `;
-                            document.head.appendChild(styles);
-                        }
-                        
-                        // ✅ DEFINIR FUNCIONES GLOBALES
-                        window.abrirArchivoRRHH = function(ruta) {
-                            try {
-                                if (ruta && ruta.trim() !== '') {
-                                    console.log("🔗 Abriendo archivo:", ruta);
-                                    window.open(ruta, '_blank');
-                                } else {
-                                    Swal.fire({
-                                        title: 'Error',
-                                        text: 'No se encontró la ruta del documento',
-                                        icon: 'error',
-                                        timer: 2000
-                                    });
-                                }
-                            } catch (error) {
-                                console.error("❌ Error abriendo archivo:", error);
-                                Swal.fire({
-                                    title: 'Error',
-                                    text: 'No se pudo abrir el documento',
-                                    icon: 'error',
-                                    timer: 2000
-                                });
-                            }
-                        };
-                        
-                        window.descargarArchivoRRHH = function(ruta, nombre) {
-                            try {
-                                if (ruta && ruta.trim() !== '') {
-                                    console.log("💾 Descargando archivo:", nombre);
-                                    
-                                    const link = document.createElement('a');
-                                    link.href = ruta;
-                                    link.download = nombre || 'documento';
-                                    link.style.display = 'none';
-                                    
-                                    document.body.appendChild(link);
-                                    link.click();
-                                    document.body.removeChild(link);
-                                    
-                                    // ✅ NOTIFICACIÓN
-                                    const Toast = Swal.mixin({
-                                        toast: true,
-                                        position: 'bottom-end',
-                                        showConfirmButton: false,
-                                        timer: 3000,
-                                        timerProgressBar: true
-                                    });
-                                    
-                                    Toast.fire({
-                                        icon: 'success',
-                                        title: `📁 Descargando: ${nombre}`
-                                    });
-                                    
-                                } else {
-                                    Swal.fire({
-                                        title: 'Error',
-                                        text: 'No se encontró la ruta del documento',
-                                        icon: 'error',
-                                        timer: 2000
-                                    });
-                                }
-                            } catch (error) {
-                                console.error("❌ Error descargando archivo:", error);
-                                Swal.fire({
-                                    title: 'Error',
-                                    text: 'No se pudo descargar el documento',
-                                    icon: 'error',
-                                    timer: 2000
-                                });
-                            }
-                        };
-                    },
-                    willClose: () => {
-                        modalResumenAbierto = false;
-                        console.log("🔒 Modal cerrado, flag reseteado");
-                    }
-                });
-            }
-
-            // ✅ FUNCIÓN MEJORADA PARA MOSTRAR ARCHIVOS (COMPATIBLE)
-            function mostrarArchivosSolicitud(id, tipo = 'CVS') {
-                if (modalArchivosAbierto) {
-                    console.warn("⚠️ Modal de archivos ya está abierto");
-                    return;
-                }
-
-                if (!id) {
-                    Swal.fire('Error', 'ID de solicitud no válido', 'error');
-                    return;
-                }
-
-                modalArchivosAbierto = true;
-
-                if (Swal.isVisible()) {
-                    Swal.close();
-                    setTimeout(() => {
-                        abrirModalArchivos(id, tipo);
-                    }, 200);
-                    return;
-                }
-
-                abrirModalArchivos(id, tipo);
-            }
-
-            // ✅ FUNCIÓN AUXILIAR PARA ABRIR MODAL DE ARCHIVOS
-            function abrirModalArchivos(id, tipo) {
-                Swal.fire({
-                    title: 'Cargando archivos...',
-                    text: `Obteniendo los archivos más recientes de tipo ${tipo}`,
-                    allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
-                });
-
-                $.ajax({
-                    url: './gestionhumana/crudsolicitudesrh.php',
-                    method: 'GET',
-                    data: {
-                        action: 'get_archivos',
-                        id: id,
-                        tipo: tipo
-                    },
-                    dataType: 'json',
-                    success: function (response) {
-                        if (!response || !response.archivos || response.archivos.length === 0) {
-                            Swal.fire({
-                                icon: 'info',
-                                title: `Sin archivos ${tipo} recientes`,
-                                text: `No se encontraron archivos correspondientes al último estado tipo ${tipo}.`,
-                                confirmButtonText: 'Entendido',
-                                willClose: () => {
-                                    modalArchivosAbierto = false;
-                                }
-                            });
-                            return;
-                        }
-
-                        const data = response.archivos;
-                        let html = `
-                            <div style="text-align: left;">
-                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                                    <h4 style="margin: 0 0 10px 0; color: #495057;">
-                                        <i class="fas fa-paperclip mr-2"></i>
-                                        Últimos archivos subidos con estado ${tipo} (#${id})
-                                    </h4>
-                                    <p style="margin: 0; color: #6c757d; font-size: 14px;">
-                                        Total de archivos: <strong>${data.length}</strong>
-                                    </p>
-                                </div>
-                                
-                                <div style="max-height: 400px; overflow-y: auto;">
-                        `;
-
-                        data.forEach((archivo) => {
-                            const ruta = `./${archivo.NOMBRE_ARCHIVO}`;
-                            const nombreArchivo = archivo.NOMBRE_ARCHIVO.split('/').pop();
-                            const fechaSubida = archivo.FECHA_SUBIDA || 'Fecha no disponible';
-
-                            const extension = nombreArchivo.split('.').pop().toLowerCase();
-                            let icono = 'fa-file';
-                            let tipoArchivo = 'Documento';
-                            let colorFondo = '#e3f2fd';
-
-                            switch (extension) {
-                                case 'pdf':
-                                    icono = 'fa-file-pdf';
-                                    tipoArchivo = 'PDF';
-                                    colorFondo = '#ffebee';
-                                    break;
-                                case 'doc':
-                                case 'docx':
-                                    icono = 'fa-file-word';
-                                    tipoArchivo = 'Word';
-                                    colorFondo = '#e8f5e8';
-                                    break;
-                                case 'jpg':
-                                case 'jpeg':
-                                case 'png':
-                                    icono = 'fa-file-image';
-                                    tipoArchivo = 'Imagen';
-                                    colorFondo = '#fff3e0';
-                                    break;
-                            }
-
-                            html += `
-                                <div style="background: ${colorFondo}; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 12px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <div style="flex: 1;">
-                                            <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                                                <i class="fas ${icono}" style="font-size: 24px; margin-right: 10px;"></i>
-                                                <div>
-                                                    <h5 style="margin: 0; color: #212529; font-size: 16px; font-weight: 600;">
-                                                        ${nombreArchivo}
-                                                    </h5>
-                                                    <small style="color: #6c757d; font-size: 12px;">
-                                                        ${tipoArchivo} • Subido: ${fechaSubida}
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div style="display: flex; gap: 8px; align-items: center;">
-                                            <a href="${ruta}" target="_blank"
-                                              style="background: #007bff; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px;">
-                                                <i class="fas fa-eye mr-1"></i> Ver
-                                            </a>
-                                            <a href="${ruta}" download="${nombreArchivo}"
-                                              style="background: #28a745; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px;">
-                                                <i class="fas fa-download mr-1"></i> Descargar
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-
-                        html += `
-                                </div>
-                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center;">
-                                    <small style="color: #6c757d;">
-                                        <i class="fas fa-info-circle mr-1"></i>
-                                        Mostrando solo los archivos subidos con el último cambio de estado ${tipo}.
-                                    </small>
-                                </div>
-                            </div>
-                        `;
-
-                        Swal.fire({
-                            title: false,
-                            html: html,
-                            width: '700px',
-                            showCloseButton: true,
-                            showConfirmButton: true,
-                            confirmButtonText: '<i class="fas fa-times"></i> Cerrar',
-                            confirmButtonColor: '#6c757d',
-                            customClass: {
-                                popup: 'swal-wide-files'
-                            },
-                            willClose: () => {
-                                modalArchivosAbierto = false;
-                            }
-                        });
-                    },
-                    error: function (xhr, status, error) {
-                        console.error('Error cargando archivos:', error);
-                        
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error al Cargar Archivos',
-                            text: 'No se pudieron cargar los archivos.',
-                            footer: 'Intenta nuevamente o contacta al administrador.',
-                            willClose: () => {
-                                modalArchivosAbierto = false;
-                            }
-                        });
-                    }
-                });
-            }
-
-            // ESCUCHADORES CON VALIDACIÓN ADICIONAL
-            $(document).off('click', '.btnVerArchivosRRHH').on('click', '.btnVerArchivosRRHH', function (e) {
-              e.preventDefault();
-              e.stopImmediatePropagation(); // ← AGREGAR PARA EVITAR PROPAGACIÓN
-              
-              if (modalArchivosAbierto) return; // ← VALIDACIÓN EXTRA
-              
-              const id = $(this).data('id');
-              mostrarArchivosSolicitud(id, 'CVS');
-            });
-
-            $(document).off('click', '.btnVerArchivosTipo').on('click', '.btnVerArchivosTipo', function (e) {
-              e.preventDefault();
-              e.stopImmediatePropagation(); // ← AGREGAR PARA EVITAR PROPAGACIÓN
-              
-              if (modalArchivosAbierto) return; // ← VALIDACIÓN EXTRA
-              
-              const id = $(this).data('id');
-              const tipo = $(this).data('tipo') || 'CVS';
-              mostrarArchivosSolicitud(id, tipo);
-            });
-
-
-
-            // FUNCIÓN MEJORADA PARA VER HISTORIAL GENERAL CON FILTROS DE FECHA
-            $(document).off('click', '.btnVerHistorial').on('click', '.btnVerHistorial', function () {
-              // Modal para seleccionar rango de fechas y filtros adicionales
-              Swal.fire({
-                title: '<i class="fas fa-calendar-alt"></i> Generar Reporte de Solicitudes',
-                html: `
-                  <div style="text-align: left; margin-bottom: 20px;">
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
-                      <h5 style="margin: 0 0 10px 0; font-weight: 600;">
-                        <i class="fas fa-chart-line"></i> Configuración del Reporte
-                      </h5>
-                      <p style="margin: 0; font-size: 14px; opacity: 0.9;">
-                        Seleccione el rango de fechas y filtros adicionales para generar el historial
-                      </p>
-                    </div>
-                    
-                    <!-- ✅ FILTROS DE FECHA -->
-                    <div class="row mb-3">
-                      <div class="col-md-6">
-                        <label style="font-weight: 600; margin-bottom: 8px; color: #333;">
-                          <i class="fas fa-calendar-day"></i> Fecha Inicial:
-                        </label>
-                        <input type="date" id="fechaInicial" class="form-control" style="
-                          padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;">
-                      </div>
-                      <div class="col-md-6">
-                        <label style="font-weight: 600; margin-bottom: 8px; color: #333;">
-                          <i class="fas fa-calendar-day"></i> Fecha Final:
-                        </label>
-                        <input type="date" id="fechaFinal" class="form-control" style="
-                          padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;">
-                      </div>
-                    </div>
-                    
-                    <!-- ✅ FILTROS RÁPIDOS DE FECHA -->
-                    <div style="margin-bottom: 20px;">
-                      <label style="font-weight: 600; margin-bottom: 10px; color: #333;">
-                        <i class="fas fa-filter"></i> Filtros Rápidos:
-                      </label>
-                      <div class="btn-group d-flex" role="group" style="margin-bottom: 15px;">
-                        <button type="button" class="btn btn-outline-primary btn-filtro-rapido" data-dias="7">
-                          <i class="fas fa-calendar-week"></i> Últimos 7 días
-                        </button>
-                        <button type="button" class="btn btn-outline-primary btn-filtro-rapido" data-dias="30">
-                          <i class="fas fa-calendar-alt"></i> Último mes
-                        </button>
-                        <button type="button" class="btn btn-outline-primary btn-filtro-rapido" data-dias="90">
-                          <i class="fas fa-calendar"></i> Últimos 3 meses
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <!-- ✅ NUEVOS FILTROS ADICIONALES -->
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #007bff;">
-                      <h6 style="margin: 0 0 15px 0; color: #007bff; font-weight: 600;">
-                        <i class="fas fa-sliders-h"></i> Filtros Adicionales
-                      </h6>
-                      
-                      <div class="row">
-                        <!-- FILTRO POR TIENDA -->
-                        <div class="col-md-4 mb-3">
-                          <label style="font-weight: 500; margin-bottom: 8px; color: #333;">
-                            <i class="fas fa-store"></i> Tienda:
-                          </label>
-                          <select id="filtroTienda" class="form-control" style="border-radius: 8px;">
-                            <option value="">Todas las Tiendas</option>
-                          </select>
-                        </div>
-                        
-                        <!-- FILTRO POR SUPERVISOR -->
-                        <div class="col-md-4 mb-3">
-                          <label style="font-weight: 500; margin-bottom: 8px; color: #333;">
-                            <i class="fas fa-user-tie"></i> Supervisor:
-                          </label>
-                          <select id="filtroSupervisor" class="form-control" style="border-radius: 8px;">
-                            <option value="">Todos los Supervisores</option>
-                          </select>
-                        </div>
-                        
-                        <!-- FILTRO POR PUESTO -->
-                        <div class="col-md-4 mb-3">
-                          <label style="font-weight: 500; margin-bottom: 8px; color: #333;">
-                            <i class="fas fa-briefcase"></i> Puesto:
-                          </label>
-                          <select id="filtroPuesto" class="form-control" style="border-radius: 8px;">
-                            <option value="">Todos los Puestos</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <!-- ✅ TIPOS DE CAMBIOS -->
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #17a2b8;">
-                      <h6 style="margin: 0 0 10px 0; color: #17a2b8; font-weight: 600;">
-                        <i class="fas fa-list-check"></i> Tipos de Cambios a Incluir
-                      </h6>
-                      <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="incluirAprobaciones" checked>
-                        <label class="form-check-label" for="incluirAprobaciones" style="font-weight: 500;">
-                          <i class="fas fa-user-check"></i> Incluir cambios de aprobación
-                        </label>
-                      </div>
-                      <div class="form-check" style="margin-top: 8px;">
-                        <input class="form-check-input" type="checkbox" id="incluirEstados" checked>
-                        <label class="form-check-label" for="incluirEstados" style="font-weight: 500;">
-                          <i class="fas fa-exchange-alt"></i> Incluir cambios de estado
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                `,
-                width: '900px',
-                showCancelButton: true,
-                confirmButtonText: '<i class="fas fa-search"></i> Generar Reporte',
-                cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
-                confirmButtonColor: '#28a745',
-                cancelButtonColor: '#6c757d',
-                buttonsStyling: false,
-                customClass: {
-                  popup: 'historial-modal-grande',
-                  confirmButton: 'btn btn-success btn-lg px-4',
-                  cancelButton: 'btn btn-secondary btn-lg px-4 mr-2'
-                },
-                preConfirm: () => {
-                  const fechaInicial = $('#fechaInicial').val();
-                  const fechaFinal = $('#fechaFinal').val();
-                  const incluirAprobaciones = $('#incluirAprobaciones').is(':checked');
-                  const incluirEstados = $('#incluirEstados').is(':checked');
-                  
-                  // ✅ OBTENER VALORES DE FILTROS ADICIONALES
-                  const filtroTienda = $('#filtroTienda').val();
-                  const filtroSupervisor = $('#filtroSupervisor').val();
-                  const filtroPuesto = $('#filtroPuesto').val();
-                  
-                  if (!fechaInicial || !fechaFinal) {
-                    Swal.showValidationMessage(`
-                      <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
-                        <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
-                        <span style="font-weight: 600;">Debe seleccionar ambas fechas</span>
-                      </div>
-                    `);
-                    return false;
-                  }
-                  
-                  if (new Date(fechaInicial) > new Date(fechaFinal)) {
-                    Swal.showValidationMessage(`
-                      <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
-                        <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
-                        <span style="font-weight: 600;">La fecha inicial debe ser menor que la fecha final</span>
-                      </div>
-                    `);
-                    return false;
-                  }
-                  
-                  if (!incluirAprobaciones && !incluirEstados) {
-                    Swal.showValidationMessage(`
-                      <div style="display: flex; align-items: center; justify-content: center; color: #dc3545;">
-                        <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
-                        <span style="font-weight: 600;">Debe incluir al menos un tipo de cambio</span>
-                      </div>
-                    `);
-                    return false;
-                  }
-                  
-                  return { 
-                    fechaInicial, 
-                    fechaFinal, 
-                    incluirAprobaciones, 
-                    incluirEstados,
-                    filtroTienda,
-                    filtroSupervisor,
-                    filtroPuesto
-                  };
-                },
-                didOpen: () => {
-                  // ✅ CARGAR DATOS PARA LOS FILTROS
-                  cargarDatosFiltros();
-                  
-                  // Establecer fechas por defecto (último mes)
-                  const hoy = new Date();
-                  const hace30dias = new Date();
-                  hace30dias.setDate(hoy.getDate() - 30);
-                  
-                  $('#fechaFinal').val(hoy.toISOString().split('T')[0]);
-                  $('#fechaInicial').val(hace30dias.toISOString().split('T')[0]);
-                  
-                  // Event listeners para filtros rápidos
-                  $('.btn-filtro-rapido').on('click', function() {
-                    const dias = parseInt($(this).data('dias'));
-                    const hoy = new Date();
-                    const fechaInicio = new Date();
-                    fechaInicio.setDate(hoy.getDate() - dias);
-                    
-                    $('#fechaFinal').val(hoy.toISOString().split('T')[0]);
-                    $('#fechaInicial').val(fechaInicio.toISOString().split('T')[0]);
-                    
-                    // Resaltar botón seleccionado
-                    $('.btn-filtro-rapido').removeClass('active');
-                    $(this).addClass('active');
-                  });
-                  
-                  // Estilos adicionales
-                  if (!document.getElementById('historial-styles')) {
-                    const styles = document.createElement('style');
-                    styles.id = 'historial-styles';
-                    styles.textContent = `
-                      .historial-modal-grande {
-                        border-radius: 16px !important;
-                        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2) !important;
-                      }
-                      .btn-filtro-rapido.active {
-                        background-color: #007bff !important;
-                        color: white !important;
-                        border-color: #007bff !important;
-                      }
-                      .historial-modal-grande .form-control:focus {
-                        border-color: #667eea !important;
-                        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
-                      }
-                    `;
-                    document.head.appendChild(styles);
-                  }
-                }
-              }).then((result) => {
-                if (result.isConfirmed) {
-                  // ✅ MENSAJE DE LOADING CON FILTROS APLICADOS
-                  let filtrosTexto = [];
-                  if (result.value.filtroTienda) filtrosTexto.push(`Tienda: ${$('#filtroTienda option:selected').text()}`);
-                  if (result.value.filtroSupervisor) filtrosTexto.push(`Supervisor: ${$('#filtroSupervisor option:selected').text()}`);
-                  if (result.value.filtroPuesto) filtrosTexto.push(`Puesto: ${$('#filtroPuesto option:selected').text()}`);
-                  
-                  const filtrosAplicados = filtrosTexto.length > 0 ? filtrosTexto.join(' | ') : 'Sin filtros adicionales';
-                  
-                  Swal.fire({
-                    title: '<i class="fas fa-spinner fa-spin"></i> Generando reporte...',
-                    html: `
-                      <div style="text-align: center; padding: 20px;">
-                        <div style="font-size: 16px; margin-bottom: 10px;">
-                          Consultando historial del ${result.value.fechaInicial} al ${result.value.fechaFinal}
-                        </div>
-                        <div style="color: #666; font-size: 14px; margin-bottom: 10px;">
-                          ${filtrosAplicados}
-                        </div>
-                        <div style="color: #999; font-size: 12px;">
-                          Por favor espera un momento...
-                        </div>
-                      </div>
-                    `,
-                    allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
-                  });
-
-                  // ✅ LLAMADA AJAX CON FILTROS ADICIONALES
-                  $.ajax({
-                    url: './gestionhumana/crudsolicitudesrh.php?action=get_historial_filtrado',
-                    type: 'GET',
-                    dataType: 'json',
-                    data: {
-                      fecha_inicial: result.value.fechaInicial,
-                      fecha_final: result.value.fechaFinal,
-                      incluir_aprobaciones: result.value.incluirAprobaciones ? 1 : 0,
-                      incluir_estados: result.value.incluirEstados ? 1 : 0,
-                      filtro_tienda: result.value.filtroTienda,
-                      filtro_supervisor: result.value.filtroSupervisor,
-                      filtro_puesto: result.value.filtroPuesto
-                    },
-                    success: function (datos) {
-                      if (!datos || datos.length === 0) {
-                        Swal.fire({
-                          icon: 'info',
-                          title: '<i class="fas fa-info-circle"></i> Sin Resultados',
-                          html: `
-                            <div style="text-align: center; padding: 20px;">
-                              <p>No se encontraron cambios con los filtros seleccionados.</p>
-                              <div style="background: #e9ecef; padding: 12px; border-radius: 8px; margin-top: 15px;">
-                                <small><strong>Período:</strong> ${result.value.fechaInicial} - ${result.value.fechaFinal}<br>
-                                <strong>Filtros:</strong> ${filtrosAplicados}</small>
-                              </div>
-                            </div>
-                          `,
-                          confirmButtonText: 'Entendido'
-                        });
-                        return;
-                      }
-
-                      mostrarHistorialFiltrado(datos, result.value);
-                    },
-                    error: function (xhr, status, error) {
-                      console.error('❌ Error cargando historial filtrado:', {
-                        status: xhr.status,
-                        responseText: xhr.responseText,
-                        error: error
-                      });
-                      Swal.fire({
-                        icon: 'error',
-                        title: '<i class="fas fa-exclamation-circle"></i> Error de Conexión',
-                        text: 'No se pudo cargar el historial filtrado.',
-                        confirmButtonText: 'Reintentar'
-                      });
-                    }
-                  });
-                }
-              });
-            });
-
-            // FUNCIÓN PARA CARGAR DATOS DE LOS FILTROS
-            function cargarDatosFiltros() {
-              console.log('🔍 Cargando datos para filtros...');
-              
-              // Cargar tiendas
-              $.ajax({
-                url: './gestionhumana/crudsolicitudesrh.php?action=get_tiendas_filtro',
-                type: 'GET',
-                dataType: 'json',
-                success: function(tiendas) {
-                  console.log('✅ Tiendas cargadas:', tiendas);
-                  const selectTienda = $('#filtroTienda');
-                  selectTienda.empty().append('<option value="">Todas las Tiendas</option>');
-                  
-                  if (tiendas && tiendas.length > 0) {
-                    tiendas.forEach(tienda => {
-                      selectTienda.append(`<option value="${tienda.numero}">${tienda.numero} - ${tienda.nombre}</option>`);
-                    });
-                  }
-                },
-                error: function(xhr, status, error) {
-                  console.error('❌ Error cargando tiendas:', xhr.responseText);
-                  console.error('Status:', status, 'Error:', error);
-                }
-              });
-              
-              // Cargar supervisores
-              $.ajax({
-                url: './gestionhumana/crudsolicitudesrh.php?action=get_supervisores_filtro',
-                type: 'GET',
-                dataType: 'json',
-                success: function(supervisores) {
-                  console.log('✅ Supervisores cargados:', supervisores);
-                  const selectSupervisor = $('#filtroSupervisor');
-                  selectSupervisor.empty().append('<option value="">Todos los Supervisores</option>');
-                  
-                  if (supervisores && supervisores.length > 0) {
-                    supervisores.forEach(supervisor => {
-                      selectSupervisor.append(`<option value="${supervisor.codigo}">${supervisor.nombre}</option>`);
-                    });
-                  }
-                },
-                error: function(xhr, status, error) {
-                  console.error('❌ Error cargando supervisores:', xhr.responseText);
-                  console.error('Status:', status, 'Error:', error);
-                }
-              });
-              
-              // Cargar puestos
-              $.ajax({
-                url: './gestionhumana/crudsolicitudesrh.php?action=get_puestos_filtro',
-                type: 'GET',
-                dataType: 'json',
-                success: function(puestos) {
-                  console.log('✅ Puestos cargados:', puestos);
-                  const selectPuesto = $('#filtroPuesto');
-                  selectPuesto.empty().append('<option value="">Todos los Puestos</option>');
-                  
-                  if (puestos && puestos.length > 0) {
-                    puestos.forEach(puesto => {
-                      selectPuesto.append(`<option value="${puesto}">${puesto}</option>`);
-                    });
-                  }
-                },
-                error: function(xhr, status, error) {
-                  console.error('❌ Error cargando puestos:', xhr.responseText);
-                  console.error('Status:', status, 'Error:', error);
-                }
-              });
-            }
-
-            // FUNCIÓN PARA MOSTRAR EL HISTORIAL FILTRADO
-            // ✅ FUNCIÓN PARA LIMPIAR CARACTERES PROBLEMÁTICOS
-            function limpiarCaracteres(texto) {
-              if (!texto) return '—';
-              
-              let textoLimpio = texto.toString();
-              
-              // ✅ REEMPLAZOS DIRECTOS SIN REGEX PROBLEMÁTICA
-              textoLimpio = textoLimpio.replace(/\?\?n/g, 'ón');
-              textoLimpio = textoLimpio.replace(/\?\?\?/g, 'ción');
-              textoLimpio = textoLimpio.replace(/\?\?/g, 'ñ');
-              
-              // Otros caracteres problemáticos UTF-8
-              textoLimpio = textoLimpio.replace(/Ã±/g, 'ñ');
-              textoLimpio = textoLimpio.replace(/Ã³/g, 'ó');
-              textoLimpio = textoLimpio.replace(/Ã¡/g, 'á');
-              textoLimpio = textoLimpio.replace(/Ã©/g, 'é');
-              textoLimpio = textoLimpio.replace(/Ã­/g, 'í');
-              textoLimpio = textoLimpio.replace(/Ãº/g, 'ú');
-              textoLimpio = textoLimpio.replace(/Ã'/g, 'Ñ');
-              
-              return textoLimpio;
-            }
-
-            // ✅ FUNCIÓN MEJORADA PARA MOSTRAR HISTORIAL CON FILTROS ADICIONALES
-            function mostrarHistorialFiltrado(datos, filtros) {
-              console.log('⏰ Timeline con filtros avanzados:', filtros);
-              
-              // ✅ LIMPIAR DATOS AL RECIBIRLOS
-              const datosLimpios = datos.map(registro => ({
-                ...registro,
-                ESTADO_ANTERIOR: limpiarCaracteres(registro.ESTADO_ANTERIOR) || '—',
-                ESTADO_NUEVO: limpiarCaracteres(registro.ESTADO_NUEVO) || '—',
-                APROBACION_ANTERIOR: limpiarCaracteres(registro.APROBACION_ANTERIOR) || 'Por Aprobar',
-                APROBACION_NUEVA: limpiarCaracteres(registro.APROBACION_NUEVA) || 'Por Aprobar',
-                COMENTARIO_NUEVO: limpiarCaracteres(registro.COMENTARIO_NUEVO) || '—',
-                PUESTO_SOLICITADO: limpiarCaracteres(registro.PUESTO_SOLICITADO) || '—',
-                SOLICITADO_POR: limpiarCaracteres(registro.SOLICITADO_POR) || '—'
-              }));
-              
-              // ✅ ELIMINAR DUPLICADOS CON DATOS LIMPIOS
-              const historialUnico = [];
-              const registrosVistos = new Set();
-              
-              datosLimpios.forEach(registro => {
-                const clave = `${registro.ID_SOLICITUD}_${registro.FECHA_CAMBIO}_${registro.ID_HISTORICO}`;
-                if (!registrosVistos.has(clave)) {
-                  registrosVistos.add(clave);
-                  historialUnico.push(registro);
-                }
-              });
-              
-              // ✅ APLICAR FILTROS DE TIPOS DE CAMBIOS
-              let datosFiltrados = [];
-              
-              if (filtros.incluirEstados && filtros.incluirAprobaciones) {
-                datosFiltrados = historialUnico;
-              } else if (filtros.incluirEstados && !filtros.incluirAprobaciones) {
-                datosFiltrados = historialUnico.filter(registro => {
-                  const tieneEstadoAnterior = registro.ESTADO_ANTERIOR && registro.ESTADO_ANTERIOR !== '—';
-                  const tieneEstadoNuevo = registro.ESTADO_NUEVO && registro.ESTADO_NUEVO !== '—';
-                  return tieneEstadoAnterior || tieneEstadoNuevo;
-                });
-              } else if (filtros.incluirAprobaciones && !filtros.incluirEstados) {
-                datosFiltrados = historialUnico.filter(registro => {
-                  const tieneAprobacionAnterior = registro.APROBACION_ANTERIOR && registro.APROBACION_ANTERIOR !== 'Por Aprobar';
-                  const tieneAprobacionNueva = registro.APROBACION_NUEVA && registro.APROBACION_NUEVA !== 'Por Aprobar';
-                  return tieneAprobacionAnterior || tieneAprobacionNueva;
-                });
-              } else {
-                datosFiltrados = [];
-              }
-              
-              // Ordenar por fecha
-              datosFiltrados.sort((a, b) => new Date(b.FECHA_CAMBIO) - new Date(a.FECHA_CAMBIO));
-              
-              // ✅ GENERAR TÍTULO SEGÚN FILTROS
-              let tituloFiltros = '';
-              if (filtros.incluirEstados && filtros.incluirAprobaciones) {
-                tituloFiltros = 'Estados y Aprobaciones';
-              } else if (filtros.incluirEstados) {
-                tituloFiltros = 'Solo Cambios de Estado';
-              } else if (filtros.incluirAprobaciones) {
-                tituloFiltros = 'Solo Cambios de Aprobación';
-              } else {
-                tituloFiltros = 'Sin Filtros Seleccionados';
-              }
-              
-              // ✅ CONSTRUIR INFORMACIÓN DE FILTROS ADICIONALES
-              let filtrosAdicionales = [];
-              if (filtros.filtroTienda) {
-                const tiendaTexto = $('#filtroTienda option:selected').text();
-                filtrosAdicionales.push(`<span class="badge badge-info">Tienda: ${tiendaTexto}</span>`);
-              }
-              if (filtros.filtroSupervisor) {
-                const supervisorTexto = $('#filtroSupervisor option:selected').text();
-                filtrosAdicionales.push(`<span class="badge badge-warning">Supervisor: ${supervisorTexto}</span>`);
-              }
-              if (filtros.filtroPuesto) {
-                const puestoTexto = $('#filtroPuesto option:selected').text();
-                filtrosAdicionales.push(`<span class="badge badge-secondary">Puesto: ${puestoTexto}</span>`);
-              }
-              
-              const filtrosAdicionalesHTML = filtrosAdicionales.length > 0 ? 
-                `<div style="margin-top: 8px;">${filtrosAdicionales.join(' ')}</div>` : '';
-              
-              // ✅ GENERAR TIMELINE CON INFORMACIÓN MEJORADA
-              let timeline = `
-                <div style="margin-bottom: 20px; text-align: center;">
-                  <h5><i class="fas fa-clock"></i> ${tituloFiltros}</h5>
-                  <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
-                    <div style="margin-bottom: 8px;">
-                      <strong>Período:</strong> ${filtros.fechaInicial} - ${filtros.fechaFinal} | 
-                      <strong>Registros:</strong> ${datosFiltrados.length}
-                    </div>
-                    <div>
-                      <strong>Tipos:</strong> 
-                      ${filtros.incluirEstados ? '<span class="badge badge-info">Estados</span> ' : ''}
-                      ${filtros.incluirAprobaciones ? '<span class="badge badge-success">Aprobaciones</span>' : ''}
-                    </div>
-                    ${filtrosAdicionalesHTML}
-                  </div>
-                </div>
-                
-                <div style="max-height: 500px; overflow-y: auto; padding: 20px;">
-              `;
-              
-              if (datosFiltrados.length === 0) {
-                timeline += `
-                  <div style="text-align: center; padding: 50px; color: #666;">
-                    <i class="fas fa-search" style="font-size: 48px; margin-bottom: 20px;"></i>
-                    <h5>No se encontraron registros</h5>
-                    <p>Ajusta los filtros o el rango de fechas para ver resultados.</p>
-                  </div>
-                `;
-              } else {
-                datosFiltrados.forEach((evento, index) => {
-                  // Determinar tipo de evento
-                  let tipoEvento = '';
-                  let iconoEvento = '';
-                  let colorEvento = '';
-                  let descripcionEvento = '';
-                  
-                  const cambioEstado = evento.ESTADO_ANTERIOR !== evento.ESTADO_NUEVO && 
-                                      (evento.ESTADO_ANTERIOR !== '—' || evento.ESTADO_NUEVO !== '—');
-                  const cambioAprobacion = evento.APROBACION_ANTERIOR !== evento.APROBACION_NUEVA;
-                  
-                  if (filtros.incluirEstados && filtros.incluirAprobaciones) {
-                    if (cambioEstado && cambioAprobacion) {
-                      tipoEvento = 'Cambio Múltiple';
-                      iconoEvento = 'fas fa-exchange-alt';
-                      colorEvento = '#ff6b6b';
-                      descripcionEvento = `<div><strong>Estado:</strong> ${evento.ESTADO_ANTERIOR} → ${evento.ESTADO_NUEVO}</div>
-                                          <div><strong>Aprobación:</strong> ${evento.APROBACION_ANTERIOR} → ${evento.APROBACION_NUEVA}</div>`;
-                    } else if (cambioEstado) {
-                      tipoEvento = 'Cambio de Estado';
-                      iconoEvento = 'fas fa-arrow-right';
-                      colorEvento = '#4ecdc4';
-                      descripcionEvento = `<strong>Estado:</strong> ${evento.ESTADO_ANTERIOR} → ${evento.ESTADO_NUEVO}`;
-                    } else if (cambioAprobacion) {
-                      tipoEvento = 'Cambio de Aprobación';
-                      iconoEvento = 'fas fa-check-circle';
-                      colorEvento = '#45b7d1';
-                      descripcionEvento = `<strong>Aprobación:</strong> ${evento.APROBACION_ANTERIOR} → ${evento.APROBACION_NUEVA}`;
-                    } else {
-                      tipoEvento = 'Actualización';
-                      iconoEvento = 'fas fa-edit';
-                      colorEvento = '#96ceb4';
-                      descripcionEvento = 'Modificación en el registro';
-                    }
-                  } else if (filtros.incluirEstados) {
-                    tipoEvento = 'Cambio de Estado';
-                    iconoEvento = 'fas fa-arrow-right';
-                    colorEvento = '#4ecdc4';
-                    descripcionEvento = `<strong>Estado:</strong> ${evento.ESTADO_ANTERIOR} → ${evento.ESTADO_NUEVO}`;
-                  } else if (filtros.incluirAprobaciones) {
-                    tipoEvento = 'Cambio de Aprobación';
-                    iconoEvento = 'fas fa-check-circle';
-                    colorEvento = '#45b7d1';
-                    descripcionEvento = `<strong>Aprobación:</strong> ${evento.APROBACION_ANTERIOR} → ${evento.APROBACION_NUEVA}`;
-                  }
-                  
-                  timeline += `
-                    <div style="display: flex; margin-bottom: 20px; position: relative;">
-                      ${index < datosFiltrados.length - 1 ? 
-                        '<div style="position: absolute; left: 24px; top: 50px; width: 2px; height: 30px; background: #ddd;"></div>' : ''}
-                      
-                      <div style="
-                        width: 50px; height: 50px; border-radius: 50%; background: ${colorEvento}; 
-                        display: flex; align-items: center; justify-content: center; color: white;
-                        flex-shrink: 0; margin-right: 15px;">
-                        <i class="${iconoEvento}"></i>
-                      </div>
-                      
-                      <div style="
-                        flex: 1; background: white; border: 1px solid #e0e0e0; border-radius: 10px; 
-                        padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                        
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                          <h6 style="margin: 0; color: ${colorEvento};">
-                            <strong>${tipoEvento}</strong>
-                          </h6>
-                          <small style="color: #666;">
-                            <i class="fas fa-clock"></i> ${evento.FECHA_CAMBIO}
-                          </small>
-                        </div>
-                        
-                        <div style="margin-bottom: 10px;">
-                          <span class="badge badge-primary">Solicitud ${evento.ID_SOLICITUD}</span>
-                          <span class="badge badge-secondary">Tienda ${evento.NUM_TIENDA}</span>
-                          <span class="badge badge-info">${evento.PUESTO_SOLICITADO}</span>
-                          <span class="badge badge-dark">${evento.SOLICITADO_POR}</span>
-                        </div>
-                        
-                        <div style="margin-bottom: 10px;">
-                          ${descripcionEvento}
-                        </div>
-                        
-                        ${evento.COMENTARIO_NUEVO && evento.COMENTARIO_NUEVO !== '—' ? 
-                          `<div style="background: #f8f9fa; padding: 8px; border-radius: 5px; border-left: 3px solid ${colorEvento};">
-                            <small><strong>Comentario:</strong> ${evento.COMENTARIO_NUEVO}</small>
-                          </div>` : ''}
-                      </div>
-                    </div>
-                  `;
-                });
-              }
-              
-              timeline += '</div>';
-              
-            // ✅ ACTUALIZAR PARÁMETROS PARA EXPORTACIÓN (CORREGIDO)
-              const parametrosExportacion = `&fecha_inicial=${filtros.fechaInicial}&fecha_final=${filtros.fechaFinal}&incluir_aprobaciones=${filtros.incluirAprobaciones ? 1 : 0}&incluir_estados=${filtros.incluirEstados ? 1 : 0}&filtro_tienda=${encodeURIComponent(filtros.filtroTienda || '')}&filtro_supervisor=${encodeURIComponent(filtros.filtroSupervisor || '')}&filtro_puesto=${encodeURIComponent(filtros.filtroPuesto || '')}`;
-              
-              console.log('🔗 Parámetros de exportación:', parametrosExportacion);
-              
-              // Mostrar modal
-              Swal.fire({
-                title: '<i class="fas fa-history"></i> Timeline de Cambios',
-                html: timeline,
-                width: '90%',
-                showCloseButton: true,
-                confirmButtonText: '<i class="fas fa-times"></i> Cerrar',
-                footer: `
-                  <div class="d-flex justify-content-between w-100">
-                    <button id="btnExportarExcel" class="btn btn-success btn-sm">
-                      <i class="fas fa-file-excel"></i> Excel
-                    </button>
-                    <button id="btnGenerarPDF" class="btn btn-danger btn-sm">
-                      <i class="fas fa-file-pdf"></i> PDF
-                    </button>
-                  </div>
-                `,
-                didOpen: () => {
-                  document.getElementById('btnExportarExcel').onclick = () => {
-                    const urlExcel = `./gestionhumana/crudsolicitudesrh.php?action=generar_reporte_historial&formato=excel${parametrosExportacion}`;
-                    console.log('🟢 URL Excel:', urlExcel);
-                    window.open(urlExcel, '_blank');
-                  };
-                  
-                  document.getElementById('btnGenerarPDF').onclick = () => {
-                    const urlPDF = `./gestionhumana/crudsolicitudesrh.php?action=generar_reporte_historial&formato=pdf${parametrosExportacion}`;
-                    console.log('🔴 URL PDF:', urlPDF);
-                    window.open(urlPDF, '_blank');
-                  };
-                }
-              });
-            }
-
-
-                  // FUNCIÓN HISTORIAL INDIVIDUAL
-            $(document).on('click', '.btn-ver-historial', function () {
-              const idSolicitud = $(this).data('id');
-
-              if (!Number.isInteger(Number(idSolicitud))) {
-                Swal.fire('Error', 'ID de solicitud inválido.', 'error');
-                return;
-              }
-
-              $('#btnPdfIndividual').attr('href', './gestionhumana/reporte_historial_pdf.php?id=' + idSolicitud);
-              $('#modalHistorialIndividual').modal('show');
-              $('#contenidoHistorial').html('<div class="text-center">Cargando historial...</div>');
-
-              $.ajax({
-                url: './gestionhumana/crudsolicitudesrh.php?action=get_historial_individual&id=' + idSolicitud,
-                method: 'GET',
-                success: function (datos) {
-                  if (datos.length === 0) {
-                    $('#contenidoHistorial').html('<div class="text-center text-muted">No hay historial para esta solicitud.</div>');
-                    return;
-                  }
-
-                  let html = `
-                    <div class="table-responsive">
-                      <table class="table table-bordered table-hover">
-                        <thead class="thead-dark">
-                          <tr>
-                            <th>#</th>
-                            <th>Tienda</th>
-                            <th>Estado Anterior</th>
-                            <th>Estado Nuevo</th>
-                            <th>Comentario Anterior</th>
-                            <th>Comentario Nuevo</th>
-                            <th>Fecha</th>
-                            <th>Archivos</th>
-                          </tr>
-                        </thead>
-                        <tbody>`;
-
-                  datos.forEach((h, index) => {
-                    let archivos = 'Sin archivos';
-                    if (h.ARCHIVOS && Array.isArray(h.ARCHIVOS) && h.ARCHIVOS.length > 0) {
-                      archivos = `
-                        <div class="btn-group" role="group">`;
-                      h.ARCHIVOS.forEach(a => {
-                        const nombre = a.NOMBRE_ARCHIVO.split('/').pop();
-                        archivos += `
-                          <a href="./${a.NOMBRE_ARCHIVO}" target="_blank" class="btn btn-sm btn-primary mb-1">
-                            <i class="fas fa-eye"></i> Ver
-                          </a>
-                          <a href="./${a.NOMBRE_ARCHIVO}" download="${nombre}" class="btn btn-sm btn-success mb-1">
-                            <i class="fas fa-download"></i> Descargar
-                          </a>`;
-                      });
-                      archivos += `</div>`;
-                    }
-
-                    html += `<tr>
-                      <td>${index + 1}</td>
-                      <td>${h.NUM_TIENDA || '-'}</td>
-                      <td>${h.ESTADO_ANTERIOR || '-'}</td>
-                      <td>${h.ESTADO_NUEVO || '-'}</td>
-                      <td>${h.COMENTARIO_ANTERIOR || '-'}</td>
-                      <td>${h.COMENTARIO_NUEVO || '-'}</td>
-                      <td>${h.FECHA_CAMBIO || '-'}</td>
-                      <td>${archivos}</td>
-                    </tr>`;
-                  });
-
-                  html += '</tbody></table></div>';
-                  $('#contenidoHistorial').html(html);
-                },
-                error: function () {
-                  $('#contenidoHistorial').html('<div class="alert alert-danger">Error al cargar historial.</div>');
-                }
-              });
-            });
-
-
-            // FUNCION VER COMENTARIO
-            $(document).off('click', '.btn-Ver-Comentario-Rh').on('click', '.btn-Ver-Comentario-Rh', function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (chatAbierto) return;
-                    chatAbierto = true;
-                    const idHistorico = $(this).data('id');
-                    console.log("🔍 ID Histórico para chat:", idHistorico);
-                    
-                    if (!idHistorico) {
-                        console.error("No se encontró ID histórico");
-                        Swal.fire('Error', 'No se encontró el ID del histórico', 'error');
-                        return;
-                    }
-
-                    function mostrarChat(mensajes) {
-                        console.log("📝 Mostrando chat con", mensajes.length, "mensajes");
-                        
-                        let chatHtml = `
-                            <div id="chat-contenedor" style="
-                                max-height: 400px;
-                                overflow-y: auto;
-                                padding: 20px;
-                                background: #ffffff;
-                                margin-bottom: 20px;
-                            ">
-                        `;
-
-                        if (mensajes && mensajes.length > 0) {
-                            mensajes.forEach(msg => {
-                                const rol = msg.rol ? msg.rol.toLowerCase() : '';
-                                const esRRHH = rol.includes('rrhh');
-                                const remitente = esRRHH ? 'RRHH' : 'SUPERVISOR';
-
-                                if (esRRHH) {
-                                    // Mensaje de RRHH (derecha, azul)
-                                    chatHtml += `
-                                        <div style="
-                                            display: flex;
-                                            justify-content: flex-end;
-                                            margin-bottom: 15px;
-                                        ">
-                                            <div style="
-                                                max-width: 70%;
-                                                background: linear-gradient(135deg, #4285f4 0%, #1976d2 100%);
-                                                color: white;
-                                                padding: 12px 16px;
-                                                border-radius: 18px 18px 4px 18px;
-                                                box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
-                                            ">
-                                                <div style="
-                                                    font-weight: 600;
-                                                    font-size: 11px;
-                                                    text-transform: uppercase;
-                                                    letter-spacing: 0.5px;
-                                                    margin-bottom: 4px;
-                                                    opacity: 0.9;
-                                                ">${remitente}</div>
-                                                <div style="
-                                                    font-size: 14px;
-                                                    line-height: 1.4;
-                                                    margin-bottom: 6px;
-                                                ">${msg.mensaje}</div>
-                                                <div style="
-                                                    font-size: 11px;
-                                                    opacity: 0.8;
-                                                    text-align: right;
-                                                ">${msg.fecha}</div>
-                                            </div>
-                                        </div>
-                                    `;
-                                } else {
-                                    // Mensaje del supervisor (izquierda, gris)
-                                    chatHtml += `
-                                        <div style="
-                                            display: flex;
-                                            justify-content: flex-start;
-                                            margin-bottom: 15px;
-                                        ">
-                                            <div style="
-                                                max-width: 70%;
-                                                background: #f1f3f4;
-                                                color: #333;
-                                                padding: 12px 16px;
-                                                border-radius: 18px 18px 18px 4px;
-                                                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                                            ">
-                                                <div style="
-                                                    font-weight: 600;
-                                                    font-size: 11px;
-                                                    text-transform: uppercase;
-                                                    letter-spacing: 0.5px;
-                                                    margin-bottom: 4px;
-                                                    color: #666;
-                                                ">${remitente}</div>
-                                                <div style="
-                                                    font-size: 14px;
-                                                    line-height: 1.4;
-                                                    margin-bottom: 6px;
-                                                ">${msg.mensaje}</div>
-                                                <div style="
-                                                    font-size: 11px;
-                                                    color: #888;
-                                                    text-align: left;
-                                                ">${msg.fecha}</div>
-                                            </div>
-                                        </div>
-                                    `;
-                                }
-                            });
-                        } else {
-                            chatHtml += `
-                                <div style="
-                                    text-align: center;
-                                    padding: 20px;
-                                    color: #999;
-                                ">
-                                    <i class="fas fa-comment-slash" style="font-size: 48px; margin-bottom: 16px;"></i>
-                                    <p style="font-size: 16px; margin: 0;">No hay mensajes en este chat</p>
-                                </div>
-                            `;
-                        }
-
-                        chatHtml += `</div>`;
-                        chatHtml += `
-                            <div style="
-                                border-top: 1px solid #e0e0e0;
-                                padding-top: 20px;
-                            ">
-                                <textarea id="nuevoMensaje" 
-                                    placeholder="Escribe tu respuesta..." 
-                                    style="
-                                        width: 100%;
-                                        min-height: 80px;
-                                        padding: 12px 16px;
-                                        border: 1px solid #ddd;
-                                        border-radius: 12px;
-                                        font-size: 14px;
-                                        font-family: inherit;
-                                        resize: vertical;
-                                        outline: none;
-                                        transition: border-color 0.2s;
-                                    "
-                                    onfocus="this.style.borderColor='#4285f4'"
-                                    onblur="this.style.borderColor='#ddd'"
-                                ></textarea>
-                            </div>
-                        `;
-
-                        // Obtener nombre del supervisor desde la fila de la tabla
-                        const filaActual = $(`button[data-id="${idHistorico}"]`).closest('tr');
-                        const nombreGerente = filaActual.find('td:nth-child(5)').text().trim() || 'Gerente'; 
-                        
-                        Swal.fire({
-                            title: `<i class="fas fa-comments"></i> ${nombreGerente}`,
-                            html: chatHtml,
-                            width: '600px',
-                            showCancelButton: true,
-                            confirmButtonText: '<i class="fas fa-paper-plane"></i> Enviar',
-                            cancelButtonText: 'Cerrar',
-                            focusConfirm: false,
-                            allowOutsideClick: false,
-                            customClass: {
-                                popup: 'chat-modal-popup',
-                                title: 'chat-modal-title',
-                                confirmButton: 'chat-send-button',
-                                cancelButton: 'chat-cancel-button'
-                            },
-                            preConfirm: () => {
-                                const mensaje = $('#nuevoMensaje').val().trim();
-                                if (!mensaje) {
-                                    Swal.showValidationMessage('Debes escribir un mensaje');
-                                    return false;
-                                }
-                                return mensaje;
-                            },
-                            didOpen: () => {
-                                const container = document.getElementById('chat-contenedor');
-                                if (container) container.scrollTop = container.scrollHeight;
-                                
-                                // Agregar estilos CSS dinámicamente
-                                if (!document.getElementById('chat-styles')) {
-                                    const styles = document.createElement('style');
-                                    styles.id = 'chat-styles';
-                                    styles.textContent = `
-                                        .chat-modal-popup {
-                                            border-radius: 16px !important;
-                                            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
-                                        }
-                                        .chat-modal-title {
-                                            font-size: 18px !important;
-                                            font-weight: 600 !important;
-                                            color: #333 !important;
-                                        }
-                                        .chat-send-button {
-                                            background: linear-gradient(135deg, #4285f4 0%, #1976d2 100%) !important;
-                                            border: none !important;
-                                            border-radius: 8px !important;
-                                            padding: 10px 20px !important;
-                                            font-weight: 600 !important;
-                                            transition: transform 0.2s !important;
-                                        }
-                                        .chat-send-button:hover {
-                                            transform: translateY(-1px) !important;
-                                            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4) !important;
-                                        }
-                                        .chat-cancel-button {
-                                            background: #f5f5f5 !important;
-                                            color: #666 !important;
-                                            border: none !important;
-                                            border-radius: 8px !important;
-                                            padding: 10px 20px !important;
-                                            font-weight: 600 !important;
-                                        }
-                                    `;
-                                    document.head.appendChild(styles);
-                                }
-                            }
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                const nuevoMensaje = result.value;
-
-                                Swal.fire({
-                                    title: 'Enviando mensaje...',
-                                    allowOutsideClick: false,
-                                    didOpen: () => Swal.showLoading()
-                                });
-
-                                // CORREGIDO - Usar nombres fijos según el contexto de RRHH
-                                  const nombreRRHH = filaActual.find('td:nth-child(6)').text().trim() || 'RRHH'; 
-                                  const nombreGerente = 'GERENTE'; //Nombre fijo para el gerente
-                                  const esRRHH = true; // Cambiar nombre de variable y valor porque estás en el lado de RRHH
-                                  const remitente = nombreRRHH; // El remitente es RRHH
-
-                                $.ajax({
-                                    url: './gestionhumana/crudsolicitudesrh.php?action=guardar_respuesta_chat_rh',
-                                    type: 'POST',
-                                    dataType: 'json',
-                                    data: {
-                                        id_historico: idHistorico,
-                                        mensaje: nuevoMensaje,
-                                        rol: 'RRHH',
-                                        remitente: remitente
-                                    },
-                                    success: function (response) {
-                                        console.log("Respuesta del servidor:", response);
-                                        if (response && response.success) {
-                                            cargarMensajesChat(idHistorico);
-                                            actualizarBadgesSilenciosamenteRH(); 
-                                        } else {
-                                            Swal.fire('Error', response?.error || 'Error al enviar el mensaje', 'error');
-                                        }
-                                    },
-                                    error: function (xhr, status, error) {
-                                        console.error('Error AJAX:', xhr.responseText);
-                                        Swal.fire('Error', 'Error de conexión: ' + error, 'error');
-                                    }
-                                });
-                            }
-                        });
-                    }
-
-                    function cargarMensajesChat(idHistorico) {
-                        console.log("Cargando mensajes para ID:", idHistorico);
-
-                        Swal.fire({
-                            title: 'Cargando comentario...',
-                            text: 'Por favor espera un momento.',
-                            allowOutsideClick: false,
-                            showConfirmButton: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-                        $.ajax({
-                            url: './gestionhumana/crudsolicitudesrh.php?action=get_comentarios_chat_rh',
-                            type: 'POST',
-                            dataType: 'json',
-                            data: { id_historico: idHistorico },
-                            success: function (response) {
-                                console.log('Respuesta del servidor:', response);
-                                if (response && response.success) {
-                                  $.ajax({
-                                      url: './gestionhumana/crudsolicitudesrh.php?action=marcar_mensajes_leidos_rh',
-                                      type: 'POST',
-                                      data: { id_historico: idHistorico }
-                                  });
-                                    mostrarChat(response.mensajes);
-                                } else {
-                                    console.error("Error en respuesta:", response?.error);
-                                    Swal.fire('Error', response?.error || 'Error al cargar mensajes', 'error');
-                                }
-                            },
-                            error: function (xhr, status, error) {
-                                console.error('Error al cargar chat:', xhr.responseText);
-                                Swal.fire('Error', 'Error al cargar el chat: ' + error, 'error');
-                            }
-                        });
-                    }
-
-                    cargarMensajesChat(idHistorico);
-                    actualizarBadgesSilenciosamenteRH();
-                    chatAbierto = false;
-                    });
-
-                // FUNCIÓN PARA ACTUALIZAR SOLO LOS BADGES SIN RUIDO VISUAL
-                function actualizarBadgesSilenciosamenteRH() {
-                    $.ajax({
-                        url: './gestionhumana/crudsolicitudesrh.php?action=get_solicitudes',
-                        type: 'GET',
-                        dataType: 'json',
-                        success: function (data) {
-                            const nuevasSolicitudes = data.success ? data.data : data;
-                            
-                            // Actualizar solo los badges sin recargar la tabla
-                            nuevasSolicitudes.forEach(function(solicitud) {
-                                const fila = $(`tr[data-id="${solicitud.ID_SOLICITUD}"]`);
-                                if (fila.length > 0) {
-                                    const noLeidos = parseInt(solicitud.NO_LEIDOS) || 0;
-                                    const badge = fila.find('.notification-badge');
-                                    
-                                    if (noLeidos > 0) {
-                                        // Actualizar badge existente o crear uno nuevo
-                                        if (badge.length > 0) {
-                                            badge.text(noLeidos);
-                                        } else {
-                                            const btnComentario = fila.find('.btn-Ver-Comentario-Rh').parent();
-                                            btnComentario.append(`<span class="notification-badge">${noLeidos}</span>`);
-                                        }
-                                    } else {
-                                        // Remover badge si no hay mensajes no leídos
-                                        badge.fadeOut(300, function() { $(this).remove(); });
-                                    }
-                                }
-                            });
-                        }
-                    });
-                }
-
-                        // 🎯 FUNCIÓN PRINCIPAL PARA VISTA COMPLETA RRHH
-                    $(document).off('click', '.btnVerObservacionesCompletasRRHH').on('click', '.btnVerObservacionesCompletasRRHH', function(e) {
-                        e.preventDefault();
-                        e.stopImmediatePropagation();
-                        
-                        const idSolicitud = $(this).data('id');
-                        const tienda = $(this).data('tienda');
-                        const puesto = $(this).data('puesto');
-                        const supervisor = $(this).data('supervisor');
-                        
-                        console.log("🏢 Vista RRHH - Observaciones completas para solicitud:", idSolicitud);
-                        
-                        // Mostrar loading
-                        Swal.fire({
-                            title: '<i class="fas fa-spinner fa-spin"></i> Cargando información completa...',
-                            text: 'Obteniendo todas las observaciones y estadísticas',
-                            allowOutsideClick: false,
-                            showConfirmButton: false
-                        });
-                        
-                        // Obtener información completa
-                        $.ajax({
-                            url: './gestionhumana/crudsolicitudesrh.php?action=get_observaciones_completas_rrhh',
-                            type: 'GET',
-                            dataType: 'json',
-                            data: {
-                                id_solicitud: idSolicitud
-                            },
-                            success: function(response) {
-                                console.log("✅ Información completa recibida:", response);
-                                
-                                if (response.success) {
-                                    mostrarVistaCompletaRRHH(response);
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: '<i class="fas fa-exclamation-triangle"></i> Error',
-                                        text: response.error || 'No se pudo obtener la información completa',
-                                        confirmButtonText: 'Entendido'
-                                    });
-                                }
-                            },
-                            error: function(xhr, status, error) {
-                                console.error('❌ Error obteniendo información completa:', {
-                                    status: xhr.status,
-                                    responseText: xhr.responseText,
-                                    error: error
-                                });
-                                
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: '<i class="fas fa-wifi"></i> Error de Conexión',
-                                    text: 'No se pudo conectar al servidor para obtener la información',
-                                    confirmButtonText: 'Entendido'
-                                });
-                            }
-                        });
-                    });
-
-                    // 🎨 FUNCIÓN PARA MOSTRAR VISTA COMPLETA RRHH
-                    function mostrarVistaCompletaRRHH(data) {
-                        const { solicitud, observaciones, estadisticas, ciclos } = data;
-                        
-                        // 🎨 CONSTRUIR MODAL AVANZADO
-                        const modalHtml = `
-                            <div style="text-align: left; max-width: 100%;">
-                                <!-- Header RRHH -->
-                                <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 25px; border-radius: 15px; margin-bottom: 25px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <div>
-                                            <h4 style="margin: 0 0 10px 0; font-weight: 700;">
-                                                <i class="fas fa-building mr-2"></i>Vista RRHH - Observaciones Completas
-                                            </h4>
-                                            <div style="font-size: 16px; opacity: 0.9;">
-                                                Solicitud #${solicitud.ID_SOLICITUD} - Tienda ${solicitud.NUM_TIENDA} - ${solicitud.PUESTO_SOLICITADO}
-                                            </div>
-                                        </div>
-                                        <div style="text-align: right;">
-                                            <div style="background: rgba(255,255,255,0.2); padding: 12px; border-radius: 10px;">
-                                                <div style="font-size: 14px; opacity: 0.9;">Supervisor</div>
-                                                <div style="font-size: 16px; font-weight: 600;">${solicitud.SOLICITADO_POR}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Estadísticas Ejecutivas -->
-                                <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 15px; padding: 25px; margin-bottom: 25px;">
-                                    <h5 style="margin: 0 0 20px 0; color: #495057; font-weight: 600;">
-                                        <i class="fas fa-chart-bar mr-2"></i>Resumen Ejecutivo
-                                    </h5>
-                                    <div class="row">
-                                        <div class="col-md-3 text-center">
-                                            <div style="background: white; padding: 20px; border-radius: 12px; border-left: 4px solid #007bff;">
-                                                <div style="font-size: 32px; font-weight: 700; color: #007bff;">${estadisticas.total_observaciones}</div>
-                                                <div style="font-size: 14px; color: #6c757d; font-weight: 600;">Total Evaluaciones</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 text-center">
-                                            <div style="background: white; padding: 20px; border-radius: 12px; border-left: 4px solid #6610f2;">
-                                                <div style="font-size: 32px; font-weight: 700; color: #6610f2;">${estadisticas.total_ciclos}</div>
-                                                <div style="font-size: 14px; color: #6c757d; font-weight: 600;">Ciclos de Prueba</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 text-center">
-                                            <div style="background: white; padding: 20px; border-radius: 12px; border-left: 4px solid #28a745;">
-                                                <div style="font-size: 32px; font-weight: 700; color: #28a745;">${estadisticas.recomendados}</div>
-                                                <div style="font-size: 14px; color: #6c757d; font-weight: 600;">Recomendados</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 text-center">
-                                            <div style="background: white; padding: 20px; border-radius: 12px; border-left: 4px solid #dc3545;">
-                                                <div style="font-size: 32px; font-weight: 700; color: #dc3545;">${estadisticas.no_recomendados}</div>
-                                                <div style="font-size: 14px; color: #6c757d; font-weight: 600;">No Recomendados</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div style="margin-top: 20px; text-align: center;">
-                                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; display: inline-block;">
-                                            <i class="fas fa-percentage mr-2"></i>
-                                            <strong>Tasa de Recomendación: ${estadisticas.porcentaje_recomendado}%</strong>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Lista de Observaciones por Ciclo -->
-                                <div style="background: white; border: 1px solid #dee2e6; border-radius: 15px; padding: 25px; margin-bottom: 25px;">
-                                    <h5 style="margin: 0 0 20px 0; color: #495057; font-weight: 600;">
-                                        <i class="fas fa-list-alt mr-2"></i>Observaciones Detalladas
-                                    </h5>
-                                    <div id="observaciones-tabs">
-                                        ${generarTabsObservaciones(observaciones)}
-                                    </div>
-                                </div>
-
-                                <!-- Acciones RRHH -->
-                                <div style="background: #e3f2fd; border: 1px solid #bbdefb; border-radius: 15px; padding: 25px;">
-                                    <h5 style="margin: 0 0 20px 0; color: #1976d2; font-weight: 600;">
-                                        <i class="fas fa-cogs mr-2"></i>Acciones de RRHH
-                                    </h5>
-                                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                                        <button class="btn btn-danger btn-lg" onclick="generarReportePDF(${solicitud.ID_SOLICITUD})">
-                                            <i class="fas fa-file-pdf mr-2"></i>Generar Reporte PDF
-                                        </button>
-                                        <button class="btn btn-warning btn-lg" onclick="enviarAvalGerencia(${solicitud.ID_SOLICITUD})">
-                                            <i class="fas fa-paper-plane mr-2"></i>Enviar a Aval Gerencia
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        /*<button class="btn btn-info btn-lg" onclick="exportarExcel(${solicitud.ID_SOLICITUD})">
-                                            <i class="fas fa-file-excel mr-2"></i>Exportar Excel
-                                        </button>*/
-                        
-                        // Mostrar modal
-                        Swal.fire({
-                            title: false,
-                            html: modalHtml,
-                            width: '1200px',
-                            showCloseButton: true,
-                            showConfirmButton: true,
-                            confirmButtonText: '<i class="fas fa-check"></i> Cerrar',
-                            confirmButtonColor: '#6c757d',
-                            customClass: {
-                                popup: 'rrhh-view-modal'
-                            },
-                            didOpen: () => {
-                                // Agregar estilos para el modal RRHH
-                                if (!document.getElementById('rrhh-view-styles')) {
-                                    const styles = document.createElement('style');
-                                    styles.id = 'rrhh-view-styles';
-                                    styles.textContent = `
-                                        .rrhh-view-modal {
-                                            border-radius: 20px !important;
-                                            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2) !important;
-                                        }
-                                        .rrhh-view-modal .swal2-html-container {
-                                            max-height: 75vh !important;
-                                            overflow-y: auto !important;
-                                        }
-                                        .obs-tab {
-                                            margin-bottom: 20px;
-                                            border: 1px solid #dee2e6;
-                                            border-radius: 10px;
-                                            overflow: hidden;
-                                        }
-                                        .obs-tab-header {
-                                            background: #f8f9fa;
-                                            padding: 15px;
-                                            cursor: pointer;
-                                            transition: all 0.3s;
-                                        }
-                                        .obs-tab-header:hover {
-                                            background: #e9ecef;
-                                        }
-                                        .obs-tab-content {
-                                            padding: 20px;
-                                            display: none;
-                                        }
-                                        .obs-tab.active .obs-tab-content {
-                                            display: block;
-                                        }
-                                    `;
-                                    document.head.appendChild(styles);
-                                }
-                                
-                                // Activar tabs
-                                $('.obs-tab-header').click(function() {
-                                    $('.obs-tab').removeClass('active');
-                                    $(this).parent().addClass('active');
-                                });
-                                
-                                // Activar primer tab
-                                $('.obs-tab').first().addClass('active');
-                            }
-                        });
-                    }
-
-                    // 🎨 FUNCIÓN PARA GENERAR TABS DE OBSERVACIONES
-                    function generarTabsObservaciones(observaciones) {
-                        if (!observaciones || observaciones.length === 0) {
-                            return '<div class="text-center py-4"><i class="fas fa-info-circle"></i> No hay observaciones disponibles</div>';
-                        }
-                        
-                        let tabsHtml = '';
-                        
-                        observaciones.forEach((obs, index) => {
-                            const cicloNum = index + 1;
-                            const recomendacionColor = obs.RECOMENDACION_SUP === 'RECOMENDADO' ? '#28a745' : '#dc3545';
-                            const recomendacionIcon = obs.RECOMENDACION_SUP === 'RECOMENDADO' ? 'thumbs-up' : 'thumbs-down';
-                            
-                            tabsHtml += `
-                                <div class="obs-tab">
-                                    <div class="obs-tab-header">
-                                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                                            <div>
-                                                <strong><i class="fas fa-calendar mr-2"></i>Ciclo ${cicloNum} - ${obs.FECHA_DIA_PRUEBA}</strong>
-                                                <span style="margin-left: 15px; color: #6c757d;">${obs.CANDIDATO_NOMBRE}</span>
-                                            </div>
-                                            <div style="background: ${recomendacionColor}; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: 600;">
-                                                <i class="fas fa-${recomendacionIcon} mr-1"></i> ${obs.RECOMENDACION_SUP}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="obs-tab-content">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <h6><i class="fas fa-user mr-2"></i>Información del Candidato</h6>
-                                                <table class="table table-sm">
-                                                    <tr><td><strong>Nombre:</strong></td><td>${obs.CANDIDATO_NOMBRE}</td></tr>
-                                                    <tr><td><strong>Documento:</strong></td><td>${obs.CANDIDATO_DOCUMENTO || 'No especificado'}</td></tr>
-                                                    <tr><td><strong>Puesto:</strong></td><td>${obs.PUESTO_EVALUADO}</td></tr>
-                                                    <tr><td><strong>Horario:</strong></td><td>${obs.HORA_INICIO} - ${obs.HORA_FIN}</td></tr>
-                                                </table>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <h6><i class="fas fa-chart-line mr-2"></i>Evaluación</h6>
-                                                <table class="table table-sm">
-                                                    <tr><td><strong>Puntualidad:</strong></td><td><span class="badge badge-info">${obs.PUNTUALIDAD}</span></td></tr>
-                                                    <tr><td><strong>Actitud:</strong></td><td><span class="badge badge-success">${obs.ACTITUD}</span></td></tr>
-                                                    <tr><td><strong>Conocimientos:</strong></td><td><span class="badge badge-warning">${obs.CONOCIMIENTOS}</span></td></tr>
-                                                    <tr><td><strong>Desempeño:</strong></td><td><span class="badge badge-primary">${obs.DESEMPENO_GENERAL || '-'}</span></td></tr>
-                                                </table>
-                                            </div>
-                                        </div>
-                                        <div class="row mt-3">
-                                            <div class="col-12">
-                                                <h6><i class="fas fa-edit mr-2"></i>Observaciones Detalladas</h6>
-                                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; max-height: 150px; overflow-y: auto;">
-                                                    <div style="white-space: pre-wrap; font-size: 14px;">${obs.OBSERVACIONES_DET || 'Sin observaciones detalladas'}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row mt-3">
-                                            <div class="col-12">
-                                                <div style="background: ${recomendacionColor}; color: white; padding: 15px; border-radius: 8px; text-align: center;">
-                                                    <i class="fas fa-${recomendacionIcon} mr-2"></i>
-                                                    <strong>RECOMENDACIÓN: ${obs.RECOMENDACION_SUP}</strong>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="text-right mt-2">
-                                            <small class="text-muted">
-                                                <i class="fas fa-user mr-1"></i>${obs.SUPERVISOR_NOMBRE} | 
-                                                <i class="fas fa-clock mr-1"></i>${obs.FECHA_CREACION}
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        
-                        return tabsHtml;
-                    }
-
-                    //BOTON PARA VER RESULTADO DEL AVAL 
-                    $(document).on('click', '.btnVerResultadoAval', function() {
-                    const idSolicitud = $(this).data('id');
-                    const tienda = $(this).data('tienda');
-                    const puesto = $(this).data('puesto');
-                    const supervisor = $(this).data('supervisor');
-                    const razon = $(this).data('razon');
-                    
-                    cargarResultadoAvalRH(idSolicitud, tienda, puesto, supervisor, razon);
-                  });
-
-                  $(document).on('click', '.btnVerResumenProcesamiento', function() {
+            // Event listener para ver resumen de aprobación gerencial (RH)
+    $(document).on('click', '.btnVerResumenProcesamiento', function() {
     const id = $(this).data('id');
     const solicitudId = $(this).data('solicitud-id') || id;
     
@@ -4443,10 +2470,1227 @@ ${(() => {
         }
     });
 });
-              // CARGAR SOLICITUDES AL INICIO
-              cargarSolicitudes();
-    });
 
+      // EVENTOS DE PAGINACIÓN
+      $(document).on('click', '.pagination .page-link', function(e) {
+        e.preventDefault();
+        const newPage = parseInt($(this).data('page'));
+        if (newPage && newPage !== currentPage && newPage >= 1 && newPage <= Math.ceil(solicitudes.length / rowsPerPage)) {
+          currentPage = newPage;
+          renderizarTabla();
+          renderizarPaginacion();
+        }
+      });
+
+      // FUNCIÓN PARA FILTROS
+      function aplicarFiltros() {
+        const searchTerm = $('#searchInput').val().toLowerCase();
+        const tiendaFilter = $('#searchTienda').val().toLowerCase();
+
+        solicitudes = allSolicitudes.filter(function(solicitud) {
+          const matchesSearch = !searchTerm || 
+            (solicitud.PUESTO && solicitud.PUESTO.toLowerCase().includes(searchTerm)) ||
+            (solicitud.SUPERVISOR && solicitud.SUPERVISOR.toLowerCase().includes(searchTerm)) ||
+            (solicitud.ESTADO && solicitud.ESTADO.toLowerCase().includes(searchTerm));
+
+          const matchesTienda = !tiendaFilter || 
+            (solicitud.TIENDA && solicitud.TIENDA.toLowerCase().includes(tiendaFilter));
+
+          return matchesSearch && matchesTienda;
+        });
+
+        currentPage = 1;
+        renderizarTabla();
+        renderizarPaginacion();
+
+        if (solicitudes.length === 0) {
+          $('#tblSolicitudes').hide();
+          $('#empty-state').show();
+        } else {
+          $('#tblSolicitudes').show();
+          $('#empty-state').hide();
+        }
+      }
+
+      // EVENTOS DE FILTROS
+      $('#searchInput, #searchTienda').on('keyup', function() {
+        aplicarFiltros();
+        filtrarPorPestana();
+      });
+
+      // FUNCIÓN PARA CONTADOR DE FILAS
+      function updateRowCounter() {
+        const total = solicitudes.length;
+        const start = (currentPage - 1) * rowsPerPage + 1;
+        const end = Math.min(currentPage * rowsPerPage, total);
+        
+        // Puedes agregar un contador si lo necesitas
+        console.log(`Mostrando ${start}-${end} de ${total} solicitudes`);
+      }
+
+      // FUNCIONES GLOBALES PARA LOS BOTONES
+      window.abrirModalCambioEstado = function(idSolicitud) {
+        console.log('Abriendo modal para cambiar estado de solicitud:', idSolicitud);
+        $('#modalCambiarEstado').modal('show');
+      };
+
+      window.verHistorialSolicitud = function(idSolicitud) {
+        console.log('Viendo historial de solicitud:', idSolicitud);
+        $('#modalHistorialIndividual').modal('show');
+      };
+
+      // EVENTOS DEL MODAL DE CAMBIO DE ESTADO
+      $('#nuevoEstado').on('change', function() {
+        const estado = $(this).val();
+        if (estado === 'Candidatos Enviados') {
+          $('#seccionCandidatos').show();
+        } else {
+          $('#seccionCandidatos').hide();
+        }
+      });
+
+      $('#btnGenerarFormularios').on('click', function() {
+        const cantidad = parseInt($('#cantidadCandidatos').val());
+        if (cantidad) {
+          generarFormulariosCandidatos(cantidad);
+        } else {
+          Swal.fire('Error', 'Seleccione la cantidad de candidatos', 'error');
+        }
+      });
+
+      // FUNCIÓN PARA GENERAR FORMULARIOS DE CANDIDATOS
+      function generarFormulariosCandidatos(cantidad) {
+        let formulariosHTML = '';
+        
+        for (let i = 1; i <= cantidad; i++) {
+          formulariosHTML += `
+            <div class="card mb-3">
+              <div class="card-header bg-success text-white">
+                <h6 class="mb-0">Candidato ${i}</h6>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <label class="font-weight-bold">Nombre <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control candidato-nombre" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="font-weight-bold">Apellidos <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control candidato-apellidos" required>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-md-6">
+                    <label>Documento (opcional)</label>
+                    <input type="text" class="form-control candidato-documento">
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        
+        $('#formulariosCandidatos').html(formulariosHTML);
+      }
+
+      //====================================================================
+      // CHAT EMERGENTE 
+      //====================================================================
+           $(document).off('click', '.btn-Ver-Comentario-Rh').on('click', '.btn-Ver-Comentario-Rh', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (chatAbierto) return;
+                    chatAbierto = true;
+                    const idHistorico = $(this).data('id');
+                    console.log("🔍 ID Histórico para chat:", idHistorico);
+                    
+                    if (!idHistorico) {
+                        console.error("No se encontró ID histórico");
+                        Swal.fire('Error', 'No se encontró el ID del histórico', 'error');
+                        return;
+                    }
+
+                    function mostrarChat(mensajes) {
+                        console.log("📝 Mostrando chat con", mensajes.length, "mensajes");
+                        
+                        let chatHtml = `
+                            <div id="chat-contenedor" style="
+                                max-height: 400px;
+                                overflow-y: auto;
+                                padding: 20px;
+                                background: #ffffff;
+                                margin-bottom: 20px;
+                            ">
+                        `;
+
+                        if (mensajes && mensajes.length > 0) {
+                            mensajes.forEach(msg => {
+                                const rol = msg.rol ? msg.rol.toLowerCase() : '';
+                                const esRRHH = rol.includes('rrhh');
+                                const remitente = esRRHH ? 'RRHH' : 'SUPERVISOR';
+
+                                if (esRRHH) {
+                                    // Mensaje de RRHH (derecha, azul)
+                                    chatHtml += `
+                                        <div style="
+                                            display: flex;
+                                            justify-content: flex-end;
+                                            margin-bottom: 15px;
+                                        ">
+                                            <div style="
+                                                max-width: 70%;
+                                                background: linear-gradient(135deg, #4285f4 0%, #1976d2 100%);
+                                                color: white;
+                                                padding: 12px 16px;
+                                                border-radius: 18px 18px 4px 18px;
+                                                box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
+                                            ">
+                                                <div style="
+                                                    font-weight: 600;
+                                                    font-size: 11px;
+                                                    text-transform: uppercase;
+                                                    letter-spacing: 0.5px;
+                                                    margin-bottom: 4px;
+                                                    opacity: 0.9;
+                                                ">${remitente}</div>
+                                                <div style="
+                                                    font-size: 14px;
+                                                    line-height: 1.4;
+                                                    margin-bottom: 6px;
+                                                ">${msg.mensaje}</div>
+                                                <div style="
+                                                    font-size: 11px;
+                                                    opacity: 0.8;
+                                                    text-align: right;
+                                                ">${msg.fecha}</div>
+                                            </div>
+                                        </div>
+                                    `;
+                                } else {
+                                    // Mensaje del supervisor (izquierda, gris)
+                                    chatHtml += `
+                                        <div style="
+                                            display: flex;
+                                            justify-content: flex-start;
+                                            margin-bottom: 15px;
+                                        ">
+                                            <div style="
+                                                max-width: 70%;
+                                                background: #d7d7f3ff;
+                                                color: #0e0d0dff;
+                                                padding: 12px 16px;
+                                                border-radius: 18px 18px 18px 4px;
+                                                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                                            ">
+                                                <div style="
+                                                    font-weight: 600;
+                                                    font-size: 11px;
+                                                    text-transform: uppercase;
+                                                    letter-spacing: 0.5px;
+                                                    margin-bottom: 4px;
+                                                    color: #050505ff;
+                                                ">${remitente}</div>
+                                                <div style="
+                                                    font-size: 14px;
+                                                    line-height: 1.4;
+                                                    margin-bottom: 6px;
+                                                ">${msg.mensaje}</div>
+                                                <div style="
+                                                    font-size: 11px;
+                                                    color: #0e0d0dff;
+                                                    text-align: left;
+                                                ">${msg.fecha}</div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+                            });
+                        } else {
+                            chatHtml += `
+                                <div style="
+                                    text-align: center;
+                                    padding: 20px;
+                                    color: #999;
+                                ">
+                                    <i class="fas fa-comment-slash" style="font-size: 48px; margin-bottom: 16px;"></i>
+                                    <p style="font-size: 16px; margin: 0;">No hay mensajes en este chat</p>
+                                </div>
+                            `;
+                        }
+
+                        chatHtml += `</div>`;
+                        chatHtml += `
+                            <div style="
+                                border-top: 1px solid #e0e0e0;
+                                padding-top: 20px;
+                            ">
+                                <textarea id="nuevoMensaje" 
+                                    placeholder="Escribe tu respuesta..." 
+                                    style="
+                                        width: 100%;
+                                        min-height: 80px;
+                                        padding: 12px 16px;
+                                        border: 1px solid #ddd;
+                                        border-radius: 12px;
+                                        font-size: 14px;
+                                        font-family: inherit;
+                                        resize: vertical;
+                                        outline: none;
+                                        transition: border-color 0.2s;
+                                    "
+                                    onfocus="this.style.borderColor='#4285f4'"
+                                    onblur="this.style.borderColor='#ddd'"
+                                ></textarea>
+                            </div>
+                        `;
+
+                        // Obtener nombre del supervisor desde la fila de la tabla
+                        const filaActual = $(`button[data-id="${idHistorico}"]`).closest('tr');
+                        const nombreSupervisor = filaActual.find('td:nth-child(4)').text().trim() || 'Supervisor'; 
+                        
+                        Swal.fire({
+                            title: `<i class="fas fa-comments"></i> ${nombreSupervisor}`,
+                            html: chatHtml,
+                            width: '600px',
+                            showCancelButton: true,
+                            confirmButtonText: '<i class="fas fa-paper-plane"></i> Enviar',
+                            cancelButtonText: 'Cerrar',
+                            focusConfirm: false,
+                            allowOutsideClick: false,
+                            customClass: {
+                                popup: 'chat-modal-popup',
+                                title: 'chat-modal-title',
+                                confirmButton: 'chat-send-button',
+                                cancelButton: 'chat-cancel-button'
+                            },
+                            preConfirm: () => {
+                                const mensaje = $('#nuevoMensaje').val().trim();
+                                if (!mensaje) {
+                                    Swal.showValidationMessage('Debes escribir un mensaje');
+                                    return false;
+                                }
+                                return mensaje;
+                            },
+                            didOpen: () => {
+                                const container = document.getElementById('chat-contenedor');
+                                if (container) container.scrollTop = container.scrollHeight;
+                                
+                                // Agregar estilos CSS dinámicamente
+                                if (!document.getElementById('chat-styles')) {
+                                    const styles = document.createElement('style');
+                                    styles.id = 'chat-styles';
+                                    styles.textContent = `
+                                        .chat-modal-popup {
+                                            border-radius: 16px !important;
+                                            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+                                        }
+                                        .chat-modal-title {
+                                            font-size: 18px !important;
+                                            font-weight: 600 !important;
+                                            color: #333 !important;
+                                        }
+                                        .chat-send-button {
+                                            background: linear-gradient(135deg, #4285f4 0%, #1976d2 100%) !important;
+                                            border: none !important;
+                                            border-radius: 8px !important;
+                                            padding: 10px 20px !important;
+                                            font-weight: 600 !important;
+                                            transition: transform 0.2s !important;
+                                        }
+                                        .chat-send-button:hover {
+                                            transform: translateY(-1px) !important;
+                                            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4) !important;
+                                        }
+                                        .chat-cancel-button {
+                                            background: #f5f5f5 !important;
+                                            color: #666 !important;
+                                            border: none !important;
+                                            border-radius: 8px !important;
+                                            padding: 10px 20px !important;
+                                            font-weight: 600 !important;
+                                        }
+                                    `;
+                                    document.head.appendChild(styles);
+                                }
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                const nuevoMensaje = result.value;
+
+                                Swal.fire({
+                                    title: 'Enviando mensaje...',
+                                    allowOutsideClick: false,
+                                    didOpen: () => Swal.showLoading()
+                                });
+
+                                // CORREGIDO - Usar nombres fijos según el contexto de RRHH
+                                  const nombreRRHH = filaActual.find('td:nth-child(6)').text().trim() || 'RRHH'; 
+                                  const nombreGerente = 'GERENTE'; //Nombre fijo para el gerente
+                                  const esRRHH = true; // Cambiar nombre de variable y valor porque estás en el lado de RRHH
+                                  const remitente = nombreRRHH; // El remitente es RRHH
+
+                                $.ajax({
+                                    url: './gestionhumana/crudsolicitudesrh.php?action=guardar_respuesta_chat_rh',
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    data: {
+                                        id_historico: idHistorico,
+                                        mensaje: nuevoMensaje,
+                                        rol: 'RRHH',
+                                        remitente: remitente
+                                    },
+                                    success: function (response) {
+                                        console.log("Respuesta del servidor:", response);
+                                        if (response && response.success) {
+                                            cargarMensajesChat(idHistorico);
+                                            actualizarBadgesSilenciosamenteRH(); 
+                                        } else {
+                                            Swal.fire('Error', response?.error || 'Error al enviar el mensaje', 'error');
+                                        }
+                                    },
+                                    error: function (xhr, status, error) {
+                                        console.error('Error AJAX:', xhr.responseText);
+                                        Swal.fire('Error', 'Error de conexión: ' + error, 'error');
+                                    }
+                                });
+                            }
+                        });
+                    }
+
+                    function cargarMensajesChat(idHistorico) {
+                        console.log("Cargando mensajes para ID:", idHistorico);
+
+                        Swal.fire({
+                            title: 'Cargando comentario...',
+                            text: 'Por favor espera un momento.',
+                            allowOutsideClick: false,
+                            showConfirmButton: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                        $.ajax({
+                            url: './gestionhumana/crudsolicitudesrh.php?action=get_comentarios_chat_rh',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: { id_historico: idHistorico },
+                            success: function (response) {
+                                console.log('Respuesta del servidor:', response);
+                                if (response && response.success) {
+                                  $.ajax({
+                                      url: './gestionhumana/crudsolicitudesrh.php?action=marcar_mensajes_leidos_rh',
+                                      type: 'POST',
+                                      data: { id_historico: idHistorico }
+                                  });
+                                    mostrarChat(response.mensajes);
+                                } else {
+                                    console.error("Error en respuesta:", response?.error);
+                                    Swal.fire('Error', response?.error || 'Error al cargar mensajes', 'error');
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('Error al cargar chat:', xhr.responseText);
+                                Swal.fire('Error', 'Error al cargar el chat: ' + error, 'error');
+                            }
+                        });
+                    }
+
+                    cargarMensajesChat(idHistorico);
+                    actualizarBadgesSilenciosamenteRH();
+                    chatAbierto = false;
+                    });
+
+                // FUNCIÓN PARA ACTUALIZAR SOLO LOS BADGES SIN RUIDO VISUAL
+                function actualizarBadgesSilenciosamenteRH() {
+                    $.ajax({
+                        url: './gestionhumana/crudsolicitudesrh.php?action=get_solicitudes',
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function (data) {
+                            const nuevasSolicitudes = data.success ? data.data : data;
+                            
+                            // Actualizar solo los badges sin recargar la tabla
+                            nuevasSolicitudes.forEach(function(solicitud) {
+                                const fila = $(`tr[data-id="${solicitud.ID_SOLICITUD}"]`);
+                                if (fila.length > 0) {
+                                    const noLeidos = parseInt(solicitud.NO_LEIDOS) || 0;
+                                    const badge = fila.find('.notification-badge');
+                                    
+                                    if (noLeidos > 0) {
+                                        // Actualizar badge existente o crear uno nuevo
+                                        if (badge.length > 0) {
+                                            badge.text(noLeidos);
+                                        } else {
+                                            const btnComentario = fila.find('.btn-Ver-Comentario-Rh').parent();
+                                            btnComentario.append(`<span class="notification-badge">${noLeidos}</span>`);
+                                        }
+                                    } else {
+                                        // Remover badge si no hay mensajes no leídos
+                                        badge.fadeOut(300, function() { $(this).remove(); });
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+// ===========================================================================================================================================
+//  FIN DE COMENTARIO EMERGENTE 
+// ===========================================================================================================================================
+// AGREGADO - Función para cerrar modal
+function cerrarModal() {
+  $('#modalCambiarEstado').removeClass('show').css('display', 'none');
+  $('body').removeClass('modal-open').css('padding-right', '');
+  $('.modal-backdrop').remove();
+}
+
+// AGREGADO - Cerrar con X
+$('#modalCambiarEstado .close').on('click', function() {
+  cerrarModal();
+});
+
+// AGREGADO - Cerrar con botón Cancelar
+$('#modalCambiarEstado .btn-secondary').on('click', function() {
+  cerrarModal();
+});      
+
+// EVENTOS DE GUARDAR CAMBIO DE ESTADO
+      $('#btnGuardarCambioEstado').on('click', function() {
+        const nuevoEstado = $('#nuevoEstado').val();
+        const comentario = $('#comentarioCambio').val();
+
+        if (!nuevoEstado) {
+          Swal.fire('Error', 'Debe seleccionar un nuevo estado', 'error');
+          return;
+        }
+
+        // Validar candidatos si es necesario
+        if (nuevoEstado === 'Candidatos Enviados') {
+          const candidatos = [];
+          let errores = [];
+
+          $('.candidato-nombre').each(function(index) {
+            const nombre = $(this).val().trim();
+            const apellidos = $(`.candidato-apellidos:eq(${index})`).val().trim();
+            const documento = $(`.candidato-documento:eq(${index})`).val().trim();
+
+            if (!nombre) errores.push(`Candidato ${index + 1}: Nombre obligatorio`);
+            if (!apellidos) errores.push(`Candidato ${index + 1}: Apellidos obligatorios`);
+
+            if (nombre && apellidos) {
+              candidatos.push({
+                nombre: nombre,
+                apellidos: apellidos,
+                documento: documento
+              });
+            }
+          });
+
+          if (errores.length > 0) {
+            Swal.fire('Errores de validación', errores.join('\n'), 'error');
+            return;
+          }
+
+          if (candidatos.length === 0) {
+            Swal.fire('Error', 'Debe registrar al menos un candidato', 'error');
+            return;
+          }
+        }
+
+        // Aquí procesarías el cambio de estado
+        Swal.fire('Éxito', 'Estado actualizado correctamente', 'success').then(() => {
+          cerrarModal();
+          // Limpiar formulario para próxima vez
+          $('#nuevoEstado').val('');
+          $('#comentarioCambio').val('');
+          $('#alertaCandidatosListos').remove();
+
+          // Restaurar botón a estado normal
+          const btnGuardar = $('#btnGuardarCambioEstado');
+          btnGuardar.removeClass('btn-success btn-lg').addClass('btn-primary');
+          btnGuardar.html('Guardar Cambios');
+          cargarSolicitudes(); // Recargar datos de las solicitudes con su actualizacion de estado
+        });
+      });
+
+      // EVENTO PARA CHECKBOX SELECT ALL
+      $('#selectAll').on('change', function() {
+        $('.row-checkbox').prop('checked', $(this).prop('checked'));
+      });
+
+      // CARGAR DATOS AL INICIAR
+      cargarSolicitudes();
+
+      // EVENTO PARA HISTORIAL GENERAL
+      // ==================================================================================
+      // EVENT LISTENER: BOTÓN GENERAR REPORTE DE SOLICITUDES HISTORIAL GENERAL E INDIVIDUAL
+      // ==================================================================================
+      $(document).off('click', '.btnVerHistorialRh').on('click', '.btnVerHistorialRh', function() {
+          
+          // Abrir modal de configuración
+          Swal.fire({
+              title: '<i class="fas fa-file-alt"></i> Generar Reporte de Solicitudes',
+              html: `
+                  <div style="text-align: left;">
+                      <!-- Header con gradiente -->
+                      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                          <h6 style="margin: 0; color: white;">
+                              <i class="fas fa-cog"></i> Configuración del Reporte
+                          </h6>
+                          <small>Seleccione el rango de fechas y filtros adicionales para generar el historial</small>
+                      </div>
+                      
+                      <!-- Fechas -->
+                      <div class="row mb-3">
+                          <div class="col-md-6">
+                              <label class="font-weight-bold"><i class="fas fa-calendar"></i> Fecha Inicial:</label>
+                              <input type="date" id="fechaInicial" class="form-control">
+                          </div>
+                          <div class="col-md-6">
+                              <label class="font-weight-bold"><i class="fas fa-calendar"></i> Fecha Final:</label>
+                              <input type="date" id="fechaFinal" class="form-control">
+                          </div>
+                      </div>
+
+                      <!-- Filtros Rápidos -->
+                      <div class="mb-3">
+                          <label class="font-weight-bold"><i class="fas fa-filter"></i> Filtros Rápidos:</label>
+                          <div class="btn-group btn-group-sm w-100" role="group">
+                              <button type="button" class="btn btn-outline-primary btn-filtro-rapido" data-dias="7">Últimos 7 días</button>
+                              <button type="button" class="btn btn-outline-primary btn-filtro-rapido active" data-dias="30">Último mes</button>
+                              <button type="button" class="btn btn-outline-primary btn-filtro-rapido" data-dias="90">Últimos 3 meses</button>
+                          </div>
+                      </div>
+
+                      <hr>
+
+                      <!-- Info sobre filtros -->
+                      <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff; margin-bottom: 15px;">
+                          <h6 style="color: #004085; margin-bottom: 10px;">
+                              <i class="fas fa-info-circle"></i> Filtros Adicionales
+                          </h6>
+                          <small style="color: #004085;">
+                              <strong>Sin filtros:</strong> Historial GENERAL (todas las solicitudes)<br>
+                              <strong>Con filtros:</strong> Historial INDIVIDUAL (solicitud específica)
+                          </small>
+                      </div>
+
+                      <!-- Filtros Adicionales -->
+                      <div class="row mb-3">
+                          <div class="col-md-4">
+                              <label class="font-weight-bold"><i class="fas fa-store"></i> Tienda:</label>
+                              <select id="filtroTienda" class="form-control">
+                                  <option value="">Todas las Tiendas</option>
+                              </select>
+                          </div>
+                          <div class="col-md-4">
+                              <label class="font-weight-bold"><i class="fas fa-user-tie"></i> Supervisor:</label>
+                              <select id="filtroSupervisor" class="form-control">
+                                  <option value="">Todos los Supervisores</option>
+                              </select>
+                          </div>
+                          <div class="col-md-4">
+                              <label class="font-weight-bold"><i class="fas fa-briefcase"></i> Puesto:</label>
+                              <select id="filtroPuesto" class="form-control">
+                                  <option value="">Todos los Puestos</option>
+                              </select>
+                          </div>
+                      </div>
+                  </div>
+              `,
+              width: '900px',
+              showCancelButton: true,
+              confirmButtonText: '<i class="fas fa-search"></i> Generar Reporte',
+              cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+              confirmButtonColor: '#667eea',
+              cancelButtonColor: '#6c757d',
+              preConfirm: () => {
+                  const fechaInicial = document.getElementById('fechaInicial').value;
+                  const fechaFinal = document.getElementById('fechaFinal').value;
+                  
+                  if (!fechaInicial || !fechaFinal) {
+                      Swal.showValidationMessage('Debe seleccionar ambas fechas');
+                      return false;
+                  }
+                  
+                  return {
+                      fechaInicial: fechaInicial,
+                      fechaFinal: fechaFinal,
+                      filtroTienda: document.getElementById('filtroTienda').value,
+                      filtroSupervisor: document.getElementById('filtroSupervisor').value,
+                      filtroPuesto: document.getElementById('filtroPuesto').value
+                  };
+              },
+              didOpen: () => {
+                  // Cargar opciones de filtros
+                  cargarOpcionesFiltrosHistorialrh();
+                  
+                  // Establecer fechas por defecto (últimos 30 días)
+                  const hoy = new Date();
+                  const hace30dias = new Date();
+                  hace30dias.setDate(hoy.getDate() - 30);
+                  
+                  document.getElementById('fechaFinal').value = hoy.toISOString().split('T')[0];
+                  document.getElementById('fechaInicial').value = hace30dias.toISOString().split('T')[0];
+                  
+                  // Event listeners para filtros rápidos
+                  document.querySelectorAll('.btn-filtro-rapido').forEach(btn => {
+                      btn.addEventListener('click', function() {
+                          const dias = parseInt(this.dataset.dias);
+                          const hoy = new Date();
+                          const fechaInicio = new Date();
+                          fechaInicio.setDate(hoy.getDate() - dias);
+                          
+                          document.getElementById('fechaFinal').value = hoy.toISOString().split('T')[0];
+                          document.getElementById('fechaInicial').value = fechaInicio.toISOString().split('T')[0];
+                          
+                          document.querySelectorAll('.btn-filtro-rapido').forEach(b => b.classList.remove('active'));
+                          this.classList.add('active');
+                      });
+                  });
+              }
+          }).then((result) => {
+              if (result.isConfirmed) {
+                  const filtros = result.value;
+                  
+                  // Determinar tipo
+                  const tieneFiltros = filtros.filtroTienda || filtros.filtroSupervisor || filtros.filtroPuesto;
+                  const tipoHistorial = tieneFiltros ? 'INDIVIDUAL' : 'GENERAL';
+                  
+                  console.log('📊 Generando historial:', tipoHistorial);
+                  console.log('Filtros:', filtros);
+                  
+                  // Loading
+                  Swal.fire({
+                      title: '<i class="fas fa-spinner fa-spin"></i> Cargando...',
+                      html: 'Generando historial ' + tipoHistorial + '...',
+                      allowOutsideClick: false,
+                      showConfirmButton: false,
+                      didOpen: () => Swal.showLoading()
+                  });
+                  
+                  // Llamada AJAX
+                  $.ajax({
+                      url: './gestionhumana/crudsolicitudesrh.php',
+                      type: 'GET',
+                      data: {
+                          action: 'get_proceso_solicitudes',
+                          filtro_tienda: filtros.filtroTienda,
+                          filtro_supervisor: filtros.filtroSupervisor,
+                          filtro_puesto: filtros.filtroPuesto
+                      },
+                      dataType: 'json',
+                      success: function(response) {
+                          console.log('✅ Respuesta:', response);
+                          
+                          if (response.success) {
+                              mostrarHistorialProceso(response.datos, response.tipo);
+                          } else {
+                              Swal.fire({
+                                  icon: 'error',
+                                  title: 'Error',
+                                  text: response.error || 'No se pudo cargar el historial',
+                                  confirmButtonText: 'Entendido'
+                              });
+                          }
+                      },
+                      error: function(xhr, status, error) {
+                          console.error('❌ Error:', error);
+                          console.error('Respuesta:', xhr.responseText);
+                          
+                          Swal.fire({
+                              icon: 'error',
+                              title: 'Error de Conexión',
+                              text: 'No se pudo conectar con el servidor',
+                              confirmButtonText: 'Entendido'
+                          });
+                      }
+                  });
+              }
+          });
+      });
+
+// HISTORIAL GENERAL E INDIVIDUAL DE SOLICITUDES
+      // ==================================================================================
+      // FUNCIÓN: CARGAR OPCIONES DE FILTROS - VERSIÓN CORREGIDA PARA TU ESTRUCTURA
+      // ==================================================================================
+      function cargarOpcionesFiltrosHistorialrh() {
+          // Cargar tiendas
+          $.ajax({
+              url: './gestionhumana/crudsolicitudesrh.php?action=get_tiendas_filtro',
+              type: 'GET',
+              dataType: 'json',
+              success: function(response) {
+                  console.log('✅ Tiendas recibidas:', response);
+                  const select = document.getElementById('filtroTienda');
+                  
+                  if (response && Array.isArray(response)) {
+                      response.forEach(tienda => {
+                          const option = document.createElement('option');
+                          // Usar 'numero' porque tu case devuelve objetos con {numero, nombre}
+                          option.value = tienda.numero;
+                          option.textContent = tienda.nombre || ('Tienda ' + tienda.numero);
+                          select.appendChild(option);
+                      });
+                  }
+              },
+              error: function(xhr) {
+                  console.error('❌ Error cargando tiendas:', xhr.responseText);
+              }
+          });
+          
+          // Cargar supervisores
+          $.ajax({
+              url: './gestionhumana/crudsolicitudesrh.php?action=get_supervisores_filtro',
+              type: 'GET',
+              dataType: 'json',
+              success: function(response) {
+                  console.log('✅ Supervisores recibidos:', response);
+                  const select = document.getElementById('filtroSupervisor');
+                  
+                  if (response && Array.isArray(response)) {
+                      response.forEach(supervisor => {
+                          const option = document.createElement('option');
+                          // Usar 'codigo' porque tu case devuelve objetos con {codigo, nombre}
+                          option.value = supervisor.codigo;
+                          option.textContent = supervisor.nombre;
+                          select.appendChild(option);
+                      });
+                  }
+              },
+              error: function(xhr) {
+                  console.error('❌ Error cargando supervisores:', xhr.responseText);
+              }
+          });
+          
+          // Cargar puestos
+          $.ajax({
+              url: './gestionhumana/crudsolicitudesrh.php?action=get_puestos_filtro',
+              type: 'GET',
+              dataType: 'json',
+              success: function(response) {
+                  console.log('✅ Puestos recibidos:', response);
+                  const select = document.getElementById('filtroPuesto');
+                  
+                  if (response && Array.isArray(response)) {
+                      response.forEach(puesto => {
+                          const option = document.createElement('option');
+                          // Los puestos vienen como strings directos
+                          option.value = puesto;
+                          option.textContent = puesto;
+                          select.appendChild(option);
+                      });
+                  }
+              },
+              error: function(xhr) {
+                  console.error('❌ Error cargando puestos:', xhr.responseText);
+              }
+          });
+      }
+
+      // ==================================================================================
+      // FUNCIÓN: MOSTRAR HISTORIAL DE PROCESO DE SOLICITUDES
+      // ==================================================================================
+      function mostrarHistorialProceso(datos, tipo) {
+          console.log('📋 Mostrando historial:', datos);
+          
+          if (!datos || datos.length === 0) {
+              Swal.fire({
+                  icon: 'info',
+                  title: 'Sin registros',
+                  text: 'No se encontraron solicitudes para mostrar',
+                  confirmButtonText: 'Entendido'
+              });
+              return;
+          }
+          
+          let html = '';
+          
+          datos.forEach(function(solicitud) {
+              html += generarCardSolicitud(solicitud);
+          });
+          
+          // Calcular métricas
+          const totalCandidatos = datos.reduce((sum, s) => sum + (parseInt(s.TOTAL_CANDIDATOS) || 0), 0);
+          const totalReactivadas = datos.reduce((sum, s) => sum + (parseInt(s.NUM_REACTIVACIONES) || 0), 0);
+          
+          // Debug para verificar
+          console.log('🔍 Total solicitudes:', datos.length);
+          console.log('🔍 Total candidatos:', totalCandidatos);
+          console.log('🔍 Total reactivadas:', totalReactivadas);
+          
+          // Mostrar modal
+          Swal.fire({
+              title: '<i class="fas fa-history"></i> Proceso de Solicitudes - ' + tipo.toUpperCase(),
+              html: `
+                  <div style="text-align: left; max-height: 70vh; overflow-y: auto;">
+                      <!-- Métricas -->
+                      <div class="alert alert-primary mb-3">
+                          <h6 class="mb-2"><i class="fas fa-chart-bar"></i> MÉTRICAS GENERALES:</h6>
+                          <div class="row text-center">
+                              <div class="col-4">
+                                  <h4>${datos.length}</h4>
+                                  <small>Solicitudes</small>
+                              </div>
+                              <div class="col-4">
+                                  <h4>${totalCandidatos}</h4>
+                                  <small>Candidatos</small>
+                              </div>
+                              <div class="col-4">
+                                  <h4>${totalReactivadas}</h4>
+                                  <small>Reactivadas</small>
+                              </div>
+                          </div>
+                      </div>
+                      
+                      ${html}
+                  </div>
+              `,
+              width: '95%',
+              showCloseButton: true,
+              showCancelButton: true,
+              showDenyButton: true,
+              confirmButtonText: '<i class="fas fa-times"></i> Cerrar',
+              cancelButtonText: '<i class="fas fa-file-pdf"></i> Generar PDF',
+              denyButtonText: '<i class="fas fa-file-excel"></i> Generar Excel',
+              confirmButtonColor: '#6c757d',
+              cancelButtonColor: '#dc3545',
+              denyButtonColor: '#28a745',
+              reverseButtons: true
+          }).then((result) => {
+              if (result.isDismissed && result.dismiss === Swal.DismissReason.cancel) {
+                  // Generar PDF
+                  exportarHistorialPDF(datos, tipo);
+              } else if (result.isDenied) {
+                  // Generar Excel
+                  exportarHistorialExcel(datos, tipo);
+              }
+          });
+      }
+
+              // ==================================================================================
+              // FUNCIÓN: EXPORTAR HISTORIAL A PDF
+              // ==================================================================================
+              function exportarHistorialPDF(datos, tipo) {
+                  Swal.fire({
+                      title: '<i class="fas fa-spinner fa-spin"></i> Generando PDF...',
+                      text: 'Por favor espere',
+                      allowOutsideClick: false,
+                      showConfirmButton: false,
+                      didOpen: () => Swal.showLoading()
+                  });
+                  
+                  $.ajax({
+                      url: './gestionhumana/exportar_historial_rh.php',
+                      type: 'POST',
+                      data: {
+                          action: 'generar_pdf',
+                          datos: JSON.stringify(datos),
+                          tipo: tipo
+                      },
+                      xhrFields: {
+                          responseType: 'blob'
+                      },
+                      success: function(blob) {
+                          Swal.close();
+                          
+                          // Crear enlace de descarga
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = 'Historial_Solicitudes_' + tipo.toUpperCase() + '_' + new Date().toISOString().split('T')[0] + '.pdf';
+                          document.body.appendChild(a);
+                          a.click();
+                          window.URL.revokeObjectURL(url);
+                          document.body.removeChild(a);
+                          
+                          Swal.fire({
+                              icon: 'success',
+                              title: '¡PDF Generado!',
+                              text: 'El archivo se ha descargado correctamente',
+                              timer: 2000,
+                              showConfirmButton: false
+                          });
+                      },
+                      error: function(xhr) {
+                          Swal.fire({
+                              icon: 'error',
+                              title: 'Error',
+                              text: 'No se pudo generar el PDF: ' + (xhr.responseText || 'Error desconocido'),
+                              confirmButtonText: 'Entendido'
+                          });
+                      }
+                  });
+              }
+
+              // ==================================================================================
+              // FUNCIÓN: EXPORTAR HISTORIAL A EXCEL
+              // ==================================================================================
+              function exportarHistorialExcel(datos, tipo) {
+                  Swal.fire({
+                      title: '<i class="fas fa-spinner fa-spin"></i> Generando Excel...',
+                      text: 'Por favor espere',
+                      allowOutsideClick: false,
+                      showConfirmButton: false,
+                      didOpen: () => Swal.showLoading()
+                  });
+                  
+                  $.ajax({
+                      url: './gestionhumana/exportar_historial_rh.php',
+                      type: 'POST',
+                      data: {
+                          action: 'generar_excel',
+                          datos: JSON.stringify(datos),
+                          tipo: tipo
+                      },
+                      xhrFields: {
+                          responseType: 'blob'
+                      },
+                      success: function(blob) {
+                          Swal.close();
+                          
+                          // Crear enlace de descarga
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = 'Historial_Solicitudes_' + tipo.toUpperCase() + '_' + new Date().toISOString().split('T')[0] + '.xlsx';
+                          document.body.appendChild(a);
+                          a.click();
+                          window.URL.revokeObjectURL(url);
+                          document.body.removeChild(a);
+                          
+                          Swal.fire({
+                              icon: 'success',
+                              title: '¡Excel Generado!',
+                              text: 'El archivo se ha descargado correctamente',
+                              timer: 2000,
+                              showConfirmButton: false
+                          });
+                      },
+                      error: function(xhr) {
+                          Swal.fire({
+                              icon: 'error',
+                              title: 'Error',
+                              text: 'No se pudo generar el Excel: ' + (xhr.responseText || 'Error desconocido'),
+                              confirmButtonText: 'Entendido'
+                          });
+                      }
+                  });
+              }
+
+      // ==================================================================================
+      // FUNCIÓN: GENERAR CARD DE SOLICITUD (VISUAL MEJORADO)
+      // ==================================================================================
+      function generarCardSolicitud(solicitud) {
+          //const esReactivada = solicitud.REACTIVADA === 'Y';
+          const esReactivada = (solicitud.NUM_REACTIVACIONES && solicitud.NUM_REACTIVACIONES > 0);
+          const esPlazaCubierta = solicitud.ESTADO_ACTUAL === 'Plaza Cubierta';
+          
+          let html = '<div style="border: 2px solid #dee2e6; border-radius: 10px; margin-bottom: 20px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">';
+          
+          // HEADER con fecha y tiempo
+          html += '<div style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 15px; border-radius: 8px 8px 0 0;">';
+          html += '  <div style="display: flex; justify-content: space-between; align-items: center;">';
+          html += '    <div>';
+          html += '      <h6 style="margin: 0; color: white;"><i class="fas fa-calendar"></i> ' + solicitud.FECHA_SOLICITUD.split(' ')[0] + '</h6>';
+          html += '    </div>';
+          html += '    <div style="text-align: right;">';
+          html += '      <div style="font-size: 14px;"><i class="fas fa-clock"></i> TIEMPO TOTAL DESDE SOLICITUD: <strong>' + solicitud.TIEMPO_TOTAL + '</strong></div>';
+          
+          if (esReactivada && solicitud.TIEMPO_REACTIVACION) {
+              html += '      <div style="font-size: 13px; background: rgba(255,193,7,0.3); padding: 3px 8px; border-radius: 5px; margin-top: 5px;">';
+              html += '        <i class="fas fa-redo"></i> TIEMPO DESDE REACTIVACIÓN: <strong>' + solicitud.TIEMPO_REACTIVACION + '</strong>';
+              html += '      </div>';
+          }
+          
+          html += '    </div>';
+          html += '  </div>';
+          html += '</div>';
+          
+          // BODY del card
+          html += '<div style="padding: 20px;">';
+          
+          // Info básica de la solicitud
+          html += '<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid #007bff;">';
+          html += '  <h6 style="color: #495057; margin-bottom: 10px;"><i class="fas fa-file-alt"></i> SOLICITUD #' + solicitud.ID_SOLICITUD + '</h6>';
+          html += '  <div class="row">';
+          html += '    <div class="col-6"><strong><i class="fas fa-store"></i> Tienda:</strong> ' + solicitud.NUM_TIENDA + ' - Managua Centro</div>';
+          html += '    <div class="col-6"><strong><i class="fas fa-briefcase"></i> Puesto:</strong> ' + solicitud.PUESTO_SOLICITADO + '</div>';
+          html += '  </div>';
+          html += '  <div class="row mt-2">';
+          html += '    <div class="col-6"><strong><i class="fas fa-user-tie"></i> Supervisor:</strong> ' + solicitud.SOLICITADO_POR + '</div>';
+          html += '    <div class="col-6"><strong><i class="fas fa-calendar-check"></i> Fecha Solicitud:</strong> ' + solicitud.FECHA_SOLICITUD + '</div>';
+          html += '  </div>';
+          html += '</div>';
+          
+          // Cambio de estado
+          html += '<div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid #ffc107;">';
+          html += '  <h6 style="color: #856404;"><i class="fas fa-exchange-alt"></i> CAMBIO DE ESTADO:</h6>';
+          html += '  <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">';
+          html += '    <div><strong>➤ Anterior:</strong> <span style="background: #6c757d; color: white; padding: 3px 10px; border-radius: 15px; font-size: 13px;">' + solicitud.ESTADO_ANTERIOR + '</span></div>';
+          html += '    <div><strong>➤ Actual:</strong> <span style="background: ' + (esPlazaCubierta ? '#28a745' : '#007bff') + '; color: white; padding: 3px 10px; border-radius: 15px; font-size: 13px;">' + solicitud.ESTADO_ACTUAL + (esPlazaCubierta ? ' ✅' : '') + '</span></div>';
+          html += '  </div>';
+          html += '  <div style="margin-top: 8px; color: #856404;"><i class="fas fa-hourglass-half"></i> Tiempo en estado anterior: <strong>' + solicitud.TIEMPO_ESTADO_ANTERIOR + '</strong></div>';
+          html += '</div>';
+          
+          // Reactivación
+          html += '<div style="background: ' + (esReactivada ? '#fff3cd' : '#e7f3ff') + '; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid ' + (esReactivada ? '#ffc107' : '#007bff') + ';">';
+          html += '  <h6 style="color: ' + (esReactivada ? '#856404' : '#004085') + ';"><i class="fas fa-' + (esReactivada ? 'redo' : 'info-circle') + '"></i> REACTIVACIÓN: ';
+          html += '    <span style="background: ' + (esReactivada ? '#ffc107' : '#28a745') + '; color: black; padding: 3px 12px; border-radius: 15px; font-size: 13px;">' + (esReactivada ? 'SÍ' : 'NO') + '</span>';
+          html += '  </h6>';
+          
+          if (esReactivada) {
+              html += '  <div style="margin-top: 10px; background: white; padding: 10px; border-radius: 5px;">';
+              html += '    <p style="margin: 0;"><strong><i class="fas fa-comment-dots"></i> Motivo:</strong> ' + (solicitud.MOTIVO_REACTIVACION || 'No especificado') + '</p>';
+              html += '    <p style="margin: 5px 0 0 0;"><strong><i class="fas fa-user"></i> Reactivado por:</strong> ' + (solicitud.USUARIO_REACTIVACION || 'No especificado') + '</p>';
+              if (solicitud.FECHA_REACTIVACION) {
+                  html += '    <p style="margin: 5px 0 0 0;"><strong><i class="fas fa-calendar"></i> Fecha reactivación:</strong> ' + solicitud.FECHA_REACTIVACION + '</p>';
+              }
+              html += '  </div>';
+          }
+          
+          html += '</div>';
+          
+          // Candidatos
+          if (solicitud.TOTAL_CANDIDATOS > 0) {
+              html += generarSeccionCandidatos(solicitud);
+          } else {
+              html += '<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; color: #6c757d;">';
+              html += '  <i class="fas fa-info-circle"></i> CANDIDATOS INVOLUCRADOS: Ninguno';
+              html += '</div>';
+          }
+          
+          html += '</div>'; // Cierre body
+          html += '</div>'; // Cierre card
+          
+          return html;
+      }
+
+      // ==================================================================================
+      // FUNCIÓN: GENERAR SECCIÓN DE CANDIDATOS
+      // ==================================================================================
+      function generarSeccionCandidatos(solicitud) {
+          const esReactivada = (solicitud.NUM_REACTIVACIONES && solicitud.NUM_REACTIVACIONES > 0);
+          const candidatos = solicitud.CANDIDATOS;
+          
+          let html = '<div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 5px solid #4caf50;">';
+          html += '  <h6 style="color: #2e7d32;"><i class="fas fa-users"></i> CANDIDATOS INVOLUCRADOS:</h6>';
+          
+          // ✅ MOSTRAR CANDIDATOS DEL PROCESO ORIGINAL
+          if (candidatos.proceso_original && candidatos.proceso_original.length > 0) {
+              html += '<div style="margin-top: 15px;">';
+              html += '  <h6 style="color: #495057; font-size: 14px; margin-bottom: 10px;"><i class="fas fa-list"></i> 👥 PROCESO ORIGINAL</h6>';
+              
+              candidatos.proceso_original.forEach(function(candidato) {
+                  html += generarCardCandidato(candidato, false);
+              });
+              
+              html += '</div>';
+          }
+          
+          // ✅ MOSTRAR CADA REACTIVACIÓN CON SUS CANDIDATOS
+          if (candidatos.reactivaciones && candidatos.reactivaciones.length > 0) {
+              candidatos.reactivaciones.forEach(function(reactivacion) {
+                  const info = reactivacion.info_reactivacion;
+                  
+                  // SEPARADOR DE REACTIVACIÓN
+                  html += '<div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 5px solid #ff9800;">';
+                  html += '  <h6 style="color: #ff9800; margin-bottom: 10px;"><i class="fas fa-redo"></i> 🔄 REACTIVACIÓN #' + info.NUM_REACTIVACION + '</h6>';
+                  html += '  <div style="background: white; padding: 10px; border-radius: 5px; font-size: 13px;">';
+                  html += '    <p style="margin: 5px 0;"><strong><i class="fas fa-calendar"></i> Fecha:</strong> ' + info.FECHA_REACTIVACION + '</p>';
+                  html += '    <p style="margin: 5px 0;"><strong><i class="fas fa-comment-dots"></i> Motivo:</strong> ' + (info.MOTIVO_REACT || 'No especificado') + '</p>';
+                  html += '    <p style="margin: 5px 0;"><strong><i class="fas fa-user-check"></i> Candidato anterior:</strong> ' + (info.NOMBRE_CAND_ANT || 'No especificado') + '</p>';
+                  html += '    <p style="margin: 5px 0 0 0;"><strong><i class="fas fa-user-tie"></i> Reactivado por:</strong> ' + (info.USUARIO_REACTIVO || 'No especificado') + '</p>';
+                  html += '  </div>';
+                  html += '</div>';
+                  
+                  // CANDIDATOS DE ESTA REACTIVACIÓN
+                  if (reactivacion.candidatos && reactivacion.candidatos.length > 0) {
+                      html += '<div style="margin-top: 15px; padding-left: 20px;">';
+                      html += '  <h6 style="color: #4caf50; font-size: 14px; margin-bottom: 10px;"><i class="fas fa-users"></i> 👥 CANDIDATOS DE REACTIVACIÓN #' + info.NUM_REACTIVACION + '</h6>';
+                      
+                      reactivacion.candidatos.forEach(function(candidato) {
+                          html += generarCardCandidato(candidato, true);
+                      });
+                      
+                      html += '</div>';
+                  } else {
+                      html += '<div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px; text-align: center; color: #6c757d;">';
+                      html += '  <i class="fas fa-info-circle"></i> No hay candidatos registrados en esta reactivación';
+                      html += '</div>';
+                  }
+              });
+          }
+          
+          // Si no hay candidatos en absoluto
+          if ((!candidatos.proceso_original || candidatos.proceso_original.length === 0) && 
+              (!candidatos.reactivaciones || candidatos.reactivaciones.length === 0)) {
+              html += '  <p style="margin: 10px 0 0 0; color: #6c757d;">No hay candidatos registrados</p>';
+          }
+          
+          html += '</div>';
+          
+          return html;
+      }
+
+
+
+        // ==================================================================================
+        // FUNCIÓN: GENERAR CARD DE UN CANDIDATO INDIVIDUAL
+        // ==================================================================================
+        function generarCardCandidato(candidato, esReactivado) {
+            let html = '';
+            
+            html += '<div style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid ' + (esReactivado ? '#4caf50' : '#007bff') + ';">';
+            html += '  <div style="display: flex; justify-content: between; align-items: start;">';
+            html += '    <div style="flex: 1;">';
+            html += '      <div style="font-weight: 600; color: #212529; margin-bottom: 5px;">';
+            html += '        <i class="fas fa-user"></i> ' + candidato.NOMBRE_COMPLETO;
+            
+            // Etiqueta de reactivado
+            if (esReactivado) {
+                html += ' <span style="background: #4caf50; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-left: 5px;"><i class="fas fa-redo"></i> 🏷️ REACTIVADO</span>';
+            }
+            
+            html += '      </div>';
+            
+            // Estados
+            html += '      <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">';
+            html += '        <span style="background: #6c757d; color: white; padding: 3px 10px; border-radius: 15px; font-size: 12px;">' + (candidato.ESTADO_ANTERIOR || 'Inicial') + '</span>';
+            html += '        <i class="fas fa-arrow-right" style="color: #007bff;"></i>';
+            
+            // Color según estado actual
+            let colorEstado = '#007bff';
+            if (candidato.ESTADO_ACTUAL === 'Contratado') {
+                colorEstado = '#28a745';
+            } else if (candidato.ESTADO_ACTUAL === 'Descartado') {
+                colorEstado = '#dc3545';
+            }
+            
+            html += '        <span style="background: ' + colorEstado + '; color: white; padding: 3px 10px; border-radius: 15px; font-size: 12px;">' + candidato.ESTADO_ACTUAL + '</span>';
+            html += '      </div>';
+            
+            // Motivo de descarte (si existe)
+            if (candidato.MOTIVO_DESCARTE && candidato.ESTADO_ACTUAL === 'Descartado') {
+                html += '      <div style="margin-top: 8px; padding: 8px; background: #fff3cd; border-radius: 5px; font-size: 12px; color: #856404;">';
+                html += '        <i class="fas fa-exclamation-triangle"></i> <strong>Motivo:</strong> ' + candidato.MOTIVO_DESCARTE;
+                html += '      </div>';
+            }
+            
+            // Tiempo en proceso
+            html += '      <div style="margin-top: 8px; font-size: 12px; color: #495057;">';
+            html += '        <i class="fas fa-clock"></i> Tiempo en proceso: <strong>' + (candidato.TIEMPO_EN_PROCESO || 'N/A') + '</strong>';
+            html += '      </div>';
+            
+            html += '    </div>';
+            html += '  </div>';
+            html += '</div>';
+            
+            return html;
+        }
+
+//FIN GENERAR HISTORIAL GENERAL E INDIVIDUAL DE SOLICITUDES
+
+    });
   </script>
 </body>
 </html>

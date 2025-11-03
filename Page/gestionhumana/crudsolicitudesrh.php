@@ -1,16 +1,5 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-error_reporting(E_ERROR | E_PARSE); // Solo errores críticos
-ini_set('display_errors', 0); // No mostrar warnings en output
-// Debug logging
-error_log("=== NUEVA PETICIÓN ===");
-error_log("GET: " . print_r($_GET, true));
-error_log("POST: " . print_r($_POST, true));
-error_log("FILES: " . print_r($_FILES, true));
-
-// ===== CONFIGURACIÓN CRÍTICA PARA ARCHIVOS GRANDES =====
+// ===== CONFIGURACIÓN ÚNICA Y LIMPIA =====
 ini_set('upload_max_filesize', '50M');
 ini_set('post_max_size', '50M');
 ini_set('max_file_uploads', 30);
@@ -18,1488 +7,421 @@ ini_set('max_execution_time', 400);
 ini_set('max_input_time', 400);
 ini_set('memory_limit', '256M');
 
-// Debug y errores
+// Solo para depuración - DESACTIVAR EN PRODUCCIÓN
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-error_log("=== CONFIGURACIÓN PHP APLICADA ===");
-error_log("upload_max_filesize: " . ini_get('upload_max_filesize'));
-error_log("post_max_size: " . ini_get('post_max_size'));
-error_log("max_file_uploads: " . ini_get('max_file_uploads'));
+// Header JSON único
+header('Content-Type: application/json; charset=utf-8');
 
-
-header('Content-Type: application/json');
-
-// Configuración para desactivar errores en producción
-ini_set('display_errors', 0);
-error_reporting(0);
-
-// SOLO PARA DEPURAR — luego desactivar en producción
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
-
+// Debug logging
+error_log("=== NUEVA PETICIÓN ===");
+error_log("GET: " . print_r($_GET, true));
+error_log("POST: " . print_r($_POST, true));
+error_log("FILES: " . print_r($_FILES, true));
 
 include_once '../../Funsiones/conexion.php';
 
 $conn = Oracle();
 if (!$conn) {
     error_log("Error de conexión a la base de datos.");
-    die("Error de conexión a la base de datos.");
+    echo json_encode(['success' => false, 'error' => 'Error de conexión a la base de datos']);
+    exit;
+}
+
+// ===== FUNCIONES AUXILIARES =====
+function detectarErrorArchivo($error_code) {
+    switch ($error_code) {
+        case UPLOAD_ERR_OK:
+            return null;
+        case UPLOAD_ERR_INI_SIZE:
+            return "Archivo muy grande (excede upload_max_filesize del servidor)";
+        case UPLOAD_ERR_FORM_SIZE:
+            return "Archivo muy grande (excede el límite del formulario)";
+        case UPLOAD_ERR_PARTIAL:
+            return "El archivo se subió parcialmente (conexión interrumpida)";
+        case UPLOAD_ERR_NO_FILE:
+            return "No se seleccionó ningún archivo";
+        case UPLOAD_ERR_NO_TMP_DIR:
+            return "Error del servidor: falta directorio temporal";
+        case UPLOAD_ERR_CANT_WRITE:
+            return "Error del servidor: no se puede escribir el archivo";
+        case UPLOAD_ERR_EXTENSION:
+            return "Extensión de archivo bloqueada por el servidor";
+        default:
+            return "Error desconocido en la subida ($error_code)";
+    }
+}
+
+function enviarJSON($data) {
+    echo json_encode($data);
+    exit;
 }
 
 
-//======================================================================================
-// FUNCIONES 
-//======================================================================================
-            // Función para detectar tipo de error
-            function detectarErrorArchivo($error_code, $file_size = 0) {
-                switch ($error_code) {
-                    case UPLOAD_ERR_OK:
-                        return null;
-                    case UPLOAD_ERR_INI_SIZE:
-                        return "Archivo muy grande (excede upload_max_filesize del servidor)";
-                    case UPLOAD_ERR_FORM_SIZE:
-                        return "Archivo muy grande (excede el límite del formulario)";
-                    case UPLOAD_ERR_PARTIAL:
-                        return "El archivo se subió parcialmente (conexión interrumpida)";
-                    case UPLOAD_ERR_NO_FILE:
-                        return "No se seleccionó ningún archivo";
-                    case UPLOAD_ERR_NO_TMP_DIR:
-                        return "Error del servidor: falta directorio temporal";
-                    case UPLOAD_ERR_CANT_WRITE:
-                        return "Error del servidor: no se puede escribir el archivo";
-                    case UPLOAD_ERR_EXTENSION:
-                        return "Extensión de archivo bloqueada por el servidor";
-                    default:
-                        return "Error desconocido en la subida ($error_code)";
-                }
-            }
-
-            function manejarError($mensaje, $errorOracle = null) {
-                $errorCompleto = $mensaje;
-                if ($errorOracle) {
-                    $errorCompleto .= ': ' . (is_array($errorOracle) ? $errorOracle['message'] : $errorOracle);
-                }
-                error_log($errorCompleto);
-                enviarJSON(['success' => false, 'error' => $errorCompleto]);
-            }
-
-            function registrarHistorial($conn, $accion, $datos = []) {
-                try {
-                    error_log("Registrando historial: $accion - " . json_encode($datos));
-                    // Aquí puedes implementar el registro de historial si es necesario
-                } catch (Exception $e) {
-                    error_log("Error registrando historial: " . $e->getMessage());
-                }
-            }
-
-            // FUNCIÓN PARA CALCULAR TIEMPO TRANSCURRIDO
-            function ordenarDatosPorFecha($datos) {
-                usort($datos, function($a, $b) {
-                    $fechaA = DateTime::createFromFormat('d-m-Y H:i:s', $a['FECHA_CAMBIO']);
-                    if (!$fechaA) {
-                        $fechaA = DateTime::createFromFormat('Y-m-d H:i:s', $a['FECHA_CAMBIO']);
-                    }
-                    
-                    $fechaB = DateTime::createFromFormat('d-m-Y H:i:s', $b['FECHA_CAMBIO']);
-                    if (!$fechaB) {
-                        $fechaB = DateTime::createFromFormat('Y-m-d H:i:s', $b['FECHA_CAMBIO']);
-                    }
-                    
-                    return $fechaA <=> $fechaB; // Orden ascendente (más antiguo primero)
-                });
-                
-                return $datos;
-            }
-
-            // ✅ FUNCIÓN PARA CALCULAR TIEMPO ENTRE CAMBIOS CONSECUTIVOS (FORMATO COMPLETO)
-            function calcularTiempoConsecutivoCompleto($fechaAnterior, $fechaActual) {
-                if (empty($fechaAnterior)) {
-                    return '--- PRIMER REGISTRO ---'; // Primera fila muestra esto
-                }
-                
-                try {
-                    // Convertir fechas
-                    $fechaAnt = DateTime::createFromFormat('d-m-Y H:i:s', $fechaAnterior);
-                    if (!$fechaAnt) {
-                        $fechaAnt = DateTime::createFromFormat('Y-m-d H:i:s', $fechaAnterior);
-                    }
-                    
-                    $fechaAct = DateTime::createFromFormat('d-m-Y H:i:s', $fechaActual);
-                    if (!$fechaAct) {
-                        $fechaAct = DateTime::createFromFormat('Y-m-d H:i:s', $fechaActual);
-                    }
-                    
-                    if (!$fechaAnt || !$fechaAct) {
-                        return 'Error de fecha';
-                    }
-                    
-                    $diferencia = $fechaAct->diff($fechaAnt);
-                    
-                    // Calcular tiempo transcurrido en formato completo
-                    $totalDias = $diferencia->days;
-                    $horas = $diferencia->h;
-                    $minutos = $diferencia->i;
-                    $segundos = $diferencia->s;
-                    
-                    // Formato completo para debug
-                    $partes = [];
-                    
-                    if ($totalDias > 0) {
-                        $partes[] = $totalDias . ' día' . ($totalDias > 1 ? 's' : '');
-                    }
-                    if ($horas > 0) {
-                        $partes[] = $horas . ' hora' . ($horas > 1 ? 's' : '');
-                    }
-                    if ($minutos > 0) {
-                        $partes[] = $minutos . ' minuto' . ($minutos > 1 ? 's' : '');
-                    }
-                    if ($segundos > 0 || empty($partes)) {
-                        $partes[] = $segundos . ' segundo' . ($segundos > 1 ? 's' : '');
-                    }
-                    
-                    return implode(', ', $partes) . ' transcurrido' . (count($partes) > 1 ? 's' : '');
-                    
-                } catch (Exception $e) {
-                    return 'Error de cálculo: ' . $e->getMessage();
-                }
-            }
-
-            // ✅ FUNCIÓN PARA GENERAR ESTADÍSTICAS DE TIEMPO MEJORADAS
-            function generarEstadisticasTiempoMejoradas($datos) {
-                if (empty($datos)) {
-                    return [
-                        'fecha_mas_antiguo' => 'N/A',
-                        'fecha_mas_reciente' => 'N/A', 
-                        'tiempo_total' => 'N/A',
-                        'promedio_real' => 'N/A'
-                    ];
-                }
-                
-                // IMPORTANTE: Ordenar datos por fecha ascendente
-                $datosOrdenados = ordenarDatosPorFecha($datos);
-                
-                // Obtener fechas ordenadas
-                $fechas = [];
-                $tiempoTotalSegundos = 0;
-                
-                foreach ($datosOrdenados as $registro) {
-                    try {
-                        $fecha = DateTime::createFromFormat('d-m-Y H:i:s', $registro['FECHA_CAMBIO']);
-                        if (!$fecha) {
-                            $fecha = DateTime::createFromFormat('Y-m-d H:i:s', $registro['FECHA_CAMBIO']);
-                        }
-                        if ($fecha) {
-                            $fechas[] = $fecha;
-                        }
-                    } catch (Exception $e) {
-                        continue;
-                    }
-                }
-                
-                if (count($fechas) < 2) {
-                    $fechaMasAntigua = $fechas[0] ?? null;
-                    $fechaMasReciente = $fechas[0] ?? null;
-                    
-                    return [
-                        'fecha_mas_antiguo' => $fechaMasAntigua ? $fechaMasAntigua->format('d-m-Y H:i:s') : 'N/A',
-                        'fecha_mas_reciente' => $fechaMasReciente ? $fechaMasReciente->format('d-m-Y H:i:s') : 'N/A',
-                        'tiempo_total' => 'Solo un registro',
-                        'promedio_real' => 'N/A'
-                    ];
-                }
-                
-                $fechaMasAntigua = $fechas[0];
-                $fechaMasReciente = end($fechas);
-                
-                // Calcular tiempo total entre todos los cambios consecutivos
-                for ($i = 1; $i < count($fechas); $i++) {
-                    $diferencia = $fechas[$i]->diff($fechas[$i-1]);
-                    $segundos = ($diferencia->days * 86400) + ($diferencia->h * 3600) + ($diferencia->i * 60) + $diferencia->s;
-                    $tiempoTotalSegundos += $segundos;
-                }
-                
-                // Calcular promedio real
-                $promedioSegundos = $tiempoTotalSegundos / (count($fechas) - 1);
-                
-                // Convertir tiempo total a formato legible
-                function convertirSegundosATexto($segundosTotal) {
-                    $diasTotal = floor($segundosTotal / 86400);
-                    $horasTotal = floor(($segundosTotal % 86400) / 3600);
-                    $minutosTotal = floor(($segundosTotal % 3600) / 60);
-                    $segTotal = floor($segundosTotal % 60);
-                    
-                    $partes = [];
-                    if ($diasTotal > 0) $partes[] = $diasTotal . ' día' . ($diasTotal > 1 ? 's' : '');
-                    if ($horasTotal > 0) $partes[] = $horasTotal . ' hora' . ($horasTotal > 1 ? 's' : '');
-                    if ($minutosTotal > 0) $partes[] = $minutosTotal . ' minuto' . ($minutosTotal > 1 ? 's' : '');
-                    if ($segTotal > 0 || empty($partes)) $partes[] = $segTotal . ' segundo' . ($segTotal > 1 ? 's' : '');
-                    
-                    return implode(', ', $partes);
-                }
-                
-                $tiempoTotalTexto = $tiempoTotalSegundos > 0 ? convertirSegundosATexto($tiempoTotalSegundos) : 'N/A';
-                $promedioTexto = $promedioSegundos > 0 ? convertirSegundosATexto($promedioSegundos) : 'N/A';
-                
-                return [
-                    'fecha_mas_antiguo' => $fechaMasAntigua->format('d-m-Y H:i:s'),
-                    'fecha_mas_reciente' => $fechaMasReciente->format('d-m-Y H:i:s'),
-                    'tiempo_total' => $tiempoTotalTexto,
-                    'promedio_real' => $promedioTexto
-                ];
-            }
-
-            // ✅ FUNCIÓN EXCEL COMPLETA CORREGIDA
-            function generarExcelHistorial($datos) {
-                if (!isset($datos['datos']) || empty($datos['datos'])) {
-                    echo "<script>alert('No hay datos para exportar'); window.close();</script>";
-                    exit;
-                }
-                
-                // IMPORTANTE: Ordenar datos por fecha ascendente antes de calcular
-                $datosOrdenados = ordenarDatosPorFecha($datos['datos']);
-                $datos['datos'] = $datosOrdenados;
-                
-                // Calcular estadísticas de tiempo mejoradas
-                $estadisticasTiempo = generarEstadisticasTiempoMejoradas($datos['datos']);
-                
-                header('Content-Type: application/vnd.ms-excel; charset=utf-8');
-                header('Content-Disposition: attachment; filename="historial_solicitudes_' . date('Y-m-d_H-i-s') . '.xls"');
-                header('Cache-Control: max-age=0');
-                
-                echo '<!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-                    <style>
-                        body { 
-                            font-family: Arial, sans-serif; 
-                            margin: 0;
-                            padding: 15px;
-                        }
-                        .header-container {
-                            text-align: center;
-                            padding: 15px 0;
-                            border-bottom: 2px solid #333;
-                            margin-bottom: 15px;
-                        }
-                        .header-content {
-                            display: inline-block;
-                            vertical-align: middle;
-                        }
-                        .logo-text { 
-                            display: inline-block;
-                            vertical-align: middle;
-                            font-size: 24px;
-                            font-weight: bold;
-                            color: #000;
-                            margin-right: 25px;
-                        }
-                        .title { 
-                            display: inline-block;
-                            vertical-align: middle;
-                            font-size: 18px; 
-                            font-weight: bold; 
-                            color: #333;
-                        }
-                        .filters {
-                            text-align: center;
-                            color: #666;
-                            font-size: 11px;
-                            margin: 10px 0 15px 0;
-                        }
-                        .info-row {
-                            font-size: 10px;
-                            margin-bottom: 15px;
-                            text-align: center;
-                        }
-                        .orden-nota {
-                            background-color: #fff3cd;
-                            border: 2px solid #ffc107;
-                            padding: 10px;
-                            margin: 15px 0;
-                            border-radius: 5px;
-                            text-align: center;
-                            font-weight: bold;
-                            color: #856404;
-                        }
-                        table { 
-                            border-collapse: collapse; 
-                            width: 100%; 
-                            font-size: 12px;
-                        }
-                        th { 
-                            background-color: #4A90E2;
-                            color: white; 
-                            font-weight: bold; 
-                            padding: 10px 8px;
-                            border: 2px solid #2c5aa0;
-                            text-align: center;
-                            font-size: 12px;
-                        }
-                        td { 
-                            padding: 8px 8px;
-                            border: 1px solid #4A90E2;
-                            text-align: left;
-                            font-size: 12px;
-                            background-color: #ffffff;
-                        }
-                        .fila-par {
-                            background-color: #f0f8ff;
-                        }
-                        .fila-impar {
-                            background-color: #fafffe;
-                        }
-                        .col-azul {
-                            border-left: 3px solid #4A90E2;
-                        }
-                        .col-verde {
-                            border-left: 3px solid #4ECDC4;
-                        }
-                        .tiempo-transcurrido { 
-                            background-color: #fff3cd; 
-                            font-weight: bold; 
-                            color: #856404; 
-                            text-align: center;
-                            font-size: 11px;
-                        }
-                        .primer-registro {
-                            background-color: #d4edda;
-                            color: #155724;
-                            text-align: center;
-                            font-weight: bold;
-                        }
-                        .estadisticas-tiempo {
-                            background-color: #e8f5e8;
-                            border: 2px solid #4CAF50;
-                            padding: 15px;
-                            margin: 20px auto;
-                            border-radius: 5px;
-                            width: 60%;
-                        }
-                    </style>
-                </head>
-                <body>';
-                
-                // HEADER
-                echo '<div class="header-container">
-                    <div class="header-content">
-                        <span class="logo-text">ROY</span>
-                        <span class="title">' . htmlspecialchars($datos['titulo_reporte']) . '</span>
-                    </div>
-                </div>';
-                
-                echo '<div class="filters">' . htmlspecialchars($datos['subtitulo']) . '</div>';
-                
-                echo '<div class="info-row">
-                    <strong>Período:</strong> ' . htmlspecialchars($datos['periodo']) . ' | 
-                    <strong>Total de registros:</strong> ' . $datos['registros'] . ' | 
-                    <strong>Fecha de generación:</strong> ' . date('d/m/Y H:i:s') . '
-                </div>';
-
-                // RESUMEN SI ES REPORTE GENERAL
-                if ($datos['tipo_reporte'] === 'general' && isset($datos['resumen'])) {
-                    echo '<table style="margin-bottom: 15px; width: 60%; margin-left: auto; margin-right: auto;">
-                        <tr><th colspan="2">RESUMEN ESTADÍSTICO</th></tr>
-                        <tr class="fila-par"><td style="padding: 8px;"><strong>Total de cambios</strong></td><td style="text-align: center;">' . $datos['resumen']['total_cambios'] . '</td></tr>
-                        <tr class="fila-impar"><td style="padding: 8px;"><strong>Solicitudes afectadas</strong></td><td style="text-align: center;">' . $datos['resumen']['solicitudes_afectadas'] . '</td></tr>
-                        <tr class="fila-par"><td style="padding: 8px;"><strong>Tiendas afectadas</strong></td><td style="text-align: center;">' . $datos['resumen']['tiendas_afectadas'] . '</td></tr>
-                        <tr class="fila-impar"><td style="padding: 8px;"><strong>Supervisores afectados</strong></td><td style="text-align: center;">' . $datos['resumen']['supervisores_afectados'] . '</td></tr>
-                    </table>';
-                }
-                
-                // TABLA PRINCIPAL CON TIEMPO CONSECUTIVO
-                echo '<table>
-                    <thead>
-                        <tr>';
-                
-                foreach ($datos['headers_excel'] as $header) {
-                    echo '<th>' . htmlspecialchars($header) . '</th>';
-                }
-                echo '<th style="background-color: #FF6B6B;"><i class="fas fa-clock"></i> Tiempo Transcurrido</th>';
-                
-                echo '</tr>
-                    </thead>
-                    <tbody>';
-                
-                foreach ($datos['datos'] as $rowIndex => $registro) {
-                    $filaClass = ($rowIndex % 2 == 0) ? 'fila-par' : 'fila-impar';
-                    
-                    // Calcular tiempo desde el cambio anterior (ahora que están ordenados correctamente)
-                    $fechaAnterior = ($rowIndex > 0) ? $datos['datos'][$rowIndex - 1]['FECHA_CAMBIO'] : '';
-                    $tiempoTranscurrido = calcularTiempoConsecutivoCompleto($fechaAnterior, $registro['FECHA_CAMBIO']);
-                    
-                    // Determinar si es el primer registro
-                    $esPrimerRegistro = ($rowIndex === 0);
-                    $tiempoClass = $esPrimerRegistro ? 'primer-registro' : 'tiempo-transcurrido';
-                    
-                    echo '<tr class="' . $filaClass . '">
-                        <td class="col-azul">' . htmlspecialchars($registro['ID_SOLICITUD']) . '</td>
-                        <td class="col-verde">' . htmlspecialchars($registro['NUM_TIENDA']) . '</td>
-                        <td class="col-azul">' . htmlspecialchars($registro['PUESTO_SOLICITADO']) . '</td>
-                        <td class="col-verde">' . htmlspecialchars($registro['SOLICITADO_POR']) . '</td>
-                        <td class="col-verde">' . htmlspecialchars($registro['ESTADO_ANTERIOR']) . '</td>
-                        <td class="col-azul">' . htmlspecialchars($registro['ESTADO_NUEVO']) . '</td>
-                        <td class="col-verde">' . htmlspecialchars($registro['APROBACION_ANTERIOR']) . '</td>
-                        <td class="col-azul">' . htmlspecialchars($registro['APROBACION_NUEVA']) . '</td>
-                        <td class="col-verde">' . htmlspecialchars($registro['COMENTARIO_NUEVO']) . '</td>
-                        <td class="col-azul">' . htmlspecialchars($registro['FECHA_CAMBIO']) . '</td>
-                        <td class="' . $tiempoClass . '">' . htmlspecialchars($tiempoTranscurrido) . '</td>
-                    </tr>';
-                }
-                
-                echo '</tbody>
-                </table>';
-                
-                // ✅ AGREGAR FILA DE TIEMPO TOTAL TRANSCURRIDO
-                echo '<table style="width: 100%; margin-bottom: 20px;">
-                    <tr>
-                        <td colspan="10" style="text-align: right; font-weight: bold; background-color: #e8f4f8; padding: 10px; border: 2px solid #4A90E2;">
-                            TIEMPO TOTAL TRANSCURRIDO:
-                        </td>
-                        <td style="text-align: center; font-weight: bold; background-color: #fff3cd; color: #856404; padding: 10px; border: 2px solid #FF6B6B;">
-                            ' . htmlspecialchars($estadisticasTiempo['tiempo_total']) . '
-                        </td>
-                    </tr>
-                </table>';
-                
-                // ESTADÍSTICAS DE TIEMPO CENTRADAS - MOVIDO MÁS AL CENTRO
-                echo '<br><br>
-                <table style="width: 100%; border-collapse: collapse;">
-                    <tr>
-                        <td colspan="11" style="text-align: center; font-size: 16px; font-weight: bold; color: #2E7D32; padding: 15px; background-color: #f8f9fa; border: 1px solid #ddd;">
-                            ANÁLISIS DE TIEMPO TRANSCURRIDO
-                        </td>
-                    </tr>
-                </table>
-                
-                <table style="width: 100%; border-collapse: collapse;">
-                    <tr>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 16.67%; padding: 8px; border: 2px solid #4CAF50; background-color: #e8f5e8; font-weight: bold; font-size: 12px;">Cambio más antiguo:</td>
-                        <td style="width: 16.67%; padding: 8px; border: 2px solid #4CAF50; background-color: white; text-align: center; font-size: 12px;">' . htmlspecialchars($estadisticasTiempo['fecha_mas_antiguo']) . '</td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                    </tr>
-                    <tr>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 16.67%; padding: 8px; border: 2px solid #4CAF50; background-color: #e8f5e8; font-weight: bold; font-size: 12px;">Cambio más reciente:</td>
-                        <td style="width: 16.67%; padding: 8px; border: 2px solid #4CAF50; background-color: white; text-align: center; font-size: 12px;">' . htmlspecialchars($estadisticasTiempo['fecha_mas_reciente']) . '</td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                    </tr>
-                    <tr>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 16.67%; padding: 8px; border: 2px solid #4CAF50; background-color: #e8f5e8; font-weight: bold; font-size: 12px;">Tiempo total entre cambios:</td>
-                        <td style="width: 16.67%; padding: 8px; border: 2px solid #4CAF50; background-color: white; text-align: center; font-size: 12px;">' . htmlspecialchars($estadisticasTiempo['tiempo_total']) . '</td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                    </tr>
-                    <tr>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 16.67%; padding: 8px; border: 2px solid #4CAF50; background-color: #e8f5e8; font-weight: bold; font-size: 12px;">Tiempo promedio entre cambios:</td>
-                        <td style="width: 16.67%; padding: 8px; border: 2px solid #4CAF50; background-color: white; text-align: center; font-size: 12px;">' . htmlspecialchars($estadisticasTiempo['promedio_real']) . '</td>
-                        <td style="width: 8.33%;"></td>
-                        <td style="width: 8.33%;"></td>
-                    </tr>
-                </table>';
-                
-                echo '</body>
-                </html>';
-                
-                exit;
-            }
-
-            // ✅ FUNCIÓN PDF COMPLETA CORREGIDA (similar implementación)
-            function generarPDFHistorial($datos) {
-                if (!isset($datos['datos']) || empty($datos['datos'])) {
-                    echo "<script>alert('No hay datos para exportar'); window.close();</script>";
-                    exit;
-                }
-                
-                // IMPORTANTE: Ordenar datos por fecha ascendente antes de calcular
-                $datosOrdenados = ordenarDatosPorFecha($datos['datos']);
-                $datos['datos'] = $datosOrdenados;
-                
-                // Calcular estadísticas de tiempo mejoradas
-                $estadisticasTiempo = generarEstadisticasTiempoMejoradas($datos['datos']);
-                
-                header('Content-Type: text/html; charset=UTF-8');
-                
-                echo '<!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <title>' . $datos['titulo_reporte'] . '</title>
-                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-                    <style>
-                        body { 
-                            font-family: Arial, sans-serif; 
-                            font-size: 12px;
-                            margin: 20px;
-                        }
-                        .header {
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            margin-bottom: 20px;
-                            border-bottom: 2px solid #333;
-                            padding-bottom: 15px;
-                        }
-                        .header img {
-                            height: 50px;
-                            margin-right: 15px;
-                            vertical-align: middle;
-                        }
-                        .logo-text {
-                            font-size: 24px;
-                            font-weight: bold;
-                            color: #000;
-                            margin-right: 20px;
-                        }
-                        .titulo {
-                            font-size: 18px;
-                            font-weight: bold;
-                            color: #333;
-                        }
-                        .subtitulo {
-                            font-size: 14px;
-                            color: #666;
-                            margin: 10px 0;
-                            text-align: center;
-                        }
-                        .info {
-                            background-color: #f5f5f5;
-                            padding: 10px;
-                            border-radius: 5px;
-                            margin-bottom: 20px;
-                        }
-                        .orden-nota {
-                            background-color: #fff3cd;
-                            border: 2px solid #ffc107;
-                            padding: 10px;
-                            margin: 15px 0;
-                            border-radius: 5px;
-                            text-align: center;
-                            font-weight: bold;
-                            color: #856404;
-                        }
-                        .resumen {
-                            display: flex;
-                            justify-content: space-around;
-                            margin-bottom: 20px;
-                            background-color: #e8f4f8;
-                            padding: 15px;
-                            border-radius: 5px;
-                        }
-                        .resumen-item {
-                            text-align: center;
-                        }
-                        .resumen-numero {
-                            font-size: 24px;
-                            font-weight: bold;
-                            color: #2c5aa0;
-                        }
-                        .resumen-texto {
-                            font-size: 12px;
-                            color: #666;
-                        }
-                        table {
-                            width: 100%;
-                            border-collapse: collapse;
-                            margin-bottom: 20px;
-                            font-size: 10px;
-                        }
-                        th, td {
-                            border: 1px solid #ddd;
-                            padding: 6px;
-                            text-align: left;
-                        }
-                        th {
-                            background-color: #4a90e2;
-                            color: white;
-                            font-weight: bold;
-                            text-align: center;
-                        }
-                        tr:nth-child(even) {
-                            background-color: #f9f9f9;
-                        }
-                        .tiempo-transcurrido {
-                            background-color: #fff3cd;
-                            font-weight: bold;
-                            color: #856404;
-                            text-align: center;
-                        }
-                        .primer-registro {
-                            background-color: #d4edda;
-                            color: #155724;
-                            text-align: center;
-                            font-weight: bold;
-                        }
-                        .estadisticas-tiempo {
-                            background-color: #e8f5e8;
-                            border: 2px solid #4CAF50;
-                            padding: 15px;
-                            margin: 20px auto;
-                            border-radius: 5px;
-                            width: 60%;
-                        }
-                        .footer {
-                            margin-top: 30px;
-                            text-align: center;
-                            font-size: 10px;
-                            color: #666;
-                            border-top: 1px solid #ddd;
-                            padding-top: 10px;
-                        }
-                        @media print {
-                            body { margin: 0; }
-                            .no-print { display: none; }
-                        }
-                    </style>
-                    <script>
-                        window.onload = function() {
-                            setTimeout(function() {
-                                window.print();
-                            }, 1000);
-                        };
-                    </script>
-                </head>
-                <body>
-                    <div class="header">
-                        <img src="logo3.png" alt="Logo ROY" style="height: 50px; margin-right: 15px; vertical-align: middle;">
-                        <div>
-                            <div class="titulo">' . htmlspecialchars($datos['titulo_reporte']) . '</div>
-                        </div>
-                    </div>
-                    
-                    <div class="subtitulo">' . htmlspecialchars($datos['subtitulo']) . '</div>
-                    
-                    <div class="info">
-                        <strong>Período:</strong> ' . htmlspecialchars($datos['periodo']) . '<br>
-                        <strong>Total de registros:</strong> ' . $datos['registros'] . '<br>
-                        <strong>Fecha de generación:</strong> ' . date('d/m/Y H:i:s') . '
-                    </div>
-                    
-                    <div class="orden-nota">
-                        <i class="fas fa-info-circle"></i> 
-                        <strong>NOTA:</strong> Los datos han sido ordenados cronológicamente (más antiguo primero) para calcular correctamente el tiempo transcurrido entre cambios consecutivos.
-                    </div>';
-                
-                // Mostrar resumen si es reporte general
-                if ($datos['tipo_reporte'] === 'general' && isset($datos['resumen'])) {
-                    echo '<div class="resumen">
-                        <div class="resumen-item">
-                            <div class="resumen-numero">' . $datos['resumen']['total_cambios'] . '</div>
-                            <div class="resumen-texto">Total de Cambios</div>
-                        </div>
-                        <div class="resumen-item">
-                            <div class="resumen-numero">' . $datos['resumen']['solicitudes_afectadas'] . '</div>
-                            <div class="resumen-texto">Solicitudes Afectadas</div>
-                        </div>
-                        <div class="resumen-item">
-                            <div class="resumen-numero">' . $datos['resumen']['tiendas_afectadas'] . '</div>
-                            <div class="resumen-texto">Tiendas Afectadas</div>
-                        </div>
-                        <div class="resumen-item">
-                            <div class="resumen-numero">' . $datos['resumen']['supervisores_afectados'] . '</div>
-                            <div class="resumen-texto">Supervisores Afectados</div>
-                        </div>
-                    </div>';
-                }
-                
-                // Tabla de datos con tiempo consecutivo
-                echo '<table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Tienda</th>
-                            <th>Puesto</th>
-                            <th>Supervisor</th>
-                            <th>Estado Anterior</th>
-                            <th>Estado Nuevo</th>
-                            <th>Aprob. Anterior</th>
-                            <th>Aprob. Nueva</th>
-                            <th>Comentario</th>
-                            <th>Fecha</th>
-                            <th><i class="fas fa-clock"></i> Tiempo Transcurrido</th>
-                        </tr>
-                    </thead>
-                    <tbody>';
-                
-                foreach ($datos['datos'] as $rowIndex => $registro) {
-                    // Calcular tiempo desde el cambio anterior (ahora que están ordenados correctamente)
-                    $fechaAnterior = ($rowIndex > 0) ? $datos['datos'][$rowIndex - 1]['FECHA_CAMBIO'] : '';
-                    $tiempoTranscurrido = calcularTiempoConsecutivoCompleto($fechaAnterior, $registro['FECHA_CAMBIO']);
-                    
-                    // Determinar si es el primer registro
-                    $esPrimerRegistro = ($rowIndex === 0);
-                    $tiempoClass = $esPrimerRegistro ? 'primer-registro' : 'tiempo-transcurrido';
-                    
-                    echo '<tr>
-                        <td>' . htmlspecialchars($registro['ID_SOLICITUD']) . '</td>
-                        <td>' . htmlspecialchars($registro['NUM_TIENDA']) . '</td>
-                        <td>' . htmlspecialchars($registro['PUESTO_SOLICITADO']) . '</td>
-                        <td>' . htmlspecialchars($registro['SOLICITADO_POR']) . '</td>
-                        <td>' . htmlspecialchars($registro['ESTADO_ANTERIOR']) . '</td>
-                        <td>' . htmlspecialchars($registro['ESTADO_NUEVO']) . '</td>
-                        <td>' . htmlspecialchars($registro['APROBACION_ANTERIOR']) . '</td>
-                        <td>' . htmlspecialchars($registro['APROBACION_NUEVA']) . '</td>
-                        <td>' . htmlspecialchars($registro['COMENTARIO_NUEVO']) . '</td>
-                        <td>' . htmlspecialchars($registro['FECHA_CAMBIO']) . '</td>
-                        <td class="' . $tiempoClass . '">' . htmlspecialchars($tiempoTranscurrido) . '</td>
-                    </tr>';
-                }
-                
-                echo '</tbody>
-                </table>';
-                
-                // Estadísticas de tiempo centradas
-                echo '<div style="text-align: center; margin: 30px 0;">
-                    <h3 style="color: #2E7D32;"><i class="fas fa-chart-bar"></i> ANÁLISIS DE TIEMPO TRANSCURRIDO</h3>
-                </div>
-                
-                <div class="estadisticas-tiempo">
-                    <table style="width: 100%; background-color: white; margin: 0;">
-                        <tr>
-                            <td style="padding: 10px;"><strong><i class="fas fa-calendar-alt"></i> Cambio más antiguo:</strong></td>
-                            <td style="padding: 10px;">' . htmlspecialchars($estadisticasTiempo['fecha_mas_antiguo']) . '</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 10px;"><strong><i class="fas fa-calendar-check"></i> Cambio más reciente:</strong></td>
-                            <td style="padding: 10px;">' . htmlspecialchars($estadisticasTiempo['fecha_mas_reciente']) . '</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 10px;"><strong><i class="fas fa-calculator"></i> Tiempo total entre cambios:</strong></td>
-                            <td style="padding: 10px;">' . htmlspecialchars($estadisticasTiempo['tiempo_total']) . '</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 10px;"><strong><i class="fas fa-clock"></i> Tiempo promedio entre cambios:</strong></td>
-                            <td style="padding: 10px;">' . htmlspecialchars($estadisticasTiempo['promedio_real']) . '</td>
-                        </tr>
-                    </table>
-                </div>
-                
-                <div class="footer">
-                    <p>Reporte generado por Sistema ROY - ' . date('d/m/Y H:i:s') . '</p>
-                    <p class="no-print">
-                        <button onclick="window.print()"><i class="fas fa-print"></i> Imprimir / Guardar como PDF</button>
-                        <button onclick="window.close()"><i class="fas fa-times"></i> Cerrar</button>
-                    </p>
-                </div>
-                
-                </body>
-                </html>';
-                
-                exit;
-            }
-
-            function generarReporteFiltrado($conn, $fecha_inicial, $fecha_final, $filtro_tienda, $filtro_supervisor, $filtro_puesto, $incluir_aprobaciones, $incluir_estados, $usuario_logueado) {
-                
-                //  OBTENER NOMBRE DEL SUPERVISOR SI SE FILTRA POR CÓDIGO
-                $nombre_supervisor_filtrado = '';
-                $codigo_supervisor_real = '';
-                if (!empty($filtro_supervisor)) {
-                    $queryNombreSup = "SELECT udf1_string as codigo, udf2_string as nombre 
-                                    FROM RPS.STORE 
-                                    WHERE udf1_string = :filtro_supervisor 
-                                    AND sbs_sid = '680861302000159257' 
-                                    AND ROWNUM = 1";
-                    
-                    $stmtNombreSup = oci_parse($conn, $queryNombreSup);
-                    oci_bind_by_name($stmtNombreSup, ':filtro_supervisor', $filtro_supervisor);
-                    oci_execute($stmtNombreSup);
-                    
-                    if ($rowSup = oci_fetch_assoc($stmtNombreSup)) {
-                        $nombre_supervisor_filtrado = trim($rowSup['NOMBRE']);
-                        $codigo_supervisor_real = trim($rowSup['CODIGO']);
-                        error_log("✅ Supervisor para reporte - Código: $codigo_supervisor_real, Nombre: $nombre_supervisor_filtrado");
-                    } else {
-                        return ['error' => 'No se encontró supervisor con código: ' . $filtro_supervisor];
-                    }
-                    oci_free_statement($stmtNombreSup);
-                }
-                
-                //CONSTRUIR QUERY PARA REPORTE FILTRADO
-                $whereConditions = [];
-                $joinConditions = [];
-                
-                $whereConditions[] = "h.FECHA_CAMBIO BETWEEN TO_DATE(:fecha_inicial, 'YYYY-MM-DD') AND TO_DATE(:fecha_final, 'YYYY-MM-DD') + 1";
-                
-                // Filtro de usuario (gerentes)
-                if (in_array($usuario_logueado, ['5333', '5210'])) {
-                    $gerente_nombres = ['5333' => 'Christian Quan', '5210' => 'Giovanni Cardoza'];
-                    $nombre_gerente = $gerente_nombres[$usuario_logueado];
-                    $joinConditions[] = "LEFT JOIN RPS.STORE rps_gerente ON rps_gerente.udf2_string = s.SOLICITADO_POR AND rps_gerente.sbs_sid = '680861302000159257'";
-                    $whereConditions[] = "UPPER(TRIM(rps_gerente.udf4_string)) = UPPER(TRIM(:nombre_gerente))";
-                }
-                
-                // Filtros específicos
-                if (!empty($filtro_tienda)) {
-                    $whereConditions[] = "s.NUM_TIENDA = :filtro_tienda";
-                }
-                
-                if (!empty($nombre_supervisor_filtrado)) {
-                    $whereConditions[] = "s.SOLICITADO_POR = :nombre_supervisor_filtrado";
-                }
-                
-                if (!empty($filtro_puesto)) {
-                    $whereConditions[] = "s.PUESTO_SOLICITADO = :filtro_puesto";
-                }
-                
-                $joinClause = implode(' ', $joinConditions);
-                $whereClause = implode(' AND ', $whereConditions);
-                
-                $query = "SELECT DISTINCT
-                            h.ID_HISTORICO,
-                            h.ID_SOLICITUD,
-                            s.NUM_TIENDA,
-                            s.PUESTO_SOLICITADO,
-                            s.SOLICITADO_POR,
-                            h.ESTADO_ANTERIOR,
-                            h.ESTADO_NUEVO,
-                            h.APROBACION_ANTERIOR,
-                            h.APROBACION_NUEVA,
-                            h.COMENTARIO_NUEVO,
-                            TO_CHAR(h.FECHA_CAMBIO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_CAMBIO,
-                            rps_info.udf1_string as CODIGO_SUPERVISOR
-                        FROM ROY_HISTORICO_SOLICITUD h
-                        INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
-                        LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
-                        $joinClause
-                        WHERE $whereClause
-                        ORDER BY FECHA_CAMBIO DESC";
-                
-                $stmt = oci_parse($conn, $query);
-                
-                // Bind parámetros
-                oci_bind_by_name($stmt, ':fecha_inicial', $fecha_inicial);
-                oci_bind_by_name($stmt, ':fecha_final', $fecha_final);
-                
-                if (!empty($filtro_tienda)) {
-                    oci_bind_by_name($stmt, ':filtro_tienda', $filtro_tienda);
-                }
-                
-                if (!empty($nombre_supervisor_filtrado)) {
-                    oci_bind_by_name($stmt, ':nombre_supervisor_filtrado', $nombre_supervisor_filtrado);
-                }
-                
-                if (!empty($filtro_puesto)) {
-                    oci_bind_by_name($stmt, ':filtro_puesto', $filtro_puesto);
-                }
-                
-                if (in_array($usuario_logueado, ['5333', '5210'])) {
-                    $gerente_nombres = ['5333' => 'Christian Quan', '5210' => 'Giovanni Cardoza'];
-                    $nombre_gerente = $gerente_nombres[$usuario_logueado];
-                    oci_bind_by_name($stmt, ':nombre_gerente', $nombre_gerente);
-                }
-                
-                if (!oci_execute($stmt)) {
-                    $error = oci_error($stmt);
-                    oci_free_statement($stmt);
-                    return ['error' => 'Error en consulta filtrada: ' . $error['message']];
-                }
-                
-                $historial = [];
-                while ($row = oci_fetch_assoc($stmt)) {
-                    $incluir_registro = false;
-                    
-                    if ($incluir_aprobaciones && $incluir_estados) {
-                        $incluir_registro = true;
-                    } elseif ($incluir_aprobaciones && !$incluir_estados) {
-                        $incluir_registro = ($row['APROBACION_ANTERIOR'] !== $row['APROBACION_NUEVA']);
-                    } elseif (!$incluir_aprobaciones && $incluir_estados) {
-                        $incluir_registro = ($row['ESTADO_ANTERIOR'] !== $row['ESTADO_NUEVO']);
-                    }
-                    
-                    if ($incluir_registro) {
-                        $historial[] = $row;
-                    }
-                }
-                
-                oci_free_statement($stmt);
-                
-                // GENERAR METADATA DEL REPORTE FILTRADO
-                $filtros_aplicados = [];
-                if (!empty($filtro_tienda)) $filtros_aplicados[] = "Tienda: $filtro_tienda";
-                if (!empty($filtro_supervisor)) $filtros_aplicados[] = "Supervisor: $nombre_supervisor_filtrado ($codigo_supervisor_real)";
-                if (!empty($filtro_puesto)) $filtros_aplicados[] = "Puesto: $filtro_puesto";
-                
-                return [
-                    'success' => true,
-                    'tipo_reporte' => 'filtrado',
-                    'registros' => count($historial),
-                    'filtros_aplicados' => $filtros_aplicados,
-                    'periodo' => "$fecha_inicial - $fecha_final",
-                    'fecha_inicial' => $fecha_inicial,
-                    'fecha_final' => $fecha_final,
-                    'datos' => $historial,
-                    'incluye_aprobaciones' => $incluir_aprobaciones,
-                    'incluye_estados' => $incluir_estados,
-                    'titulo_reporte' => 'Historial Filtrado de Solicitudes',
-                    'subtitulo' => 'Filtros: ' . implode(' | ', $filtros_aplicados),
-                    'headers_excel' => [
-                        'ID_SOLICITUD' => 'ID Solicitud',
-                        'NUM_TIENDA' => 'Tienda',
-                        'PUESTO_SOLICITADO' => 'Puesto',
-                        'SOLICITADO_POR' => 'Supervisor',
-                        'ESTADO_ANTERIOR' => 'Estado Anterior',
-                        'ESTADO_NUEVO' => 'Estado Nuevo',
-                        'APROBACION_ANTERIOR' => 'Aprobación Anterior',
-                        'APROBACION_NUEVA' => 'Aprobación Nueva',
-                        'COMENTARIO_NUEVO' => 'Comentario',
-                        'FECHA_CAMBIO' => 'Fecha Cambio'
-                    ]
-                ];
-            }
-
-            //  FUNCIÓN PARA REPORTE GENERAL
-            function generarReporteGeneral($conn, $fecha_inicial, $fecha_final, $incluir_aprobaciones, $incluir_estados, $usuario_logueado) {
-                
-                $whereConditions = [];
-                $joinConditions = [];
-                
-                $whereConditions[] = "h.FECHA_CAMBIO BETWEEN TO_DATE(:fecha_inicial, 'YYYY-MM-DD') AND TO_DATE(:fecha_final, 'YYYY-MM-DD') + 1";
-                
-                // Filtro de usuario (gerentes)
-                if (in_array($usuario_logueado, ['5333', '5210'])) {
-                    $gerente_nombres = ['5333' => 'Christian Quan', '5210' => 'Giovanni Cardoza'];
-                    $nombre_gerente = $gerente_nombres[$usuario_logueado];
-                    $joinConditions[] = "LEFT JOIN RPS.STORE rps_gerente ON rps_gerente.udf2_string = s.SOLICITADO_POR AND rps_gerente.sbs_sid = '680861302000159257'";
-                    $whereConditions[] = "UPPER(TRIM(rps_gerente.udf4_string)) = UPPER(TRIM(:nombre_gerente))";
-                }
-                
-                $joinClause = implode(' ', $joinConditions);
-                $whereClause = implode(' AND ', $whereConditions);
-                
-                // QUERY PARA RESUMEN GENERAL
-                $queryResumen = "SELECT 
-                                    COUNT(DISTINCT h.ID_HISTORICO) as TOTAL_CAMBIOS,
-                                    COUNT(DISTINCT s.ID_SOLICITUD) as SOLICITUDES_AFECTADAS,
-                                    COUNT(DISTINCT s.NUM_TIENDA) as TIENDAS_AFECTADAS,
-                                    COUNT(DISTINCT s.SOLICITADO_POR) as SUPERVISORES_AFECTADOS
-                                FROM ROY_HISTORICO_SOLICITUD h
-                                INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
-                                $joinClause
-                                WHERE $whereClause";
-                
-                $stmtResumen = oci_parse($conn, $queryResumen);
-                oci_bind_by_name($stmtResumen, ':fecha_inicial', $fecha_inicial);
-                oci_bind_by_name($stmtResumen, ':fecha_final', $fecha_final);
-                
-                if (in_array($usuario_logueado, ['5333', '5210'])) {
-                    $gerente_nombres = ['5333' => 'Christian Quan', '5210' => 'Giovanni Cardoza'];
-                    $nombre_gerente = $gerente_nombres[$usuario_logueado];
-                    oci_bind_by_name($stmtResumen, ':nombre_gerente', $nombre_gerente);
-                }
-                
-                oci_execute($stmtResumen);
-                $resumen = oci_fetch_assoc($stmtResumen);
-                oci_free_statement($stmtResumen);
-                
-                // QUERY PARA DATOS DETALLADOS
-                $queryDetalle = "SELECT DISTINCT
-                                    h.ID_HISTORICO,
-                                    h.ID_SOLICITUD,
-                                    s.NUM_TIENDA,
-                                    s.PUESTO_SOLICITADO,
-                                    s.SOLICITADO_POR,
-                                    h.ESTADO_ANTERIOR,
-                                    h.ESTADO_NUEVO,
-                                    h.APROBACION_ANTERIOR,
-                                    h.APROBACION_NUEVA,
-                                    h.COMENTARIO_NUEVO,
-                                    TO_CHAR(h.FECHA_CAMBIO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_CAMBIO,
-                                    rps_info.udf1_string as CODIGO_SUPERVISOR
-                                FROM ROY_HISTORICO_SOLICITUD h
-                                INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
-                                LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
-                                $joinClause
-                                WHERE $whereClause
-                                ORDER BY FECHA_CAMBIO DESC";
-                
-                $stmtDetalle = oci_parse($conn, $queryDetalle);
-                oci_bind_by_name($stmtDetalle, ':fecha_inicial', $fecha_inicial);
-                oci_bind_by_name($stmtDetalle, ':fecha_final', $fecha_final);
-                
-                if (in_array($usuario_logueado, ['5333', '5210'])) {
-                    $gerente_nombres = ['5333' => 'Christian Quan', '5210' => 'Giovanni Cardoza'];
-                    $nombre_gerente = $gerente_nombres[$usuario_logueado];
-                    oci_bind_by_name($stmtDetalle, ':nombre_gerente', $nombre_gerente);
-                }
-                
-                if (!oci_execute($stmtDetalle)) {
-                    $error = oci_error($stmtDetalle);
-                    oci_free_statement($stmtDetalle);
-                    return ['error' => 'Error en consulta general: ' . $error['message']];
-                }
-                
-                $historial = [];
-                while ($row = oci_fetch_assoc($stmtDetalle)) {
-                    $incluir_registro = false;
-                    
-                    if ($incluir_aprobaciones && $incluir_estados) {
-                        $incluir_registro = true;
-                    } elseif ($incluir_aprobaciones && !$incluir_estados) {
-                        $incluir_registro = ($row['APROBACION_ANTERIOR'] !== $row['APROBACION_NUEVA']);
-                    } elseif (!$incluir_aprobaciones && $incluir_estados) {
-                        $incluir_registro = ($row['ESTADO_ANTERIOR'] !== $row['ESTADO_NUEVO']);
-                    }
-                    
-                    if ($incluir_registro) {
-                        $historial[] = $row;
-                    }
-                }
-                
-                oci_free_statement($stmtDetalle);
-                
-                return [
-                    'success' => true,
-                    'tipo_reporte' => 'general',
-                    'registros' => count($historial),
-                    'resumen' => [
-                        'total_cambios' => $resumen['TOTAL_CAMBIOS'],
-                        'solicitudes_afectadas' => $resumen['SOLICITUDES_AFECTADAS'],
-                        'tiendas_afectadas' => $resumen['TIENDAS_AFECTADAS'],
-                        'supervisores_afectados' => $resumen['SUPERVISORES_AFECTADOS']
-                    ],
-                    'periodo' => "$fecha_inicial - $fecha_final",
-                    'fecha_inicial' => $fecha_inicial,
-                    'fecha_final' => $fecha_final,
-                    'datos' => $historial,
-                    'incluye_aprobaciones' => $incluir_aprobaciones,
-                    'incluye_estados' => $incluir_estados,
-                    'titulo_reporte' => 'Historial General de Solicitudes',
-                    'subtitulo' => 'Período: ' . date('d/m/Y', strtotime($fecha_inicial)) . ' - ' . date('d/m/Y', strtotime($fecha_final)),
-                    'headers_excel' => [
-                        'ID_SOLICITUD' => 'ID Solicitud',
-                        'NUM_TIENDA' => 'Tienda',
-                        'PUESTO_SOLICITADO' => 'Puesto',
-                        'SOLICITADO_POR' => 'Supervisor',
-                        'ESTADO_ANTERIOR' => 'Estado Anterior',
-                        'ESTADO_NUEVO' => 'Estado Nuevo',
-                        'APROBACION_ANTERIOR' => 'Aprobación Anterior',
-                        'APROBACION_NUEVA' => 'Aprobación Nueva',
-                        'COMENTARIO_NUEVO' => 'Comentario',
-                        'FECHA_CAMBIO' => 'Fecha Cambio'
-                    ],
-                    'estadisticas_adicionales' => [
-                        'cambios_por_tipo' => getCambiosPorTipo($historial),
-                        'actividad_por_tienda' => getActividadPorTienda($historial),
-                        'cambios_por_dia' => getCambiosPorDia($historial)
-                    ]
-                ];
-            }
-
-            //  FUNCIONES AUXILIARES PARA ESTADÍSTICAS
-            function getCambiosPorTipo($historial) {
-                $tipos = [
-                    'solo_estado' => 0,
-                    'solo_aprobacion' => 0,
-                    'ambos' => 0
-                ];
-                
-                foreach ($historial as $registro) {
-                    $cambio_estado = $registro['ESTADO_ANTERIOR'] !== $registro['ESTADO_NUEVO'];
-                    $cambio_aprobacion = $registro['APROBACION_ANTERIOR'] !== $registro['APROBACION_NUEVA'];
-                    
-                    if ($cambio_estado && $cambio_aprobacion) {
-                        $tipos['ambos']++;
-                    } elseif ($cambio_estado) {
-                        $tipos['solo_estado']++;
-                    } elseif ($cambio_aprobacion) {
-                        $tipos['solo_aprobacion']++;
-                    }
-                }
-                
-                return $tipos;
-            }
-
-            function getActividadPorTienda($historial) {
-                $tiendas = [];
-                
-                foreach ($historial as $registro) {
-                    $tienda = $registro['NUM_TIENDA'];
-                    if (!isset($tiendas[$tienda])) {
-                        $tiendas[$tienda] = [
-                            'tienda' => $tienda,
-                            'supervisor' => $registro['SOLICITADO_POR'],
-                            'cambios' => 0,
-                            'solicitudes' => []
-                        ];
-                    }
-                    $tiendas[$tienda]['cambios']++;
-                    $tiendas[$tienda]['solicitudes'][] = $registro['ID_SOLICITUD'];
-                }
-                
-                // Contar solicitudes únicas por tienda
-                foreach ($tiendas as &$tienda) {
-                    $tienda['solicitudes_unicas'] = count(array_unique($tienda['solicitudes']));
-                    unset($tienda['solicitudes']); // No necesitamos el array completo en la respuesta
-                }
-                
-                // Ordenar por mayor actividad
-                usort($tiendas, function($a, $b) {
-                    return $b['cambios'] - $a['cambios'];
-                });
-                
-                return array_slice($tiendas, 0, 10); // Top 10 tiendas más activas
-            }
-
-            function getCambiosPorDia($historial) {
-                $dias = [];
-                
-                foreach ($historial as $registro) {
-                    $fecha = substr($registro['FECHA_CAMBIO'], 0, 10); // DD-MM-YYYY
-                    if (!isset($dias[$fecha])) {
-                        $dias[$fecha] = 0;
-                    }
-                    $dias[$fecha]++;
-                }
-                
-                // Ordenar por fecha
-                ksort($dias);
-                
-                return $dias;
-            }
-           
-                function generarReporteFiltradoSinUsuario($conn, $fecha_inicial, $fecha_final, $filtro_tienda, $filtro_supervisor, $filtro_puesto, $incluir_aprobaciones, $incluir_estados) {
-                    
-                    // OBTENER NOMBRE DEL SUPERVISOR SI SE FILTRA POR CÓDIGO
-                    $nombre_supervisor_filtrado = '';
-                    $codigo_supervisor_real = '';
-                    if (!empty($filtro_supervisor)) {
-                        $queryNombreSup = "SELECT udf1_string as codigo, udf2_string as nombre 
-                                        FROM RPS.STORE 
-                                        WHERE udf1_string = :filtro_supervisor 
-                                        AND sbs_sid = '680861302000159257' 
-                                        AND ROWNUM = 1";
-                        
-                        $stmtNombreSup = oci_parse($conn, $queryNombreSup);
-                        oci_bind_by_name($stmtNombreSup, ':filtro_supervisor', $filtro_supervisor);
-                        oci_execute($stmtNombreSup);
-                        
-                        if ($rowSup = oci_fetch_assoc($stmtNombreSup)) {
-                            $nombre_supervisor_filtrado = trim($rowSup['NOMBRE']);
-                            $codigo_supervisor_real = trim($rowSup['CODIGO']);
-                        } else {
-                            return ['error' => 'No se encontró supervisor con código: ' . $filtro_supervisor];
-                        }
-                        oci_free_statement($stmtNombreSup);
-                    }
-                    
-                    // CONSTRUIR QUERY SIN RESTRICCIONES DE USUARIO
-                    $whereConditions = [];
-                    
-                    $whereConditions[] = "h.FECHA_CAMBIO BETWEEN TO_DATE(:fecha_inicial, 'YYYY-MM-DD') AND TO_DATE(:fecha_final, 'YYYY-MM-DD') + 1";
-                    
-                    if (!empty($filtro_tienda)) {
-                        $whereConditions[] = "s.NUM_TIENDA = :filtro_tienda";
-                    }
-                    
-                    if (!empty($nombre_supervisor_filtrado)) {
-                        $whereConditions[] = "s.SOLICITADO_POR = :nombre_supervisor_filtrado";
-                    }
-                    
-                    if (!empty($filtro_puesto)) {
-                        $whereConditions[] = "s.PUESTO_SOLICITADO = :filtro_puesto";
-                    }
-                    
-                    $whereClause = implode(' AND ', $whereConditions);
-                    
-                    $query = "SELECT DISTINCT
-                                h.ID_HISTORICO,
-                                h.ID_SOLICITUD,
-                                s.NUM_TIENDA,
-                                s.PUESTO_SOLICITADO,
-                                s.SOLICITADO_POR,
-                                h.ESTADO_ANTERIOR,
-                                h.ESTADO_NUEVO,
-                                h.APROBACION_ANTERIOR,
-                                h.APROBACION_NUEVA,
-                                h.COMENTARIO_NUEVO,
-                                TO_CHAR(h.FECHA_CAMBIO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_CAMBIO,
-                                rps_info.udf1_string as CODIGO_SUPERVISOR
-                            FROM ROY_HISTORICO_SOLICITUD h
-                            INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
-                            LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
-                            WHERE $whereClause
-                            ORDER BY FECHA_CAMBIO DESC";
-                    
-                    $stmt = oci_parse($conn, $query);
-                    
-                    oci_bind_by_name($stmt, ':fecha_inicial', $fecha_inicial);
-                    oci_bind_by_name($stmt, ':fecha_final', $fecha_final);
-                    
-                    if (!empty($filtro_tienda)) {
-                        oci_bind_by_name($stmt, ':filtro_tienda', $filtro_tienda);
-                    }
-                    
-                    if (!empty($nombre_supervisor_filtrado)) {
-                        oci_bind_by_name($stmt, ':nombre_supervisor_filtrado', $nombre_supervisor_filtrado);
-                    }
-                    
-                    if (!empty($filtro_puesto)) {
-                        oci_bind_by_name($stmt, ':filtro_puesto', $filtro_puesto);
-                    }
-                    
-                    if (!oci_execute($stmt)) {
-                        $error = oci_error($stmt);
-                        oci_free_statement($stmt);
-                        return ['error' => 'Error en consulta filtrada: ' . $error['message']];
-                    }
-                    
-                    $historial = [];
-                    while ($row = oci_fetch_assoc($stmt)) {
-                        $incluir_registro = false;
-                        
-                        if ($incluir_aprobaciones && $incluir_estados) {
-                            $incluir_registro = true;
-                        } elseif ($incluir_aprobaciones && !$incluir_estados) {
-                            $incluir_registro = ($row['APROBACION_ANTERIOR'] !== $row['APROBACION_NUEVA']);
-                        } elseif (!$incluir_aprobaciones && $incluir_estados) {
-                            $incluir_registro = ($row['ESTADO_ANTERIOR'] !== $row['ESTADO_NUEVO']);
-                        }
-                        
-                        if ($incluir_registro) {
-                            $historial[] = $row;
-                        }
-                    }
-                    
-                    oci_free_statement($stmt);
-                    
-                    $filtros_aplicados = [];
-                    if (!empty($filtro_tienda)) $filtros_aplicados[] = "Tienda: $filtro_tienda";
-                    if (!empty($filtro_supervisor)) $filtros_aplicados[] = "Supervisor: $nombre_supervisor_filtrado ($codigo_supervisor_real)";
-                    if (!empty($filtro_puesto)) $filtros_aplicados[] = "Puesto: $filtro_puesto";
-                    
-                    return [
-                        'success' => true,
-                        'tipo_reporte' => 'filtrado',
-                        'registros' => count($historial),
-                        'filtros_aplicados' => $filtros_aplicados,
-                        'periodo' => "$fecha_inicial - $fecha_final",
-                        'fecha_inicial' => $fecha_inicial,
-                        'fecha_final' => $fecha_final,
-                        'datos' => $historial,
-                        'incluye_aprobaciones' => $incluir_aprobaciones,
-                        'incluye_estados' => $incluir_estados,
-                        'titulo_reporte' => 'Historial Filtrado de Solicitudes',
-                        'subtitulo' => 'Filtros: ' . implode(' | ', $filtros_aplicados),
-                        'headers_excel' => [
-                            'ID_SOLICITUD' => 'ID Solicitud',
-                            'NUM_TIENDA' => 'Tienda',
-                            'PUESTO_SOLICITADO' => 'Puesto',
-                            'SOLICITADO_POR' => 'Supervisor',
-                            'ESTADO_ANTERIOR' => 'Estado Anterior',
-                            'ESTADO_NUEVO' => 'Estado Nuevo',
-                            'APROBACION_ANTERIOR' => 'Aprobación Anterior',
-                            'APROBACION_NUEVA' => 'Aprobación Nueva',
-                            'COMENTARIO_NUEVO' => 'Comentario',
-                            'FECHA_CAMBIO' => 'Fecha Cambio'
-                        ]
-                    ];
-                }
-
-                function generarReporteGeneralSinUsuario($conn, $fecha_inicial, $fecha_final, $incluir_aprobaciones, $incluir_estados) {
-                    
-                    $whereConditions = [];
-                    $whereConditions[] = "h.FECHA_CAMBIO BETWEEN TO_DATE(:fecha_inicial, 'YYYY-MM-DD') AND TO_DATE(:fecha_final, 'YYYY-MM-DD') + 1";
-                    $whereClause = implode(' AND ', $whereConditions);
-                    
-                    // QUERY PARA RESUMEN GENERAL
-                    $queryResumen = "SELECT 
-                                        COUNT(*) as TOTAL_CAMBIOS,
-                                        COUNT(DISTINCT s.ID_SOLICITUD) as SOLICITUDES_AFECTADAS,
-                                        COUNT(DISTINCT s.NUM_TIENDA) as TIENDAS_AFECTADAS,
-                                        COUNT(DISTINCT s.SOLICITADO_POR) as SUPERVISORES_AFECTADOS
-                                    FROM ROY_HISTORICO_SOLICITUD h
-                                    INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
-                                    WHERE $whereClause";
-                    
-                    $stmtResumen = oci_parse($conn, $queryResumen);
-                    oci_bind_by_name($stmtResumen, ':fecha_inicial', $fecha_inicial);
-                    oci_bind_by_name($stmtResumen, ':fecha_final', $fecha_final);
-                    
-                    oci_execute($stmtResumen);
-                    $resumen = oci_fetch_assoc($stmtResumen);
-                    oci_free_statement($stmtResumen);
-                    
-                    // QUERY PARA DATOS DETALLADOS
-                    $queryDetalle = "SELECT DISTINCT
-                                        h.ID_HISTORICO,
-                                        h.ID_SOLICITUD,
-                                        s.NUM_TIENDA,
-                                        s.PUESTO_SOLICITADO,
-                                        s.SOLICITADO_POR,
-                                        h.ESTADO_ANTERIOR,
-                                        h.ESTADO_NUEVO,
-                                        h.APROBACION_ANTERIOR,
-                                        h.APROBACION_NUEVA,
-                                        h.COMENTARIO_NUEVO,
-                                        TO_CHAR(h.FECHA_CAMBIO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_CAMBIO,
-                                        rps_info.udf1_string as CODIGO_SUPERVISOR
-                                    FROM ROY_HISTORICO_SOLICITUD h
-                                    INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
-                                    LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
-                                    WHERE $whereClause
-                                    ORDER BY FECHA_CAMBIO DESC";
-                    
-                    $stmtDetalle = oci_parse($conn, $queryDetalle);
-                    oci_bind_by_name($stmtDetalle, ':fecha_inicial', $fecha_inicial);
-                    oci_bind_by_name($stmtDetalle, ':fecha_final', $fecha_final);
-                    
-                    if (!oci_execute($stmtDetalle)) {
-                        $error = oci_error($stmtDetalle);
-                        oci_free_statement($stmtDetalle);
-                        return ['error' => 'Error en consulta general: ' . $error['message']];
-                    }
-                    
-                    $historial = [];
-                    while ($row = oci_fetch_assoc($stmtDetalle)) {
-                        $incluir_registro = false;
-                        
-                        if ($incluir_aprobaciones && $incluir_estados) {
-                            $incluir_registro = true;
-                        } elseif ($incluir_aprobaciones && !$incluir_estados) {
-                            $incluir_registro = ($row['APROBACION_ANTERIOR'] !== $row['APROBACION_NUEVA']);
-                        } elseif (!$incluir_aprobaciones && $incluir_estados) {
-                            $incluir_registro = ($row['ESTADO_ANTERIOR'] !== $row['ESTADO_NUEVO']);
-                        }
-                        
-                        if ($incluir_registro) {
-                            $historial[] = $row;
-                        }
-                    }
-                    
-                    oci_free_statement($stmtDetalle);
-                    
-                    return [
-                        'success' => true,
-                        'tipo_reporte' => 'general',
-                        'registros' => count($historial),
-                        'resumen' => [
-                            'total_cambios' => $resumen['TOTAL_CAMBIOS'],
-                            'solicitudes_afectadas' => $resumen['SOLICITUDES_AFECTADAS'],
-                            'tiendas_afectadas' => $resumen['TIENDAS_AFECTADAS'],
-                            'supervisores_afectados' => $resumen['SUPERVISORES_AFECTADOS']
-                        ],
-                        'periodo' => "$fecha_inicial - $fecha_final",
-                        'fecha_inicial' => $fecha_inicial,
-                        'fecha_final' => $fecha_final,
-                        'datos' => $historial,
-                        'incluye_aprobaciones' => $incluir_aprobaciones,
-                        'incluye_estados' => $incluir_estados,
-                        'titulo_reporte' => 'Historial General de Solicitudes',
-                        'subtitulo' => 'Período: ' . date('d/m/Y', strtotime($fecha_inicial)) . ' - ' . date('d/m/Y', strtotime($fecha_final)),
-                        'headers_excel' => [
-                            'ID_SOLICITUD' => 'ID Solicitud',
-                            'NUM_TIENDA' => 'Tienda',
-                            'PUESTO_SOLICITADO' => 'Puesto',
-                            'SOLICITADO_POR' => 'Supervisor',
-                            'ESTADO_ANTERIOR' => 'Estado Anterior',
-                            'ESTADO_NUEVO' => 'Estado Nuevo',
-                            'APROBACION_ANTERIOR' => 'Aprobación Anterior',
-                            'APROBACION_NUEVA' => 'Aprobación Nueva',
-                            'COMENTARIO_NUEVO' => 'Comentario',
-                            'FECHA_CAMBIO' => 'Fecha Cambio'
-                        ],
-                        'estadisticas_adicionales' => [
-                            'cambios_por_tipo' => getCambiosPorTipo($historial),
-                            'actividad_por_tienda' => getActividadPorTienda($historial),
-                            'cambios_por_dia' => getCambiosPorDia($historial)
-                        ]
-                    ];
-                }
-
-                //FUNCIÓN AUXILIAR PARA SUBIR ARCHIVOS DE AVAL
-                            function subirArchivoAval($archivo, $idSolicitud, $tipo) {
-                                $uploadDir = '../uploads/avales/';
+function formatearTamaño($bytes) {
+if ($bytes == 0) return '0 B';
                                 
-                                // Crear directorio si no existe
-                                if (!is_dir($uploadDir)) {
-                                    mkdir($uploadDir, 0755, true);
-                                }
-                                
-                                // Validar tipo de archivo
-                                $tiposPermitidos = ['pdf'];
-                                $extension = strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION));
-                                
-                                if (!in_array($extension, $tiposPermitidos)) {
-                                    throw new Exception("Tipo de archivo no permitido. Solo se permiten archivos PDF.");
-                                }
-                                
-                                // Validar tamaño (max 10MB)
-                                $maxSize = 10 * 1024 * 1024; // 10MB
-                                if ($archivo['size'] > $maxSize) {
-                                    throw new Exception("El archivo es demasiado grande. Máximo 10MB permitido.");
-                                }
-                                
-                                // Generar nombre único
-                                $timestamp = date('Y-m-d_H-i-s');
-                                $nombreArchivo = $tipo . '_SOL_' . $idSolicitud . '_' . $timestamp . '.' . $extension;
-                                $rutaCompleta = $uploadDir . $nombreArchivo;
-                                $rutaRelativa = 'uploads/avales/' . $nombreArchivo;
-                                
-                                if (!move_uploaded_file($archivo['tmp_name'], $rutaCompleta)) {
-                                    throw new Exception('Error subiendo archivo: ' . $archivo['name']);
-                                }
-                                
-                                return [
-                                    'nombre_archivo' => $nombreArchivo,
-                                    'nombre_original' => $archivo['name'],
-                                    'ruta_completa' => $rutaCompleta,
-                                    'ruta_relativa' => $rutaRelativa,
-                                    'tipo' => $tipo,
-                                    'tamaño' => $archivo['size'],
-                                    'extension' => $extension
-                                ];
-                            }
+$k = 1024;
+$sizes = ['B', 'KB', 'MB', 'GB'];
+$i = floor(log($bytes) / log($k));
+return round($bytes / pow($k, $i), 2) . ' ' . $sizes[$i];
+}
+
+// ==================================================================================
+// FUNCIÓN AUXILIAR: CALCULAR TIEMPO TRANSCURRIDO
+// ==================================================================================
+function calcularTiempo($fechaInicio, $fechaFin = null) {
+    try {
+        $fin = $fechaFin ? DateTime::createFromFormat('d-m-Y H:i:s', $fechaFin) : new DateTime();
+        $inicio = DateTime::createFromFormat('d-m-Y H:i:s', $fechaInicio);
+        
+        if (!$inicio) {
+            $inicio = DateTime::createFromFormat('Y-m-d H:i:s', $fechaInicio);
+        }
+        
+        if (!$inicio) return 'Fecha inválida';
+        
+        $diff = $fin->diff($inicio);
+        
+        $dias = $diff->days;
+        $horas = $diff->h;
+        $minutos = $diff->i;
+        
+        $partes = [];
+        if ($dias > 0) $partes[] = $dias . ' día' . ($dias > 1 ? 's' : '');
+        if ($horas > 0) $partes[] = $horas . ' hora' . ($horas > 1 ? 's' : '');
+        if ($minutos > 0) $partes[] = $minutos . ' minuto' . ($minutos > 1 ? 's' : '');
+        
+        return !empty($partes) ? implode(', ', $partes) : '0 minutos';
+        
+    } catch (Exception $e) {
+        return 'Error';
+    }
+}
 
 
+// ===== DETERMINAR ACCIÓN =====
+$action = $_GET['action'] ?? $_POST['action'] ?? null;
+
+if (!$action) {
+    enviarJSON(['success' => false, 'error' => 'Acción no especificada']);
+}
+
+// ===== SWITCH PRINCIPAL =====
 //=========================================================================================
 // INICIALIZACION
 //==========================================================================================
-$action = $_GET['action'] ?? $_POST['action'] ?? '';
-if (isset($_GET['action'])) {
-    switch ($_GET['action']) {
+switch ($action) {
 
-                    // 🧪 CASE DE PRUEBA - AGREGAR ESTE PRIMERO
-                    case 'test_conexion':
-                        echo json_encode([
-                            'success' => true,
-                            'message' => 'Conexión funcionando',
-                            'timestamp' => date('Y-m-d H:i:s'),
-                            'get_data' => $_GET,
-                            'post_data' => $_POST
-                        ]);
-                        exit;
+//=========================================================================================
+// INICIO ACCIONES
+//==========================================================================================   
+                            case 'listar_solicitudes_rh':
+                            error_log("Obteniendo solicitudes APROBADAS para RRHH...");         
+                            $query = "SELECT
+                                s.ID_SOLICITUD,
+                                s.NUM_TIENDA,
+                                s.PUESTO_SOLICITADO,
+                                s.ESTADO_SOLICITUD,
+                                s.ESTADO_APROBACION,
+                                s.DIRIGIDO_RH,
+                                TO_CHAR(s.FECHA_SOLICITUD, 'DD-MM-YYYY') AS FECHA_SOLICITUD,
+                                TO_CHAR(s.FECHA_MODIFICACION, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_MODIFICACION,
+                                s.SOLICITADO_POR,
+                                s.RAZON,
+                                s.DIRIGIDO_A,
+                                
+                                -- COMENTARIO COMBINADO: del historial general O del último cambio de candidatos
+                                COALESCE(
+                                    s.COMENTARIO_SOLICITUD,
+                                    (SELECT h.COMENTARIO_NUEVO 
+                                    FROM ROY_HISTORICO_SOLICITUD h 
+                                    WHERE h.ID_SOLICITUD = s.ID_SOLICITUD 
+                                    AND h.COMENTARIO_NUEVO IS NOT NULL
+                                    ORDER BY h.FECHA_CAMBIO DESC 
+                                    FETCH FIRST 1 ROWS ONLY)
+                                ) AS COMENTARIO_SOLICITUD,
 
+                                -- ID_HISTORICO del último comentario (general o candidatos)
+                                (SELECT h.ID_HISTORICO
+                                FROM ROY_HISTORICO_SOLICITUD h
+                                WHERE h.ID_SOLICITUD = s.ID_SOLICITUD
+                                AND (h.COMENTARIO_NUEVO IS NOT NULL OR EXISTS (
+                                    SELECT 1 FROM ROY_CHAT_HISTORICO c WHERE c.ID_HISTORICO = h.ID_HISTORICO
+                                ))
+                                ORDER BY h.FECHA_CAMBIO DESC
+                                FETCH FIRST 1 ROWS ONLY
+                                ) AS ID_HISTORICO,
 
-                            // OBTENER TIENDAS PARA FILTRO
+                                -- Conteo de mensajes NO LEÍDOS del SUPERVISOR
+                                (
+                                    SELECT COUNT(*)
+                                    FROM ROY_CHAT_HISTORICO ch
+                                    WHERE ch.ID_HISTORICO = (
+                                        SELECT h.ID_HISTORICO
+                                        FROM ROY_HISTORICO_SOLICITUD h
+                                        WHERE h.ID_SOLICITUD = s.ID_SOLICITUD
+                                        AND EXISTS (
+                                            SELECT 1 FROM ROY_CHAT_HISTORICO c WHERE c.ID_HISTORICO = h.ID_HISTORICO
+                                        )
+                                        ORDER BY h.FECHA_CAMBIO DESC
+                                        FETCH FIRST 1 ROWS ONLY
+                                    )
+                                    AND UPPER(ch.ES_LEIDO) = 'N'
+                                    AND UPPER(ch.ROL) = 'SUPERVISOR'
+                                ) AS NO_LEIDOS,
+
+                                -- TIENE_ARCHIVOS
+                                CASE
+                                WHEN EXISTS (
+                                    SELECT 1 
+                                    FROM ROY_ARCHIVOS_SOLICITUD a
+                                    JOIN ROY_HISTORICO_SOLICITUD h ON a.ID_HISTORICO = h.ID_HISTORICO
+                                    WHERE a.ID_SOLICITUD = s.ID_SOLICITUD
+                                    AND LOWER(h.ESTADO_NUEVO) LIKE '%cvs%'
+                                    AND h.ID_HISTORICO = (
+                                        SELECT MAX(ID_HISTORICO)
+                                        FROM ROY_HISTORICO_SOLICITUD
+                                        WHERE ID_SOLICITUD = s.ID_SOLICITUD
+                                        AND LOWER(ESTADO_NUEVO) LIKE '%cvs%'
+                                    )
+                                ) THEN 1 ELSE 0
+                                END AS TIENE_ARCHIVOS,
+
+                                -- TIENE_SELECCION
+                                (
+                                    SELECT CASE
+                                        WHEN COUNT(*) > 0 THEN 1 ELSE 0
+                                    END
+                                    FROM ROY_SELECCION_CVS sc
+                                    JOIN (
+                                        SELECT MAX(ID_HISTORICO) AS ID_HISTORICO
+                                        FROM ROY_HISTORICO_SOLICITUD
+                                        WHERE ID_SOLICITUD = s.ID_SOLICITUD
+                                        AND LOWER(ESTADO_NUEVO) LIKE '%cvs%'
+                                    ) h_cvs ON sc.ID_HISTORICO_CV_ENVIO = h_cvs.ID_HISTORICO
+                                    WHERE sc.ID_SOLICITUD = s.ID_SOLICITUD
+                                    AND sc.ES_ACTIVA = 'Y'
+                                ) AS TIENE_SELECCION,
+
+                                -- CORREGIDO: TIENE_OBSERVACIONES_DIA_PRUEBA
+                                (
+                                    SELECT CASE
+                                        WHEN MAX(obs.ID_OBSERVACION) IS NOT NULL THEN 1 ELSE 0
+                                    END
+                                    FROM ROY_OBSERVACIONES_DIA_PRUEBA obs
+                                    WHERE obs.ID_SOLICITUD = s.ID_SOLICITUD
+                                    AND obs.ESTADO = 'ENVIADO'
+                                ) AS TIENE_OBSERVACIONES_DIA_PRUEBA,
+
+                                --  AGREGAR ESTE CAMPO QUE FALTABA
+                                (
+                                    SELECT COUNT(*)
+                                    FROM ROY_CANDIDATOS_SOLICITUD cs
+                                    WHERE cs.ID_SOLICITUD = s.ID_SOLICITUD
+                                    AND cs.ACTIVO = 'Y'
+                                ) AS TOTAL_CANDIDATOS
+
+                            FROM ROY_SOLICITUD_PERSONAL s
+                            WHERE s.ESTADO_APROBACION = 'Aprobado'
+                            ORDER BY s.FECHA_SOLICITUD DESC";
+
+                         $stmt = oci_parse($conn, $query);
+                                                    
+                         if (!oci_execute($stmt)) {
+                         $error = oci_error($stmt);
+                         error_log("❌ Error ejecutando consulta RRHH: " . print_r($error, true));
+                         echo json_encode(['success' => false, 'error' => 'Error en consulta: ' . $error['message']]);
+                         oci_close($conn);
+                         break;
+                                                    }
+
+                        $solicitudes = [];
+                        while ($row = oci_fetch_assoc($stmt)) {
+                        $solicitudes[] = [
+                            'ID_SOLICITUD' => $row['ID_SOLICITUD'],
+                            'NUM_TIENDA' => $row['NUM_TIENDA'],
+                            'PUESTO_SOLICITADO' => $row['PUESTO_SOLICITADO'],
+                            'ESTADO_SOLICITUD' => $row['ESTADO_SOLICITUD'],
+                            'ESTADO_APROBACION' => $row['ESTADO_APROBACION'] ?: 'Por Aprobar',
+                            'DIRIGIDO_RH' => $row['DIRIGIDO_RH'],
+                            'FECHA_SOLICITUD' => $row['FECHA_SOLICITUD'],
+                            'FECHA_MODIFICACION' => $row['FECHA_MODIFICACION'],
+                            'SOLICITADO_POR' => $row['SOLICITADO_POR'],
+                            'RAZON' => $row['RAZON'],
+                            'DIRIGIDO_A' => $row['DIRIGIDO_A'],
+                            'COMENTARIO_SOLICITUD' => $row['COMENTARIO_SOLICITUD'],
+                            'ID_HISTORICO' => $row['ID_HISTORICO'],
+                            'TIENE_ARCHIVOS' => $row['TIENE_ARCHIVOS'],
+                            'TIENE_SELECCION' => $row['TIENE_SELECCION'],
+                            'TIENE_OBSERVACIONES_DIA_PRUEBA' => $row['TIENE_OBSERVACIONES_DIA_PRUEBA'],
+                            'NO_LEIDOS' => intval($row['NO_LEIDOS']),
+                            'TOTAL_CANDIDATOS' => intval($row['TOTAL_CANDIDATOS'])
+                        ];
+                            }
+
+                            oci_free_statement($stmt);
+                            oci_close($conn);
+
+                            error_log(" Solicitudes APROBADAS obtenidas para RRHH: " . count($solicitudes));
+                            echo json_encode($solicitudes);
+                            break;
+//=========================================================================================
+// CAMBIO DE ESTADO
+//==========================================================================================
+
+                        //CAMBIAR ESTADO - CORREGIDO PARA ACEPTAR PDFs
+case 'toggle_solicitud_status':
+    error_log("========== INICIO toggle_solicitud_status ==========");
+    
+    if (empty($_POST['id_solicitud']) || empty($_POST['nuevo_estado'])) {
+        echo json_encode(['success' => false, 'error' => 'Faltan datos obligatorios']);
+        break;
+    }
+
+    $id = trim($_POST['id_solicitud']);
+    $nuevo_estado = trim($_POST['nuevo_estado']);
+    $comentario_nuevo = trim($_POST['comentario'] ?? '');
+
+    if (empty($comentario_nuevo)) {
+        echo json_encode(['success' => false, 'error' => 'El comentario es obligatorio']);
+        break;
+    }
+
+    // Normalizar estado
+    $estadosPermitidos = ['Pendiente', 'Vacante Activa', 'Candidatos en Seleccion'];
+    $nuevo_estado = ucwords(strtolower($nuevo_estado));
+    
+    if ($nuevo_estado === 'Candidatos En Seleccion') {
+        $nuevo_estado = 'Candidatos en Seleccion';
+    }
+
+    if (!in_array($nuevo_estado, $estadosPermitidos, true)) {
+        echo json_encode(['success' => false, 'error' => "Estado no válido: $nuevo_estado"]);
+        break;
+    }
+
+    try {
+        // 1. Obtener estado anterior
+        $sql = "SELECT ESTADO_SOLICITUD FROM ROY_SOLICITUD_PERSONAL WHERE ID_SOLICITUD = :id";
+        $stmt = oci_parse($conn, $sql);
+        oci_bind_by_name($stmt, ':id', $id);
+        
+        if (!oci_execute($stmt)) {
+            throw new Exception("Error al consultar estado anterior");
+        }
+        
+        $row = oci_fetch_assoc($stmt);
+        if (!$row) {
+            throw new Exception("Solicitud no encontrada con ID: $id");
+        }
+        
+        $estado_anterior = $row['ESTADO_SOLICITUD'];
+        oci_free_statement($stmt);
+
+        // 2. UPDATE
+        $sql_update = "UPDATE ROY_SOLICITUD_PERSONAL 
+                      SET ESTADO_SOLICITUD = :estado,
+                          COMENTARIO_SOLICITUD = :comentario,
+                          FECHA_MODIFICACION = SYSDATE
+                      WHERE ID_SOLICITUD = :id";
+        
+        $stmt_update = oci_parse($conn, $sql_update);
+        oci_bind_by_name($stmt_update, ':estado', $nuevo_estado);
+        oci_bind_by_name($stmt_update, ':comentario', $comentario_nuevo);
+        oci_bind_by_name($stmt_update, ':id', $id);
+        
+        if (!oci_execute($stmt_update, OCI_NO_AUTO_COMMIT)) {
+            $error = oci_error($stmt_update);
+            throw new Exception("Error en UPDATE: " . $error['message']);
+        }
+        
+        oci_free_statement($stmt_update);
+
+        // 3. Insertar en ROY_HISTORICO_SOLICITUD
+        $sql_hist = "INSERT INTO ROY_HISTORICO_SOLICITUD 
+                    (ID_SOLICITUD, ESTADO_ANTERIOR, ESTADO_NUEVO, COMENTARIO_NUEVO, FECHA_CAMBIO, TIPO_EVENTO)
+                    VALUES (:id, :ant, :nuevo, :com, SYSDATE, 'CAMBIO_ESTADO_SOLICITUD')";
+        
+        $stmt_hist = oci_parse($conn, $sql_hist);
+        oci_bind_by_name($stmt_hist, ':id', $id);
+        oci_bind_by_name($stmt_hist, ':ant', $estado_anterior);
+        oci_bind_by_name($stmt_hist, ':nuevo', $nuevo_estado);
+        oci_bind_by_name($stmt_hist, ':com', $comentario_nuevo);
+        
+        if (!oci_execute($stmt_hist, OCI_NO_AUTO_COMMIT)) {
+            throw new Exception("Error insertando historial");
+        }
+        
+        $id_historico = null;
+        $sql_get_hist = "SELECT ID_HISTORICO FROM ROY_HISTORICO_SOLICITUD 
+                        WHERE ID_SOLICITUD = :id 
+                        ORDER BY FECHA_CAMBIO DESC 
+                        FETCH FIRST 1 ROWS ONLY";
+        
+        $stmt_get_hist = oci_parse($conn, $sql_get_hist);
+        oci_bind_by_name($stmt_get_hist, ':id', $id);
+        oci_execute($stmt_get_hist);
+        $hist_row = oci_fetch_assoc($stmt_get_hist);
+        if ($hist_row) {
+            $id_historico = $hist_row['ID_HISTORICO'];
+        }
+        oci_free_statement($stmt_get_hist);
+        oci_free_statement($stmt_hist);
+
+        // 4. ✅ AGREGAR COMENTARIO AL CHAT (ROY_CHAT_HISTORICO)
+        if ($id_historico) {
+            $sql_chat = "INSERT INTO ROY_CHAT_HISTORICO 
+                        (ID_MENSAJE, ID_HISTORICO, ROL, MENSAJE, FECHA, REMITENTE, ES_LEIDO)
+                        VALUES (SEQ_CHAT_MENSAJE.NEXTVAL, :id_hist, 'RRHH', EMPTY_CLOB(), SYSDATE, 'RRHH_SISTEMA', 'N')
+                        RETURNING MENSAJE INTO :mensaje_clob";
+            
+            $stmt_chat = oci_parse($conn, $sql_chat);
+            oci_bind_by_name($stmt_chat, ':id_hist', $id_historico);
+            
+            $clob = oci_new_descriptor($conn, OCI_D_LOB);
+            oci_bind_by_name($stmt_chat, ':mensaje_clob', $clob, -1, OCI_B_CLOB);
+            
+            if (oci_execute($stmt_chat, OCI_NO_AUTO_COMMIT)) {
+                // Guardar el comentario en el CLOB
+                $mensaje_chat = "Estado cambiado a: $nuevo_estado\n\nComentario: $comentario_nuevo";
+                $clob->save($mensaje_chat);
+                $clob->free();
+            }
+            
+            oci_free_statement($stmt_chat);
+            error_log("✅ Comentario guardado en chat");
+        }
+
+        // 5. COMMIT
+        if (!oci_commit($conn)) {
+            $error = oci_error($conn);
+            throw new Exception("COMMIT FALLÓ: " . $error['message']);
+        }
+        
+        error_log("✅ COMMIT EXITOSO");
+
+        echo json_encode([
+            'success' => true,
+            'mensaje' => 'Estado actualizado correctamente',
+            'estado_anterior' => $estado_anterior,
+            'estado_nuevo' => $nuevo_estado,
+            'chat_guardado' => ($id_historico ? true : false)
+        ]);
+
+    } catch (Exception $e) {
+        error_log("❌ ERROR: " . $e->getMessage());
+        oci_rollback($conn);
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+    break;
+//=========================================================================================
+// FILTROS
+//==========================================================================================
+
+                           // OBTENER TIENDAS PARA FILTRO
                             case 'get_tiendas_filtro':
                                 try {
                                     if (ob_get_level()) ob_clean();
@@ -1539,8 +461,8 @@ if (isset($_GET['action'])) {
                                 }
                                 break;
                     
-                    // OBTENER SUPERVISORES PARA FILTRO - CORREGIDO PARA INFORMÁTICA
-                    case 'get_supervisores_filtro':
+                            // OBTENER SUPERVISORES PARA FILTRO - CORREGIDO PARA INFORMÁTICA
+                            case 'get_supervisores_filtro':
                                 try {
                                     if (ob_get_level()) ob_clean();
                                     
@@ -1620,869 +542,645 @@ if (isset($_GET['action'])) {
                                 exit;
                             }
                             break;
+    
+//=========================================================================================
+// LECTURA Y SUBIDA DE ARCHVIVOS DE CANDIDATOS
+//==========================================================================================
+    //LECTURA DE ARCHIVOS DE LOS CANDIDATOS
+case 'get_archivos_candidato':
+    header('Content-Type: application/json; charset=utf-8');
+    try {
+        $id_candidato = $_GET['id_candidato'] ?? null;
+        $estado_filtro = $_GET['estado_filtro'] ?? null;
+        
+        if (!$id_candidato) {
+            throw new Exception('ID de candidato requerido');
+        }
+        
+        $whereClause = "a.ID_CANDIDATO = :id_candidato";
+        if ($estado_filtro) {
+            $whereClause .= " AND a.ESTADO_RELACIONADO = :estado_filtro";
+        }
+        
+        $query = "SELECT 
+                    a.ID_ARCHIVO,
+                    a.NOMBRE_ARCHIVO,
+                    a.TIPO_ARCHIVO,
+                    a.ESTADO_RELACIONADO,
+                    a.SUBIDO_POR_ROL,
+                    TO_CHAR(a.FECHA_SUBIDA, 'DD-MM-YYYY HH24:MI:SS') as FECHA_SUBIDA,
+                    c.NOMBRE_CANDIDATO,
+                    c.APELLIDOS_CANDIDATO
+                FROM ROY_ARCHIVOS_SOLICITUD a
+                JOIN ROY_CANDIDATOS_SOLICITUD c ON a.ID_CANDIDATO = c.ID_CANDIDATO
+                WHERE " . $whereClause . "
+                ORDER BY a.FECHA_SUBIDA DESC";
+        
+        $stmt = oci_parse($conn, $query);
+        oci_bind_by_name($stmt, ':id_candidato', $id_candidato);
+        
+        if ($estado_filtro) {
+            oci_bind_by_name($stmt, ':estado_filtro', $estado_filtro);
+        }
+        
+        oci_execute($stmt);
+        
+        $archivos = [];
+        while ($row = oci_fetch_assoc($stmt)) {
+            $nombreSolo = basename($row['NOMBRE_ARCHIVO']);
+            $rutaCompleta = __DIR__ . "/archivos_candidatos/" . $nombreSolo;
+            $archivoExiste = file_exists($rutaCompleta);
+            $tamaño = $archivoExiste ? filesize($rutaCompleta) : 0;
+            
+            $archivos[] = [
+                'ID_ARCHIVO' => $row['ID_ARCHIVO'],
+                'NOMBRE_ARCHIVO' => $row['NOMBRE_ARCHIVO'],
+                'NOMBRE_SOLO' => $nombreSolo,
+                'TIPO_ARCHIVO' => $row['TIPO_ARCHIVO'],
+                'ESTADO_RELACIONADO' => $row['ESTADO_RELACIONADO'],
+                'SUBIDO_POR_ROL' => $row['SUBIDO_POR_ROL'],
+                'FECHA_SUBIDA' => $row['FECHA_SUBIDA'],
+                'NOMBRE_CANDIDATO' => $row['NOMBRE_CANDIDATO'],
+                'APELLIDOS_CANDIDATO' => $row['APELLIDOS_CANDIDATO'],
+                'TAMAÑO_BYTES' => $tamaño,
+                'TAMAÑO_FORMATTED' => formatearTamaño($tamaño), // Ya tienes esta función
+                'EXISTE' => $archivoExiste,
+                // NUEVAS URLS PARA VER Y DESCARGAR
+                'URL_VER' => $archivoExiste ? './gestionhumana/crudsolicitudesrh.php?action=ver_archivo&archivo=' . urlencode($nombreSolo) : null,
+                'URL_DESCARGA' => $archivoExiste ? './gestionhumana/crudsolicitudesrh.php?action=descargar_archivo&archivo=' . urlencode($nombreSolo) : null
+            ];
+        }
+        
+        oci_free_statement($stmt);
+        
+        echo json_encode([
+            'success' => true,
+            'archivos' => $archivos,
+            'total' => count($archivos)
+        ]);
+        exit;
+        
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        exit;
+    }
+    break;
 
-                        // HISTORIAL GENERAL FILTRADO GENERAL
-                        case 'get_historial_filtrado':
-                            try {
-                                if (ob_get_level()) ob_clean();
-                                
-                                $fecha_inicial = $_GET['fecha_inicial'] ?? '';
-                                $fecha_final = $_GET['fecha_final'] ?? '';
-                                $incluir_aprobaciones = $_GET['incluir_aprobaciones'] ?? 1;
-                                $incluir_estados = $_GET['incluir_estados'] ?? 1;
-                                
-                                $filtro_tienda = $_GET['filtro_tienda'] ?? '';
-                                $filtro_supervisor = $_GET['filtro_supervisor'] ?? '';
-                                $filtro_puesto = $_GET['filtro_puesto'] ?? '';
-                                
-                                error_log("🔍 FILTROS RECIBIDOS - Tienda: '$filtro_tienda', Código Supervisor: '$filtro_supervisor', Puesto: '$filtro_puesto'");
-                                
-                                if (empty($fecha_inicial) || empty($fecha_final)) {
-                                    header('Content-Type: application/json');
-                                    echo json_encode(['error' => 'Fechas requeridas']);
-                                    exit;
-                                }
-                                
-                                // ✅ OBTENER NOMBRE DEL SUPERVISOR SI SE FILTRA POR CÓDIGO
-                                $nombre_supervisor_filtrado = '';
-                                if (!empty($filtro_supervisor)) {
-                                    $queryNombreSup = "SELECT udf2_string as nombre 
-                                                    FROM RPS.STORE 
-                                                    WHERE udf1_string = :filtro_supervisor 
-                                                    AND sbs_sid = '680861302000159257' 
-                                                    AND ROWNUM = 1";
-                                    
-                                    $stmtNombreSup = oci_parse($conn, $queryNombreSup);
-                                    oci_bind_by_name($stmtNombreSup, ':filtro_supervisor', $filtro_supervisor);
-                                    oci_execute($stmtNombreSup);
-                                    
-                                    if ($rowSup = oci_fetch_assoc($stmtNombreSup)) {
-                                        $nombre_supervisor_filtrado = trim($rowSup['NOMBRE']);
-                                        error_log("✅ Supervisor encontrado - Código: $filtro_supervisor, Nombre: $nombre_supervisor_filtrado");
-                                    } else {
-                                        error_log("❌ No se encontró supervisor con código: $filtro_supervisor");
-                                        // Si no existe el supervisor, devolver array vacío
-                                        header('Content-Type: application/json');
-                                        echo json_encode([]);
-                                        exit;
-                                    }
-                                    oci_free_statement($stmtNombreSup);
-                                }
-                                
-                                // ✅ CONSTRUIR QUERY PRINCIPAL CON JOINS CORRECTOS
-                                $whereConditions = [];
-                                $joinConditions = [];
-                                
-                                // Fecha siempre requerida
-                                $whereConditions[] = "h.FECHA_CAMBIO BETWEEN TO_DATE(:fecha_inicial, 'YYYY-MM-DD') AND TO_DATE(:fecha_final, 'YYYY-MM-DD') + 1";
-                                
-                                // ✅ FILTRO DE USUARIO (GERENTES)
-                                
-                                // ✅ FILTRO POR TIENDA
-                                if (!empty($filtro_tienda)) {
-                                    $whereConditions[] = "s.NUM_TIENDA = :filtro_tienda";
-                                }
-                                
-                                // ✅ FILTRO POR SUPERVISOR (usando nombre obtenido)
-                                if (!empty($filtro_supervisor) && !empty($nombre_supervisor_filtrado)) {
-                                    $whereConditions[] = "s.SOLICITADO_POR = :nombre_supervisor_filtrado";
-                                }
-                                
-                                // ✅ FILTRO POR PUESTO
-                                if (!empty($filtro_puesto)) {
-                                    $whereConditions[] = "s.PUESTO_SOLICITADO = :filtro_puesto";
-                                }
-                                
-                                // ✅ CONSTRUIR QUERY COMPLETO
-                                $joinClause = implode(' ', $joinConditions);
-                                $whereClause = implode(' AND ', $whereConditions);
-                                
-                                $query = "SELECT DISTINCT
-                                            h.ID_HISTORICO,
-                                            h.ID_SOLICITUD,
-                                            s.NUM_TIENDA,
-                                            s.PUESTO_SOLICITADO,
-                                            s.SOLICITADO_POR,
-                                            h.ESTADO_ANTERIOR,
-                                            h.ESTADO_NUEVO,
-                                            h.APROBACION_ANTERIOR,
-                                            h.APROBACION_NUEVA,
-                                            h.COMENTARIO_NUEVO,
-                                            TO_CHAR(h.FECHA_CAMBIO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_CAMBIO,
-                                            rps_info.udf1_string as CODIGO_SUPERVISOR
-                                        FROM ROY_HISTORICO_SOLICITUD h
-                                        INNER JOIN ROY_SOLICITUD_PERSONAL s ON h.ID_SOLICITUD = s.ID_SOLICITUD
-                                        LEFT JOIN RPS.STORE rps_info ON rps_info.udf2_string = s.SOLICITADO_POR AND rps_info.sbs_sid = '680861302000159257'
-                                        $joinClause
-                                        WHERE $whereClause
-                                        ORDER BY FECHA_CAMBIO DESC";
-                                
-                                error_log("🔍 QUERY FINAL CONSTRUIDO:");
-                                error_log($query);
-                                
-                                // ✅ PREPARAR Y EJECUTAR
-                                $stmt = oci_parse($conn, $query);
-                                if (!$stmt) {
-                                    $error = oci_error($conn);
-                                    error_log("❌ Error preparando query: " . print_r($error, true));
-                                    header('Content-Type: application/json');
-                                    echo json_encode(['error' => 'Error preparando consulta']);
-                                    exit;
-                                }
-                                
-                                // ✅ BIND PARÁMETROS
-                                oci_bind_by_name($stmt, ':fecha_inicial', $fecha_inicial);
-                                oci_bind_by_name($stmt, ':fecha_final', $fecha_final);
-                                error_log("✅ Parámetros de fecha vinculados");
-                                
-                                if (!empty($filtro_tienda)) {
-                                    oci_bind_by_name($stmt, ':filtro_tienda', $filtro_tienda);
-                                    error_log("✅ Parámetro tienda vinculado: $filtro_tienda");
-                                }
-                                
-                                if (!empty($nombre_supervisor_filtrado)) {
-                                    oci_bind_by_name($stmt, ':nombre_supervisor_filtrado', $nombre_supervisor_filtrado);
-                                    error_log("✅ Parámetro supervisor vinculado: $nombre_supervisor_filtrado");
-                                }
-                                
-                                if (!empty($filtro_puesto)) {
-                                    oci_bind_by_name($stmt, ':filtro_puesto', $filtro_puesto);
-                                    error_log("✅ Parámetro puesto vinculado: $filtro_puesto");
-                                }
-                                
-                                // ✅ EJECUTAR QUERY
-                                error_log("🚀 Ejecutando query...");
-                                if (!oci_execute($stmt)) {
-                                    $error = oci_error($stmt);
-                                    error_log("❌ Error ejecutando query: " . print_r($error, true));
-                                    header('Content-Type: application/json');
-                                    echo json_encode(['error' => 'Error en consulta: ' . $error['message']]);
-                                    exit;
-                                }
-                                
-                                error_log("✅ Query ejecutado exitosamente, procesando resultados...");
-                                
-                                // ✅ PROCESAR RESULTADOS
-                                $historial = [];
-                                $registrosEncontrados = 0;
-                                
-                                while ($row = oci_fetch_assoc($stmt)) {
-                                    $registrosEncontrados++;
-                                    
-                                    if ($registrosEncontrados <= 5) { // Log de primeros 5 registros
-                                        error_log("📝 Registro $registrosEncontrados: Tienda={$row['NUM_TIENDA']}, Supervisor={$row['SOLICITADO_POR']}, Código={$row['CODIGO_SUPERVISOR']}, Puesto={$row['PUESTO_SOLICITADO']}");
-                                    }
-                                    
-                                    // ✅ APLICAR FILTROS DE INCLUSIÓN
-                                    $incluir_registro = false;
-                                    
-                                    if ($incluir_aprobaciones && $incluir_estados) {
-                                        $incluir_registro = true;
-                                    } elseif ($incluir_aprobaciones && !$incluir_estados) {
-                                        $incluir_registro = ($row['APROBACION_ANTERIOR'] !== $row['APROBACION_NUEVA']);
-                                    } elseif (!$incluir_aprobaciones && $incluir_estados) {
-                                        $incluir_registro = ($row['ESTADO_ANTERIOR'] !== $row['ESTADO_NUEVO']);
-                                    }
-                                    
-                                    if ($incluir_registro) {
-                                        $historial[] = [
-                                            'ID_HISTORICO' => $row['ID_HISTORICO'],
-                                            'ID_SOLICITUD' => $row['ID_SOLICITUD'],
-                                            'NUM_TIENDA' => $row['NUM_TIENDA'],
-                                            'PUESTO_SOLICITADO' => $row['PUESTO_SOLICITADO'],
-                                            'SOLICITADO_POR' => $row['SOLICITADO_POR'],
-                                            'CODIGO_SUPERVISOR' => $row['CODIGO_SUPERVISOR'],
-                                            'ESTADO_ANTERIOR' => $row['ESTADO_ANTERIOR'],
-                                            'ESTADO_NUEVO' => $row['ESTADO_NUEVO'],
-                                            'APROBACION_ANTERIOR' => $row['APROBACION_ANTERIOR'],
-                                            'APROBACION_NUEVA' => $row['APROBACION_NUEVA'],
-                                            'COMENTARIO_NUEVO' => $row['COMENTARIO_NUEVO'],
-                                            'FECHA_CAMBIO' => $row['FECHA_CAMBIO']
-                                        ];
-                                    }
-                                }
-                                
-                                oci_free_statement($stmt);
-                                oci_close($conn);
-                                
-                                error_log("✅ RESULTADO FINAL: $registrosEncontrados registros encontrados, " . count($historial) . " incluidos en respuesta");
-                                
-                                // ✅ RESPUESTA
-                                header('Content-Type: application/json');
-                                echo json_encode($historial);
-                                exit;
-                                
-                            } catch (Exception $e) {
-                                error_log("❌ EXCEPCIÓN CAPTURADA: " . $e->getMessage());
-                                error_log("❌ Stack trace: " . $e->getTraceAsString());
-                                header('Content-Type: application/json');
-                                echo json_encode(['error' => 'Error interno: ' . $e->getMessage()]);
-                                exit;
-                            }
-                            break;
+        //SUBIDA DE ARCHIVOS DE LOS CANDIDATOS
+    case 'subir_archivo_candidato':
+        try {
+            error_log("=== INICIO SUBIDA ARCHIVO ===");
+            
+            // 1. VALIDAR DATOS OBLIGATORIOS
+            if (!isset($_FILES['archivo'])) {
+                enviarJSON(['success' => false, 'error' => 'No se recibió el archivo']);
+            }
+            
+            if (!isset($_POST['id_candidato']) || !isset($_POST['id_solicitud'])) {
+                enviarJSON(['success' => false, 'error' => 'Faltan datos obligatorios (id_candidato, id_solicitud)']);
+            }
 
-            //====================================================================
-            // GENERACION DE REPORTES PDF Y EXCEL
-            //====================================================================
-            case 'generar_reporte_historial':
-                try {
-                    if (ob_get_level()) ob_clean();
-                    
-                    // ✅ DETECTAR FORMATO SOLICITADO
-                    $formato = $_GET['formato'] ?? 'json';
-                    
-                    // ✅ OBTENER PARÁMETROS (desde GET o POST dependiendo del formato)
-                    if ($formato === 'json') {
-                        // Para vista previa, usar POST
-                        $fecha_inicial = $_POST['fecha_inicial'] ?? '';
-                        $fecha_final = $_POST['fecha_final'] ?? '';
-                        $incluir_aprobaciones = $_POST['incluir_aprobaciones'] ?? 1;
-                        $incluir_estados = $_POST['incluir_estados'] ?? 1;
-                        $filtro_tienda = $_POST['filtro_tienda'] ?? '';
-                        $filtro_supervisor = $_POST['filtro_supervisor'] ?? '';
-                        $filtro_puesto = $_POST['filtro_puesto'] ?? '';
-                    } else {
-                        // Para exportación, usar GET
-                        $fecha_inicial = $_GET['fecha_inicial'] ?? '';
-                        $fecha_final = $_GET['fecha_final'] ?? '';
-                        $incluir_aprobaciones = $_GET['incluir_aprobaciones'] ?? 1;
-                        $incluir_estados = $_GET['incluir_estados'] ?? 1;
-                        $filtro_tienda = $_GET['filtro_tienda'] ?? '';
-                        $filtro_supervisor = $_GET['filtro_supervisor'] ?? '';
-                        $filtro_puesto = $_GET['filtro_puesto'] ?? '';
-                    }
-                    
-                    error_log("🎯 GENERAR REPORTE FORMATO: $formato - Tienda: '$filtro_tienda', Supervisor: '$filtro_supervisor', Puesto: '$filtro_puesto'");
-                    
-                    if (empty($fecha_inicial) || empty($fecha_final)) {
-                        if ($formato === 'json') {
-                            header('Content-Type: application/json');
-                            echo json_encode(['error' => 'Fechas requeridas para generar el reporte']);
-                        } else {
-                            echo "<script>alert('Fechas requeridas'); window.close();</script>";
-                        }
-                        exit;
-                    }
-                    
-                    // ✅ VERIFICAR SI HAY FILTROS ADICIONALES
-                    $hay_filtros_adicionales = !empty($filtro_tienda) || !empty($filtro_supervisor) || !empty($filtro_puesto);
-                    
-                    if ($hay_filtros_adicionales) {
-                        error_log("📊 Generando REPORTE FILTRADO en formato: $formato");
-                       $resultado = generarReporteFiltradoSinUsuario($conn, $fecha_inicial, $fecha_final, $filtro_tienda, $filtro_supervisor, $filtro_puesto, $incluir_aprobaciones, $incluir_estados);
-                    } else {
-                        error_log("📊 Generando REPORTE GENERAL en formato: $formato");
-                        $resultado = generarReporteGeneralSinUsuario($conn, $fecha_inicial, $fecha_final, $incluir_aprobaciones, $incluir_estados);
-                    }
-                    // ✅ VERIFICAR SI HAY ERROR EN LA GENERACIÓN DE DATOS
-                    if (isset($resultado['error'])) {
-                        if ($formato === 'json') {
-                            header('Content-Type: application/json');
-                            echo json_encode($resultado);
-                        } else {
-                            echo "<script>alert('Error: {$resultado['error']}'); window.close();</script>";
-                        }
-                        exit;
-                    }
-                    
-                    // ✅ GENERAR SEGÚN EL FORMATO SOLICITADO
-                    switch($formato) {
-                        case 'excel':
-                            error_log("📊 Generando archivo Excel...");
-                            generarExcelHistorial($resultado);
-                            break;
-                            
-                        case 'pdf':
-                            error_log("📊 Generando archivo PDF...");
-                            generarPDFHistorial($resultado);
-                            break;
-                            
-                        default:
-                            // Devolver JSON para vista previa en el modal
-                            error_log("📊 Devolviendo JSON para vista previa");
-                            header('Content-Type: application/json');
-                            echo json_encode($resultado);
-                            break;
-                    }
-                    
-                    exit;
-                    
-                } catch (Exception $e) {
-                    error_log("❌ Error generando reporte: " . $e->getMessage());
-                    
-                    if (isset($formato) && $formato !== 'json') {
-                        echo "<script>alert('Error generando reporte: {$e->getMessage()}'); window.close();</script>";
-                    } else {
-                        header('Content-Type: application/json');
-                        echo json_encode(['error' => 'Error generando reporte: ' . $e->getMessage()]);
-                    }
-                    exit;
+            $id_candidato = intval($_POST['id_candidato']);
+            $id_solicitud = intval($_POST['id_solicitud']);
+            $archivo = $_FILES['archivo'];
+            $tipo_archivo = $_POST['tipo_archivo'] ?? 'CV Enviado';
+
+            error_log("ID Candidato: $id_candidato, ID Solicitud: $id_solicitud");
+            error_log("Archivo recibido: " . print_r($archivo, true));
+
+            // 2. VALIDAR ERRORES DE SUBIDA
+            $errorArchivo = detectarErrorArchivo($archivo['error']);
+            if ($errorArchivo) {
+                enviarJSON(['success' => false, 'error' => $errorArchivo]);
+            }
+
+            // 3. VALIDAR TAMAÑO Y TIPO
+            if ($archivo['size'] > 10 * 1024 * 1024) { // 10MB
+                enviarJSON(['success' => false, 'error' => 'Archivo muy grande (máximo 10MB)']);
+            }
+
+            $extensionesPermitidas = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
+            $extension = strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION));
+            
+            if (!in_array($extension, $extensionesPermitidas)) {
+                enviarJSON(['success' => false, 'error' => 'Tipo de archivo no permitido. Solo: ' . implode(', ', $extensionesPermitidas)]);
+            }
+
+            // 4. CREAR DIRECTORIO SI NO EXISTE
+            $rutaDestino = __DIR__ . "/archivos_candidatos/";
+            if (!is_dir($rutaDestino)) {
+                if (!mkdir($rutaDestino, 0777, true)) {
+                    enviarJSON(['success' => false, 'error' => 'No se pudo crear el directorio de destino']);
                 }
-                break;
+            }
 
+            // 5. GENERAR NOMBRE ÚNICO
+            // Generar nombre con nueva nomenclatura: ESTADO_SOLICITUD_CANDIDATO_FECHA.extension
+            $fechaActual = date('Y-m-d');
+            $nombreArchivo = $tipo_archivo . "_{$id_solicitud}_{$id_candidato}_{$fechaActual}." . $extension;
+            $rutaFinal = $rutaDestino . $nombreArchivo;
 
-                        case 'get_solicitudes':
-                            error_log("Obteniendo solicitudes APROBADAS para RRHH...");
-                            
-                                $query = "SELECT
-                                    s.ID_SOLICITUD,
-                                    s.NUM_TIENDA,
-                                    s.PUESTO_SOLICITADO,
-                                    s.ESTADO_SOLICITUD,
-                                    s.ESTADO_APROBACION,
-                                    s.DIRIGIDO_RH,
-                                    TO_CHAR(s.FECHA_SOLICITUD, 'DD-MM-YYYY') AS FECHA_SOLICITUD,
-                                    TO_CHAR(s.FECHA_MODIFICACION, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_MODIFICACION,
-                                    s.SOLICITADO_POR,
-                                    s.RAZON,
-                                    s.DIRIGIDO_A,
-                                    s.COMENTARIO_SOLICITUD,
+            error_log("Ruta final: $rutaFinal");
 
-                                    -- ID_HISTORICO último con mensajes
-                                    (
-                                        SELECT h.ID_HISTORICO
-                                        FROM ROY_HISTORICO_SOLICITUD h
-                                        WHERE h.ID_SOLICITUD = s.ID_SOLICITUD
-                                        AND EXISTS (
-                                            SELECT 1 FROM ROY_CHAT_HISTORICO c WHERE c.ID_HISTORICO = h.ID_HISTORICO
-                                        )
-                                        ORDER BY h.FECHA_CAMBIO DESC
-                                        FETCH FIRST 1 ROWS ONLY
-                                    ) AS ID_HISTORICO,
+            // 6. MOVER ARCHIVO
+            if (!move_uploaded_file($archivo['tmp_name'], $rutaFinal)) {
+                $error = error_get_last();
+                error_log("Error moviendo archivo: " . print_r($error, true));
+                enviarJSON(['success' => false, 'error' => 'Error al guardar el archivo en el servidor']);
+            }
 
-                                    -- Conteo de mensajes NO LEÍDOS del SUPERVISOR
-                                    (
-                                        SELECT COUNT(*)
-                                        FROM ROY_CHAT_HISTORICO ch
-                                        WHERE ch.ID_HISTORICO = (
-                                            SELECT h.ID_HISTORICO
-                                            FROM ROY_HISTORICO_SOLICITUD h
-                                            WHERE h.ID_SOLICITUD = s.ID_SOLICITUD
-                                            AND EXISTS (
-                                                SELECT 1 FROM ROY_CHAT_HISTORICO c WHERE c.ID_HISTORICO = h.ID_HISTORICO
-                                            )
-                                            ORDER BY h.FECHA_CAMBIO DESC
-                                            FETCH FIRST 1 ROWS ONLY
-                                        )
-                                        AND UPPER(ch.ES_LEIDO) = 'N'
-                                        AND UPPER(ch.ROL) = 'SUPERVISOR'
-                                    ) AS NO_LEIDOS,
+            // 7. INSERTAR EN BASE DE DATOS
+            $query = "INSERT INTO ROY_ARCHIVOS_SOLICITUD 
+                        (ID_SOLICITUD, NOMBRE_ARCHIVO, FECHA_SUBIDA, ID_CANDIDATO, ESTADO_RELACIONADO, SUBIDO_POR_ROL, TIPO_ARCHIVO) 
+                    VALUES 
+                        (:id_solicitud, :nombre, SYSDATE, :id_candidato, :estado, :rol, :tipo)";
 
-                                    -- TIENE_ARCHIVOS
-                                    CASE
-                                    WHEN EXISTS (
-                                        SELECT 1 
-                                        FROM ROY_ARCHIVOS_SOLICITUD a
-                                        JOIN ROY_HISTORICO_SOLICITUD h ON a.ID_HISTORICO = h.ID_HISTORICO
-                                        WHERE a.ID_SOLICITUD = s.ID_SOLICITUD
-                                        AND LOWER(h.ESTADO_NUEVO) LIKE '%cvs%'
-                                        AND h.ID_HISTORICO = (
-                                            SELECT MAX(ID_HISTORICO)
-                                            FROM ROY_HISTORICO_SOLICITUD
-                                            WHERE ID_SOLICITUD = s.ID_SOLICITUD
-                                            AND LOWER(ESTADO_NUEVO) LIKE '%cvs%'
-                                        )
-                                    ) THEN 1 ELSE 0
-                                    END AS TIENE_ARCHIVOS,
+            $stmt = oci_parse($conn, $query);
+            oci_bind_by_name($stmt, ':id_solicitud', $id_solicitud);
+            oci_bind_by_name($stmt, ':nombre', $nombreArchivo);
+            oci_bind_by_name($stmt, ':id_candidato', $id_candidato);
+            oci_bind_by_name($stmt, ':estado', $tipo_archivo);
+            
+            $rol_usuario = 'RRHH'; // Puedes obtener esto de la sesión
+            oci_bind_by_name($stmt, ':rol', $rol_usuario);
+            oci_bind_by_name($stmt, ':tipo', $tipo_archivo);
+            
+            if (!oci_execute($stmt)) {
+                $error = oci_error($stmt);
+                error_log("Error BD: " . print_r($error, true));
+                
+                // Eliminar archivo físico si falló la BD
+                if (file_exists($rutaFinal)) {
+                    unlink($rutaFinal);
+                }
+                
+                oci_rollback($conn);
+                enviarJSON(['success' => false, 'error' => 'Error guardando en base de datos: ' . $error['message']]);
+            }
 
-                                    -- TIENE_SELECCION
-                                    (
-                                        SELECT CASE
-                                            WHEN COUNT(*) > 0 THEN 1 ELSE 0
-                                        END
-                                        FROM ROY_SELECCION_CVS sc
-                                        JOIN (
-                                            SELECT MAX(ID_HISTORICO) AS ID_HISTORICO
-                                            FROM ROY_HISTORICO_SOLICITUD
-                                            WHERE ID_SOLICITUD = s.ID_SOLICITUD
-                                            AND LOWER(ESTADO_NUEVO) LIKE '%cvs%'
-                                        ) h_cvs ON sc.ID_HISTORICO_CV_ENVIO = h_cvs.ID_HISTORICO
-                                        WHERE sc.ID_SOLICITUD = s.ID_SOLICITUD
-                                        AND sc.ES_ACTIVA = 'Y'
-                                    ) AS TIENE_SELECCION,
+            oci_free_statement($stmt);
+            oci_commit($conn);
 
-                                    -- CORREGIDO: TIENE_OBSERVACIONES_DIA_PRUEBA
-                                    (
-                                        SELECT CASE
-                                            WHEN MAX(obs.ID_OBSERVACION) IS NOT NULL THEN 1 ELSE 0
-                                        END
-                                        FROM ROY_OBSERVACIONES_DIA_PRUEBA obs
-                                        WHERE obs.ID_SOLICITUD = s.ID_SOLICITUD
-                                        AND obs.ESTADO = 'ENVIADO'
-                                    ) AS TIENE_OBSERVACIONES_DIA_PRUEBA
+            error_log("=== ARCHIVO SUBIDO EXITOSAMENTE ===");
+            
+            enviarJSON([
+                'success' => true, 
+                'mensaje' => 'Archivo subido correctamente',
+                'archivo' => $nombreArchivo,
+                'tamaño' => $archivo['size']
+            ]);
 
-                                FROM ROY_SOLICITUD_PERSONAL s
-                                WHERE s.ESTADO_APROBACION = 'Aprobado'
-                                ORDER BY s.FECHA_SOLICITUD DESC";
+        } catch (Exception $e) {
+            error_log("Excepción en subida: " . $e->getMessage());
+            if ($conn) oci_rollback($conn);
+            enviarJSON(['success' => false, 'error' => 'Error interno: ' . $e->getMessage()]);
+        }
+        break;
+//=========================================================================================
+// PERMISOS DE SUBIDA DE ARCHIVOS
+//==========================================================================================
+        //PERMISOS DE SUBIDA SEGUN ROL Y ESTADO
+ case 'get_permisos_subida_candidato_rh':
+    try {
+        $id_candidato = $_GET['id_candidato'] ?? null;
+        $rol_usuario = $_GET['rol_usuario'] ?? 'RRHH';
+        
+        if (!$id_candidato) {
+            throw new Exception('ID de candidato requerido');
+        }
+        
+        //  INCLUIR MOTIVO_DESCARTE Y ACTIVO EN LA CONSULTA
+        $queryCandidato = "SELECT 
+                            c.ESTADO_CANDIDATO, 
+                            c.MOTIVO_DESCARTE,
+                            c.ACTIVO,
+                            c.DOCUMENTO_CANDIDATO,
+                            c.FECHA_REGISTRO,
+                            s.PUESTO_SOLICITADO, 
+                            s.SOLICITADO_POR, 
+                            s.DIRIGIDO_A
+                          FROM ROY_CANDIDATOS_SOLICITUD c
+                          JOIN ROY_SOLICITUD_PERSONAL s ON c.ID_SOLICITUD = s.ID_SOLICITUD
+                          WHERE c.ID_CANDIDATO = :id";
+        
+        $stmt = oci_parse($conn, $queryCandidato);
+        oci_bind_by_name($stmt, ':id', $id_candidato);
+        oci_execute($stmt);
+        $dataCandidato = oci_fetch_assoc($stmt);
+        oci_free_statement($stmt);
+        
+        if (!$dataCandidato) {
+            throw new Exception('Candidato no encontrado');
+        }
 
-                            $stmt = oci_parse($conn, $query);
-                            
-                            if (!oci_execute($stmt)) {
-                                $error = oci_error($stmt);
-                                error_log("❌ Error ejecutando consulta RRHH: " . print_r($error, true));
-                                echo json_encode(['success' => false, 'error' => 'Error en consulta: ' . $error['message']]);
-                                oci_close($conn);
-                                break;
-                            }
+        //  PROCESAR MOTIVO_DESCARTE SI ES CLOB
+        $motivo_descarte = '';
+        if ($dataCandidato['MOTIVO_DESCARTE']) {
+            if (is_object($dataCandidato['MOTIVO_DESCARTE'])) {
+                $motivo_descarte = $dataCandidato['MOTIVO_DESCARTE']->load();
+            } else {
+                $motivo_descarte = $dataCandidato['MOTIVO_DESCARTE'];
+            }
+        }
 
-                            $solicitudes = [];
-                            while ($row = oci_fetch_assoc($stmt)) {
-                                $solicitudes[] = [
-                                    'ID_SOLICITUD' => $row['ID_SOLICITUD'],
-                                    'NUM_TIENDA' => $row['NUM_TIENDA'],
-                                    'PUESTO_SOLICITADO' => $row['PUESTO_SOLICITADO'],
-                                    'ESTADO_SOLICITUD' => $row['ESTADO_SOLICITUD'],
-                                    'ESTADO_APROBACION' => $row['ESTADO_APROBACION'] ?: 'Por Aprobar',
-                                    'DIRIGIDO_RH' => $row['DIRIGIDO_RH'],  // ✅ AGREGAR ESTA LÍNEA
-                                    'FECHA_SOLICITUD' => $row['FECHA_SOLICITUD'],
-                                    'FECHA_MODIFICACION' => $row['FECHA_MODIFICACION'],
-                                    'SOLICITADO_POR' => $row['SOLICITADO_POR'],
-                                    'RAZON' => $row['RAZON'],
-                                    'DIRIGIDO_A' => $row['DIRIGIDO_A'],
-                                    'COMENTARIO_SOLICITUD' => $row['COMENTARIO_SOLICITUD'],
-                                    'ID_HISTORICO' => $row['ID_HISTORICO'],
-                                    'TIENE_ARCHIVOS' => $row['TIENE_ARCHIVOS'],
-                                    'TIENE_SELECCION' => $row['TIENE_SELECCION'],
-                                    'TIENE_OBSERVACIONES_DIA_PRUEBA' => $row['TIENE_OBSERVACIONES_DIA_PRUEBA'],
-                                    'NO_LEIDOS' => intval($row['NO_LEIDOS'])
-                                ];
-                            }
+        //  CONSULTA PARA OBTENER QUIÉN DESCARTÓ AL CANDIDATO
+        $queryQuienDescarto = "SELECT 
+                                h.OBSERVACIONES,
+                                h.FECHA_CAMBIO,
+                                CASE 
+                                    WHEN h.OBSERVACIONES LIKE '%GERENTE:%' THEN 
+                                        TRIM(REGEXP_SUBSTR(h.OBSERVACIONES, 'GERENTE: ([^-]+)', 1, 1, NULL, 1))
+                                    WHEN h.OBSERVACIONES LIKE '%SUPERVISOR:%' THEN 
+                                        TRIM(REGEXP_SUBSTR(h.OBSERVACIONES, 'SUPERVISOR: ([^-]+)', 1, 1, NULL, 1))
+                                    WHEN h.OBSERVACIONES LIKE '%RRHH:%' THEN 
+                                        TRIM(REGEXP_SUBSTR(h.OBSERVACIONES, 'RRHH: ([^-]+)', 1, 1, NULL, 1))
+                                    WHEN h.OBSERVACIONES LIKE '%GERENTE%' THEN 'Gerente (sin nombre)'
+                                    WHEN h.OBSERVACIONES LIKE '%SUPERVISOR%' THEN 'Supervisor (sin nombre)'
+                                    WHEN h.OBSERVACIONES LIKE '%RRHH%' THEN 'RH (sin nombre)'
+                                    ELSE 'Usuario no identificado'
+                                END as NOMBRE_QUIEN_DESCARTO,
+                                CASE 
+                                    WHEN h.OBSERVACIONES LIKE '%GERENTE%' THEN 'GERENTE'
+                                    WHEN h.OBSERVACIONES LIKE '%SUPERVISOR%' THEN 'SUPERVISOR'
+                                    WHEN h.OBSERVACIONES LIKE '%RRHH%' THEN 'RRHH'
+                                    ELSE 'DESCONOCIDO'
+                                END as TIPO_USUARIO_DESCARTO
+                            FROM ROY_CANDIDATOS_HIST_EST h 
+                            WHERE h.ID_CANDIDATO = :id_candidato 
+                            AND h.ESTADO_NUEVO = 'Descartado' 
+                            AND h.ACTIVO = 'Y'
+                            ORDER BY h.FECHA_CAMBIO DESC 
+                            FETCH FIRST 1 ROWS ONLY";
 
-                            oci_free_statement($stmt);
-                            oci_close($conn);
+        $stmtDescarte = oci_parse($conn, $queryQuienDescarto);
+        oci_bind_by_name($stmtDescarte, ':id_candidato', $id_candidato);
+        oci_execute($stmtDescarte);
+        $infoDescarte = oci_fetch_assoc($stmtDescarte);
+        oci_free_statement($stmtDescarte);
 
-                            error_log("✅ Solicitudes APROBADAS obtenidas para RRHH: " . count($solicitudes));
-                            echo json_encode($solicitudes);
-                            break;
+        // Verificar si está descartado
+        $esDescartado = ($dataCandidato['ACTIVO'] === 'N' || $dataCandidato['ESTADO_CANDIDATO'] === 'Descartado');
 
-                //VER CVS SELECCIONADOS POR SUPERVISORES
-                case 'ver_resumen_cvs':
-                    error_log("🔍 CASE ver_resumen_cvs ejecutado");
-                    
-                    // ✅ OBTENER ID_SOLICITUD DE GET (ya no necesitas validar action)
-                    $idSolicitud = $_GET['id_solicitud'] ?? $_POST['id_solicitud'] ?? null;
-                    error_log("📋 ID Solicitud recibido: " . $idSolicitud);
-                    
-                    if (empty($idSolicitud)) {
-                        echo json_encode(['success' => false, 'error' => 'ID de solicitud no proporcionado']);
-                        exit;
-                    }
-
-                    try {
-                        $query = "SELECT 
-                                    sel.ARCHIVOS_SELECCIONADOS,
-                                    sol.SOLICITADO_POR,
-                                    TO_CHAR(sol.FECHA_SOLICITUD, 'DD-MM-YYYY') AS FECHA_SOLICITUD
-                                FROM ROY_SELECCION_CVS sel
-                                JOIN ROY_SOLICITUD_PERSONAL sol ON sol.ID_SOLICITUD = sel.ID_SOLICITUD
-                                WHERE sel.ID_SOLICITUD = :id
-                                AND sel.ES_ACTIVA = 'Y'
-                                ORDER BY sel.FECHA_SELECCION DESC
-                                FETCH FIRST 1 ROWS ONLY";
-
-                        $stmt = oci_parse($conn, $query);
-                        oci_bind_by_name($stmt, ':id', $idSolicitud);
-
-                        if (!oci_execute($stmt)) {
-                            $error = oci_error($stmt);
-                            echo json_encode([
-                                'success' => false,
-                                'error' => 'Error en la consulta SQL: ' . $error['message']
-                            ]);
-                            exit;
-                        }
-
-                        $archivos = [];
-                        $supervisor = '';
-                        $fechaSolicitud = '';
-
-                        $row = oci_fetch_assoc($stmt);
-                        if ($row) {
-                            $supervisor = $row['SOLICITADO_POR'];
-                            $fechaSolicitud = $row['FECHA_SOLICITUD'];
-
-                            if (!empty($row['ARCHIVOS_SELECCIONADOS'])) {
-                                $clob = $row['ARCHIVOS_SELECCIONADOS'];
-                                $contenido = is_object($clob) && method_exists($clob, 'load') ? $clob->load() : $clob;
-
-                                if (!empty($contenido)) {
-                                    $rutasArchivos = explode(',', $contenido);
-                                    foreach ($rutasArchivos as $ruta) {
-                                        $ruta = trim($ruta);
-                                        if (!empty($ruta)) {
-                                            $nombre = basename($ruta);
-                                            $tipo = strtoupper(pathinfo($nombre, PATHINFO_EXTENSION));
-                                            $archivos[] = [
-                                                'NOMBRE_ARCHIVO' => $nombre,
-                                                'TIPO' => $tipo,
-                                                'RUTA' => $ruta
-                                            ];
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        oci_free_statement($stmt);
-
-                        echo json_encode([
-                            'success' => true,
-                            'archivos' => $archivos,
-                            'supervisor' => $supervisor,
-                            'fecha' => $fechaSolicitud,
-                            'total' => count($archivos)
-                        ]);
+        //  DEFINIR CARPETAS DISPONIBLES PARA RH
+        $carpetasDisponibles = [
+            ['NOMBRE_ESTADO' => 'CV Enviado'],
+            ['NOMBRE_ESTADO' => 'Psicometrica'],
+            ['NOMBRE_ESTADO' => 'Entrevista RH'],
+            ['NOMBRE_ESTADO' => 'Entrevista Tecnica'],
+            ['NOMBRE_ESTADO' => 'Dia de Prueba'],
+            ['NOMBRE_ESTADO' => 'Poligrafo'],
+            ['NOMBRE_ESTADO' => 'Expediente RH']
+        ];
+        
+        // Filtrar según permisos del rol
+        $carpetasPermitidas = [];
+        
+        foreach ($carpetasDisponibles as $carpeta) {
+            $nombreEstado = $carpeta['NOMBRE_ESTADO'];
+            
+            //  VERIFICAR SI YA SUBIÓ ARCHIVOS
+            $queryArchivos = "SELECT COUNT(*) as TIENE_ARCHIVOS
+                             FROM ROY_ARCHIVOS_SOLICITUD 
+                             WHERE ID_CANDIDATO = :id_candidato 
+                             AND ESTADO_RELACIONADO = :estado";
+            
+            $stmtArch = oci_parse($conn, $queryArchivos);
+            oci_bind_by_name($stmtArch, ':id_candidato', $id_candidato);
+            oci_bind_by_name($stmtArch, ':estado', $nombreEstado);
+            oci_execute($stmtArch);
+            $rowArch = oci_fetch_assoc($stmtArch);
+            $yaSubioArchivos = ($rowArch['TIENE_ARCHIVOS'] > 0);
+            oci_free_statement($stmtArch);
+            
+            $puedeSubir = false;
+            $motivoBloqueo = null;
+            
+            // Si está descartado, no puede subir nada
+            if ($esDescartado) {
+                $puedeSubir = false;
+                $motivoBloqueo = 'Candidato descartado';
+            } else {
+                //  PERMISOS PARA RH
+                switch ($rol_usuario) {
+                    case 'RRHH':
+                        // RH puede subir archivos en todos los estados
+                        $estadosRRHH = ['CV Enviado', 'Psicometrica', 'Entrevista RH', 'Poligrafo', 'Expediente RH'];
                         
-                    } catch (Exception $e) {
-                        error_log("❌ Error en ver_resumen_cvs: " . $e->getMessage());
-                        echo json_encode([
-                            'success' => false,
-                            'error' => 'Error interno: ' . $e->getMessage()
-                        ]);
-                    }
-                    exit;
-                            //CAMBIAR ESTADO - CORREGIDO PARA ACEPTAR PDFs
-                case 'toggle_solicitud_status':
-                    if (empty($_POST['id_solicitud']) || empty($_POST['nuevo_estado']) || !isset($_POST['comentario'])) {
-                        echo json_encode(['success' => false, 'error' => 'Faltan datos obligatorios.']);
-                        oci_close($conn);
-                        break;
-                    }
-
-                    $id = $_POST['id_solicitud'];
-                    $nuevo_estado = $_POST['nuevo_estado'];
-                    $comentario_nuevo = $_POST['comentario'];
-                    $tipoArchivo = $_POST['tipo_archivo'] ?? null; // ← NUEVO
-
-                    // Obtener estado anterior
-                    $queryAnterior = "SELECT ESTADO_SOLICITUD FROM ROY_SOLICITUD_PERSONAL WHERE ID_SOLICITUD = :id";
-                    $stmtAnt = oci_parse($conn, $queryAnterior);
-                    oci_bind_by_name($stmtAnt, ':id', $id);
-                    oci_execute($stmtAnt);
-                    $estado_anterior = ($row = oci_fetch_assoc($stmtAnt)) ? $row['ESTADO_SOLICITUD'] : '';
-                    oci_free_statement($stmtAnt);
-
-                    // Obtener último comentario anterior
-                    $comentario_anterior = '';
-                    $queryComentario = "SELECT COMENTARIO_NUEVO FROM ROY_HISTORICO_SOLICITUD 
-                                        WHERE ID_SOLICITUD = :id 
-                                        AND ID_HISTORICO = (SELECT MAX(ID_HISTORICO) FROM ROY_HISTORICO_SOLICITUD WHERE ID_SOLICITUD = :id)";
-                    $stmtCom = oci_parse($conn, $queryComentario);
-                    oci_bind_by_name($stmtCom, ':id', $id);
-                    oci_execute($stmtCom);
-                    if ($row = oci_fetch_assoc($stmtCom)) {
-                        $comentario_anterior = $row['COMENTARIO_NUEVO'];
-                    }
-                    oci_free_statement($stmtCom);
-
-                    // Actualizar solicitud
-                    $queryUpdate = "UPDATE ROY_SOLICITUD_PERSONAL SET 
-                                    ESTADO_SOLICITUD = :estado, 
-                                    COMENTARIO_SOLICITUD = :comentario,
-                                    FECHA_MODIFICACION = SYSDATE 
-                                    WHERE ID_SOLICITUD = :id";
-                    $stmtUpd = oci_parse($conn, $queryUpdate);
-                    oci_bind_by_name($stmtUpd, ':estado', $nuevo_estado);
-                    oci_bind_by_name($stmtUpd, ':comentario', $comentario_nuevo);
-                    oci_bind_by_name($stmtUpd, ':id', $id);
-                    oci_execute($stmtUpd);
-                    oci_free_statement($stmtUpd);
-
-                    // Obtener ID_HISTORICO desde la secuencia
-                    $stmtSeq = oci_parse($conn, "SELECT SEQ_HISTORICO_SOLICITUD.NEXTVAL AS ID FROM DUAL");
-                    oci_execute($stmtSeq);
-                    $rowSeq = oci_fetch_assoc($stmtSeq);
-                    $idHistorico = $rowSeq['ID'];
-                    oci_free_statement($stmtSeq);
-
-                    // Insertar en historial con ID fijo
-                    $queryHistorial = "INSERT INTO ROY_HISTORICO_SOLICITUD 
-                    (ID_SOLICITUD, ESTADO_ANTERIOR, ESTADO_NUEVO, COMENTARIO_ANTERIOR, COMENTARIO_NUEVO, FECHA_CAMBIO)
-                    VALUES (:id_solicitud, :estado_anterior, :estado_nuevo, :comentario_anterior, :comentario_nuevo, SYSDATE)
-                    RETURNING ID_HISTORICO INTO :id_historico";
-                    $stmtHist = oci_parse($conn, $queryHistorial);
-                    oci_bind_by_name($stmtHist, ':id_solicitud', $id);
-                    oci_bind_by_name($stmtHist, ':estado_anterior', $estado_anterior);
-                    oci_bind_by_name($stmtHist, ':estado_nuevo', $nuevo_estado);
-                    oci_bind_by_name($stmtHist, ':comentario_anterior', $comentario_anterior);
-                    oci_bind_by_name($stmtHist, ':comentario_nuevo', $comentario_nuevo);
-                    oci_bind_by_name($stmtHist, ':id_historico', $idHistorico, -1, SQLT_INT);
-                    oci_execute($stmtHist);
-                    oci_free_statement($stmtHist);
-
-                    // Insertar en chat si aplica
-                    if (!empty($comentario_nuevo) && $idHistorico !== null) {
-                        
-                        $sqlChat = "INSERT INTO ROY_CHAT_HISTORICO (
-                                    ID_MENSAJE,       
-                                    ID_HISTORICO, 
-                                    ROL, 
-                                    MENSAJE,          
-                                    FECHA,
-                                    REMITENTE,
-                                    ES_LEIDO
-                                ) VALUES (
-                                    SEQ_CHAT_MENSAJE.NEXTVAL,  
-                                    :id_historico, 
-                                    'RRHH', 
-                                    :mensaje, 
-                                    SYSDATE,
-                                    :remitente,
-                                    'N'
-                                )";
-
-                        $queryRemitente = "SELECT DIRIGIDO_A FROM ROY_SOLICITUD_PERSONAL WHERE ID_SOLICITUD = :id";
-                        $stmtRem = oci_parse($conn, $queryRemitente);
-                        oci_bind_by_name($stmtRem, ':id', $id);
-                        oci_execute($stmtRem);
-                        $rowRem = oci_fetch_assoc($stmtRem);
-                        $remitente = $rowRem['DIRIGIDO_A'] ?? 'RRHH';
-                        oci_free_statement($stmtRem);
-
-                        $stmtChat = oci_parse($conn, $sqlChat);
-                        oci_bind_by_name($stmtChat, ':id_historico', $idHistorico);
-                        oci_bind_by_name($stmtChat, ':mensaje', $comentario_nuevo);
-                        oci_bind_by_name($stmtChat, ':remitente', $remitente);
-                        oci_execute($stmtChat);
-                        oci_free_statement($stmtChat);
-                    }
-
-                    // Subir archivos
-                    $archivosSubidos = [];
-                    $archivos_field = $_FILES['archivos'] ?? $_FILES['archivos[]'] ?? null;
-
-                    if ($archivos_field && isset($archivos_field['name'])) {
-                        $rutaBase = '../gestionhumana/archivos_aprobados/';
-                        if (!is_dir($rutaBase)) mkdir($rutaBase, 0777, true);
-
-                        $nombres = is_array($archivos_field['name']) ? $archivos_field['name'] : [$archivos_field['name']];
-                        $tmp_names = is_array($archivos_field['tmp_name']) ? $archivos_field['tmp_name'] : [$archivos_field['tmp_name']];
-                        $errors = is_array($archivos_field['error']) ? $archivos_field['error'] : [$archivos_field['error']];
-
-                        for ($i = 0; $i < count($nombres); $i++) {
-                            if ($errors[$i] === UPLOAD_ERR_OK && !empty($nombres[$i])) {
-                                $nombreOriginal = basename($nombres[$i]);
-                                $tmp = $tmp_names[$i];
-                                $extension = strtolower(pathinfo($nombreOriginal, PATHINFO_EXTENSION));
-                                $permitidos = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
-
-                                if (!in_array($extension, $permitidos) || !file_exists($tmp)) continue;
-
-                                $fileSize = filesize($tmp);
-                                if ($fileSize === 0 || $fileSize > 50 * 1024 * 1024) continue;
-
-                                $nombreFinal = 'solicitud_' . $id . '_' . date('YmdHis') . '_' . uniqid() . '.' . $extension;
-                                $rutaFinal = $rutaBase . $nombreFinal;
-                                $rutaRelativa = 'gestionhumana/archivos_aprobados/' . $nombreFinal;
-
-                                if (move_uploaded_file($tmp, $rutaFinal) && file_exists($rutaFinal)) {
-                                    $stmtArchivo = oci_parse($conn, "INSERT INTO ROY_ARCHIVOS_SOLICITUD (
-                                        ID_SOLICITUD,
-                                        ID_HISTORICO,
-                                        NOMBRE_ARCHIVO,
-                                        FECHA_SUBIDA,
-                                        TIPO_ARCHIVO
-                                    ) VALUES (
-                                        :id_solicitud,
-                                        :id_historico,
-                                        :nombre_archivo,
-                                        SYSDATE,
-                                        :tipo_archivo
-                                    )");
-                                    oci_bind_by_name($stmtArchivo, ':id_solicitud', $id);
-                                    oci_bind_by_name($stmtArchivo, ':id_historico', $idHistorico);
-                                    oci_bind_by_name($stmtArchivo, ':nombre_archivo', $rutaRelativa);
-                                    oci_bind_by_name($stmtArchivo, ':tipo_archivo', $tipoArchivo);
-                                    if (!oci_execute($stmtArchivo)) {
-                                        $e = oci_error($stmtArchivo);
-                                        error_log("❌ Error al insertar archivo: " . $e['message']);
-                                    } else {
-                                        $archivosSubidos[] = $nombreOriginal;
-                                    }
-
-                                    oci_free_statement($stmtArchivo);
-                                }
+                        if (in_array($nombreEstado, $estadosRRHH)) {
+                            $puedeSubir = !$yaSubioArchivos;
+                            $motivoBloqueo = $yaSubioArchivos ? 'Ya se subieron archivos para este estado' : null;
+                        } else {
+                            // Para estados que no puede subir RH (Entrevista Técnica, Día de Prueba)
+                            $puedeSubir = false;
+                            if (!$yaSubioArchivos) {
+                                $motivoBloqueo = "Este estado es manejado por supervisión";
+                            } else {
+                                $motivoBloqueo = 'Solo visualización disponible';
                             }
                         }
-                    }
-
-                    echo json_encode([
-                        'success' => true,
-                        'mensaje' => !empty($archivosSubidos)
-                            ? 'Estado actualizado y ' . count($archivosSubidos) . ' archivo(s) subido(s) correctamente.'
-                            : 'Estado actualizado correctamente.'
-                    ]);
-                    oci_close($conn);
-                    break;
-
-
-
-
-                // VER ARCHIVOS
-                case 'get_archivos':
-                    error_log("=== OBTENIENDO ARCHIVOS POR TIPO ===");
-
-                    if (!isset($_GET['id']) || empty($_GET['id'])) {
-                        error_log("ID de solicitud no proporcionado");
-                        echo json_encode([
-                            'error' => 'ID de solicitud requerido',
-                            'archivos' => []
-                        ]);
                         break;
-                    }
+                        
+                    default:
+                        $puedeSubir = false;
+                        $motivoBloqueo = 'Sin permisos para este estado';
+                }
+            }
+            
+            $carpetasPermitidas[] = [
+                'nombre_estado' => $nombreEstado,
+                'puede_subir' => $puedeSubir,
+                'puede_ver' => true, // RH SIEMPRE PUEDE VER
+                'ya_tiene_archivos' => $yaSubioArchivos,
+                'motivo_bloqueo' => $motivoBloqueo
+            ];
+        }
+        
+        //  RESPUESTA COMPLETA PARA RH
+        echo json_encode([
+            'success' => true,
+            'rol_usuario' => 'RRHH',
+            'estado_candidato' => $dataCandidato['ESTADO_CANDIDATO'],
+            'puesto_solicitado' => $dataCandidato['PUESTO_SOLICITADO'],
+            'motivo_descarte' => $motivo_descarte,
+            'info_descarte' => $infoDescarte ?: [], //  INFORMACIÓN DE QUIÉN DESCARTÓ
+            'carpetas' => $carpetasPermitidas,
+            'candidato' => [
+                'ACTIVO' => $dataCandidato['ACTIVO'],
+                'DOCUMENTO_CANDIDATO' => $dataCandidato['DOCUMENTO_CANDIDATO'] ?? 'No registrado',
+                'FECHA_REGISTRO' => $dataCandidato['FECHA_REGISTRO'] ?? 'No disponible'
+            ],
+            'es_descartado' => $esDescartado,
+            'solicitado_por' => $dataCandidato['SOLICITADO_POR'],
+            'dirigido_a' => $dataCandidato['DIRIGIDO_A']
+        ]);
+        
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+    break;
 
-                    $id = $_GET['id'];
-                    $tipoArchivo = strtoupper($_GET['tipo'] ?? 'CVS'); // Default a CVS si no viene tipo
-                    error_log("Buscando archivos para solicitud ID: $id y tipo: $tipoArchivo");
+// ================================
+// 2. AGREGAR CASE PARA OBTENER CANDIDATOS CON FILTROS
+// ================================
+case 'get_candidatos_solicitud_rh':
+    try {
+        $id_solicitud = $_GET['id_solicitud'] ?? null;
+        $filtro_estado = $_GET['filtro_estado'] ?? 'todos';
+        
+        if (!$id_solicitud) {
+            throw new Exception('ID de solicitud requerido');
+        }
 
-                    try {
-                        // Buscar el último ID_HISTORICO del tipo solicitado (CVS, PSICOMETRICA, POLIGRAFO)
-                        $queryHist = "SELECT MAX(ID_HISTORICO) AS ID_HISTORICO 
-                                    FROM ROY_HISTORICO_SOLICITUD 
-                                    WHERE ID_SOLICITUD = :id 
-                                    AND LOWER(ESTADO_NUEVO) LIKE :tipo_estado";
+        // 1. OBTENER INFO BÁSICA DE LA SOLICITUD
+        $query_sol = "SELECT REACTIVADA, ESTADO_SOLICITUD FROM ROY_SOLICITUD_PERSONAL WHERE ID_SOLICITUD = :id";
+        $stmt_sol = oci_parse($conn, $query_sol);
+        oci_bind_by_name($stmt_sol, ':id', $id_solicitud);
+        oci_execute($stmt_sol);
+        $info_sol = oci_fetch_assoc($stmt_sol);
+        oci_free_statement($stmt_sol);
 
-                        $stmtHist = oci_parse($conn, $queryHist);
-                        $tipoLike = '%' . strtolower($tipoArchivo) . '%';
-                        oci_bind_by_name($stmtHist, ':id', $id);
-                        oci_bind_by_name($stmtHist, ':tipo_estado', $tipoLike);
-                        oci_execute($stmtHist);
+        $es_reactivada = ($info_sol['REACTIVADA'] === 'Y');
+        $es_plaza_cubierta = (strtolower(trim($info_sol['ESTADO_SOLICITUD'])) === 'plaza cubierta');
 
-                        $idHistorico = null;
-                        if ($row = oci_fetch_assoc($stmtHist)) {
-                            $idHistorico = $row['ID_HISTORICO'];
-                        }
-                        oci_free_statement($stmtHist);
+       // 2. CONSTRUIR WHERE CON LÓGICA CORRECTA
+        $whereClause = "WHERE c.ID_SOLICITUD = :id_solicitud";
+        
+        if ($es_plaza_cubierta) {
+            // CASO 1: Plaza cubierta - Solo mostrar contratado activo
+            $whereClause .= " AND c.ESTADO_CANDIDATO = 'Contratado' AND c.ACTIVO = 'Y'";
+        } elseif ($es_reactivada) {
+            // ✅ CASO 2: Solicitud reactivada - Verificar estado de reactivación
+            $query_estado_react = "SELECT ESTADO_REACT 
+                                  FROM ROY_HIST_REACTIVACIONES 
+                                  WHERE ID_SOLICITUD = :id_solicitud 
+                                  ORDER BY NUM_REACTIVACION DESC 
+                                  FETCH FIRST 1 ROW ONLY";
+            
+            $stmt_react = oci_parse($conn, $query_estado_react);
+            oci_bind_by_name($stmt_react, ':id_solicitud', $id_solicitud);
+            oci_execute($stmt_react);
+            $react_info = oci_fetch_assoc($stmt_react);
+            oci_free_statement($stmt_react);
+            
+            $estado_react = strtolower(trim($react_info['ESTADO_REACT'] ?? 'pendiente'));
+            
+            if ($estado_react === 'pendiente') {
+                // PENDIENTE: Mostrar todos los candidatos disponibles para reactivar (descartados + no contratados)
+                $whereClause .= " AND c.ESTADO_CANDIDATO != 'Contratado'";
+            } else {
+                // CONFIRMADA: Mostrar SOLO los candidatos que RH ya reactivó
+                // Obtener fecha de la última reactivación
+                $query_ultima_fecha = "SELECT MAX(FECHA_REACTIVACION) as ULTIMA_FECHA
+                                      FROM ROY_HIST_REACTIVACIONES 
+                                      WHERE ID_SOLICITUD = :id_solicitud";
+                $stmt_fecha = oci_parse($conn, $query_ultima_fecha);
+                oci_bind_by_name($stmt_fecha, ':id_solicitud', $id_solicitud);
+                oci_execute($stmt_fecha);
+                $fecha_result = oci_fetch_assoc($stmt_fecha);
+                $ultima_fecha_reactivacion = $fecha_result['ULTIMA_FECHA'];
+                oci_free_statement($stmt_fecha);
+                
+                if ($ultima_fecha_reactivacion) {
+                    // Mostrar SOLO candidatos reactivados en la ÚLTIMA reactivación
+                    $whereClause .= " AND c.REACTIVADO_POST_CONTRATACION = 'Y'
+                                     AND TRUNC(c.FECHA_REACTIVACION_CANDIDATO) >= TRUNC(TO_DATE(:ultima_fecha, 'DD/MM/YY HH24:MI:SS'))
+                                     AND c.ESTADO_CANDIDATO != 'Contratado'";
+                } else {
+                    // No hay fecha, mostrar todos los reactivados
+                    $whereClause .= " AND c.REACTIVADO_POST_CONTRATACION = 'Y'
+                                     AND c.ESTADO_CANDIDATO != 'Contratado'";
+                }
+            }
+        } else {
+            // CASO 3: Proceso normal - Verificar si hay candidatos reactivados
+            $query_check_reactivados = "SELECT COUNT(*) as TOTAL 
+                                        FROM ROY_CANDIDATOS_SOLICITUD 
+                                        WHERE ID_SOLICITUD = :id_solicitud 
+                                        AND REACTIVADO_POST_CONTRATACION = 'Y'";
+            $stmt_check = oci_parse($conn, $query_check_reactivados);
+            oci_bind_by_name($stmt_check, ':id_solicitud', $id_solicitud);
+            oci_execute($stmt_check);
+            $result_check = oci_fetch_assoc($stmt_check);
+            $hay_reactivados = ($result_check['TOTAL'] > 0);
+            oci_free_statement($stmt_check);
+            
+            if ($hay_reactivados) {
+                // Hay reactivados - Obtener fecha de la última reactivación
+                $query_ultima_fecha = "SELECT MAX(FECHA_REACTIVACION) as ULTIMA_FECHA
+                                      FROM ROY_HIST_REACTIVACIONES 
+                                      WHERE ID_SOLICITUD = :id_solicitud";
+                $stmt_fecha = oci_parse($conn, $query_ultima_fecha);
+                oci_bind_by_name($stmt_fecha, ':id_solicitud', $id_solicitud);
+                oci_execute($stmt_fecha);
+                $fecha_result = oci_fetch_assoc($stmt_fecha);
+                $ultima_fecha_reactivacion = $fecha_result['ULTIMA_FECHA'];
+                oci_free_statement($stmt_fecha);
+                
+                if ($ultima_fecha_reactivacion) {
+                    // Mostrar SOLO candidatos de la última reactivación
+                    $whereClause .= " AND c.REACTIVADO_POST_CONTRATACION = 'Y'
+                                     AND TRUNC(c.FECHA_REACTIVACION_CANDIDATO) >= TRUNC(TO_DATE(:ultima_fecha, 'DD/MM/YY HH24:MI:SS'))";
+                } else {
+                    $whereClause .= " AND c.REACTIVADO_POST_CONTRATACION = 'Y'";
+                }
+            } else {
+                // No hay reactivados - Aplicar filtros normales
+                if ($filtro_estado === 'activos') {
+                    $whereClause .= " AND (c.ACTIVO = 'Y' AND c.ESTADO_CANDIDATO != 'Descartado')";
+                } elseif ($filtro_estado === 'descartados') {
+                    $whereClause .= " AND (c.ACTIVO = 'N' OR c.ESTADO_CANDIDATO = 'Descartado')";
+                }
+            }
+        }
+        $query = "SELECT 
+                    c.ID_CANDIDATO,
+                    c.NOMBRE_CANDIDATO,
+                    c.APELLIDOS_CANDIDATO,
+                    c.DOCUMENTO_CANDIDATO,
+                    c.ESTADO_CANDIDATO,
+                    c.ACTIVO,
+                    c.APROBACION,
+                    c.MOTIVO_DESCARTE,
+                    c.FECHA_REGISTRO,
+                    c.FECHA_MODIFICACION,
+                    c.REACTIVADO_POST_CONTRATACION,  -- ← AGREGAR ESTA LÍNEA
+                    s.PUESTO_SOLICITADO,
+                    s.SOLICITADO_POR,
+                    s.MOTIVO_REACTIVACION,
+                    s.DIRIGIDO_A,
+                    
+                    (SELECT COUNT(*) 
+                    FROM ROY_ARCHIVOS_SOLICITUD a 
+                    WHERE a.ID_CANDIDATO = c.ID_CANDIDATO) AS TOTAL_ARCHIVOS,
+                    
+                    (SELECT h.OBSERVACIONES 
+                    FROM ROY_CANDIDATOS_HIST_EST h 
+                    WHERE h.ID_CANDIDATO = c.ID_CANDIDATO 
+                    AND h.ESTADO_NUEVO = 'Descartado' 
+                    AND h.ACTIVO = 'Y'
+                    ORDER BY h.FECHA_CAMBIO DESC 
+                    FETCH FIRST 1 ROWS ONLY) as OBSERVACIONES_DESCARTE,
+                    
+                    (SELECT h.FECHA_CAMBIO 
+                    FROM ROY_CANDIDATOS_HIST_EST h 
+                    WHERE h.ID_CANDIDATO = c.ID_CANDIDATO 
+                    AND h.ESTADO_NUEVO = 'Descartado' 
+                    AND h.ACTIVO = 'Y'
+                    ORDER BY h.FECHA_CAMBIO DESC 
+                    FETCH FIRST 1 ROWS ONLY) as FECHA_DESCARTE
+                    
+                FROM ROY_CANDIDATOS_SOLICITUD c
+                JOIN ROY_SOLICITUD_PERSONAL s ON c.ID_SOLICITUD = s.ID_SOLICITUD
+                $whereClause
+                ORDER BY c.FECHA_REGISTRO DESC";
 
-                        if (!$idHistorico) {
-                            echo json_encode([
-                                'success' => true,
-                                'archivos' => [],
-                                'mensaje' => "No hay archivos recientes para el tipo: $tipoArchivo.",
-                                'solicitud_id' => $id
-                            ]);
-                            break;
-                        }
+        $stmt = oci_parse($conn, $query);
+        oci_bind_by_name($stmt, ':id_solicitud', $id_solicitud);
+        
+        // ✅ Si hay fecha de última reactivación, hacer bind
+        if (isset($ultima_fecha_reactivacion) && $ultima_fecha_reactivacion) {
+            oci_bind_by_name($stmt, ':ultima_fecha', $ultima_fecha_reactivacion);
+        }
+        
+        oci_execute($stmt);
 
-                        // Obtener archivos vinculados al ID_HISTORICO Y tipo
-                        $query = "SELECT 
-                                    NOMBRE_ARCHIVO, 
-                                    TO_CHAR(FECHA_SUBIDA, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_SUBIDA,
-                                    ID_ARCHIVO
-                                FROM ROY_ARCHIVOS_SOLICITUD 
-                                WHERE ID_SOLICITUD = :id 
-                                AND ID_HISTORICO = :id_hist
-                                AND UPPER(TIPO_ARCHIVO) = :tipo_arch
-                                ORDER BY FECHA_SUBIDA DESC";
+        $candidatos = [];
+        $motivo_reactivacion = '';
+        $nombre_gerente = 'Gerente';
+        
+        while ($row = oci_fetch_assoc($stmt)) {
+            $motivo_descarte = '';
+            if ($row['MOTIVO_DESCARTE']) {
+                if (is_object($row['MOTIVO_DESCARTE'])) {
+                    $motivo_descarte = $row['MOTIVO_DESCARTE']->load();
+                } else {
+                    $motivo_descarte = $row['MOTIVO_DESCARTE'];
+                }
+            }
 
-                        $stmt = oci_parse($conn, $query);
-                        oci_bind_by_name($stmt, ':id', $id);
-                        oci_bind_by_name($stmt, ':id_hist', $idHistorico);
-                        oci_bind_by_name($stmt, ':tipo_arch', $tipoArchivo);
-                        oci_execute($stmt);
+            // Capturar info de la solicitud del primer registro
+            if (empty($motivo_reactivacion) && $row['MOTIVO_REACTIVACION']) {
+                $motivo_reactivacion = is_object($row['MOTIVO_REACTIVACION']) ? 
+                    $row['MOTIVO_REACTIVACION']->load() : $row['MOTIVO_REACTIVACION'];
+            }
 
-                        $archivos = [];
-                        while ($row = oci_fetch_assoc($stmt)) {
-                            $nombreArchivo = $row['NOMBRE_ARCHIVO'];
-                            $fechaSubida = $row['FECHA_SUBIDA'];
-                            $idArchivo = $row['ID_ARCHIVO'] ?? uniqid();
+            $quien_descarto = 'No identificado';
+            $tipo_usuario = 'DESCONOCIDO';
+            
+            if ($row['OBSERVACIONES_DESCARTE']) {
+                $obs = $row['OBSERVACIONES_DESCARTE'];
+                if (strpos($obs, 'GERENTE:') !== false) {
+                    $quien_descarto = trim(preg_replace('/.*GERENTE:\s*([^-]+)\s*-.*/i', '$1', $obs));
+                    $tipo_usuario = 'GERENTE';
+                } elseif (strpos($obs, 'SUPERVISOR:') !== false) {
+                    $quien_descarto = trim(preg_replace('/.*SUPERVISOR:\s*([^-]+)\s*-.*/i', '$1', $obs));
+                    $tipo_usuario = 'SUPERVISOR';
+                }
+            }
 
-                            $rutaCompleta = '../../' . $nombreArchivo;
-                            $archivoExiste = file_exists($rutaCompleta);
+            $candidatos[] = [
+                'ID_CANDIDATO' => $row['ID_CANDIDATO'],
+                'NOMBRE_COMPLETO' => trim($row['NOMBRE_CANDIDATO'] . ' ' . $row['APELLIDOS_CANDIDATO']),
+                'NOMBRE_CANDIDATO' => $row['NOMBRE_CANDIDATO'],
+                'APELLIDOS_CANDIDATO' => $row['APELLIDOS_CANDIDATO'],
+                'DOCUMENTO_CANDIDATO' => $row['DOCUMENTO_CANDIDATO'],
+                'ESTADO_CANDIDATO' => $row['ESTADO_CANDIDATO'],
+                'ACTIVO' => $row['ACTIVO'],
+                'APROBACION' => $row['APROBACION'],
+                'MOTIVO_DESCARTE' => $motivo_descarte,
+                'FECHA_REGISTRO' => $row['FECHA_REGISTRO'],
+                'FECHA_MODIFICACION' => $row['FECHA_MODIFICACION'],
+                'REACTIVADO_POST_CONTRATACION' => $row['REACTIVADO_POST_CONTRATACION'] ?? 'N',  // ← AGREGAR
+                'PUESTO_SOLICITADO' => $row['PUESTO_SOLICITADO'],
+                'SUPERVISOR' => $row['SOLICITADO_POR'],
+                'FECHA_DESCARTE' => $row['FECHA_DESCARTE'],
+                'QUIEN_DESCARTO' => $quien_descarto,
+                'TIPO_USUARIO_DESCARTO' => $tipo_usuario,
+                'TOTAL_ARCHIVOS' => intval($row['TOTAL_ARCHIVOS'] ?? 0),
+                'ES_DESCARTADO' => ($row['ACTIVO'] === 'N' || $row['ESTADO_CANDIDATO'] === 'Descartado')
+            ];
+        }
+        oci_free_statement($stmt);
 
-                            $extension = strtolower(pathinfo($nombreArchivo, PATHINFO_EXTENSION));
-                            $nombreSolo = basename($nombreArchivo);
-                            $tamaño = $archivoExiste ? filesize($rutaCompleta) : 0;
-                            $tamañoMB = $tamaño > 0 ? round($tamaño / 1024 / 1024, 2) : 0;
+        // OBTENER INFO COMPLETA DE LA SOLICITUD
+        $querySolicitudCompleta = "SELECT NUM_TIENDA, PUESTO_SOLICITADO, SOLICITADO_POR, ESTADO_SOLICITUD 
+                                FROM ROY_SOLICITUD_PERSONAL 
+                                WHERE ID_SOLICITUD = :id";
+        $stmtSolCompleta = oci_parse($conn, $querySolicitudCompleta);
+        oci_bind_by_name($stmtSolCompleta, ':id', $id_solicitud);
+        oci_execute($stmtSolCompleta);
+        $infoSolicitudCompleta = oci_fetch_assoc($stmtSolCompleta);
+        oci_free_statement($stmtSolCompleta);
 
-                            $archivos[] = [
-                                'ID_ARCHIVO' => $idArchivo,
-                                'NOMBRE_ARCHIVO' => $nombreArchivo,
-                                'NOMBRE_SOLO' => $nombreSolo,
-                                'FECHA_SUBIDA' => $fechaSubida,
-                                'EXTENSION' => $extension,
-                                'TAMAÑO_BYTES' => $tamaño,
-                                'TAMAÑO_MB' => $tamañoMB,
-                                'EXISTE' => $archivoExiste,
-                                'RUTA_RELATIVA' => $nombreArchivo
-                            ];
-                        }
+        $response = [
+            'success' => true,
+            'candidatos' => $candidatos,
+            'total' => count($candidatos),
+            'filtro_aplicado' => $filtro_estado,
+            // SIEMPRE INCLUIR INFO DE SOLICITUD
+            'solicitud' => [
+                'id' => $id_solicitud,
+                'tienda' => $infoSolicitudCompleta['NUM_TIENDA'] ?? 'No especificada',
+                'puesto' => $infoSolicitudCompleta['PUESTO_SOLICITADO'] ?? 'No especificado',
+                'supervisor' => $infoSolicitudCompleta['SOLICITADO_POR'] ?? 'No asignado',
+                'estado' => $infoSolicitudCompleta['ESTADO_SOLICITUD'] ?? '',
+                'reactivada' => $es_reactivada ? 'Y' : 'N',
+                'motivo_reactivacion' => $motivo_reactivacion,
+                'nombre_gerente' => $nombre_gerente
+            ]
+        ];
 
-                        oci_free_statement($stmt);
+        echo json_encode($response);
 
-                        echo json_encode([
-                            'success' => true,
-                            'archivos' => $archivos,
-                            'id_historico' => $idHistorico,
-                            'solicitud_id' => $id,
-                            'tipo_archivo' => $tipoArchivo
-                        ]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+    break;
+//=========================================================================================
+// CHAT EMERGENTE
+//==========================================================================================
 
-                    } catch (Exception $e) {
-                        error_log("Excepción en get_archivos: " . $e->getMessage());
-                        echo json_encode([
-                            'error' => 'Error interno del servidor',
-                            'archivos' => []
-                        ]);
-                    }
-
-                    oci_close($conn);
-                    break;
-
-
-                                        // CASE HISTORIAL INDIVIDUAL MODIFICADO
-                case 'get_historial_individual':
-                    if (!isset($_GET['id'])) {
-                        echo json_encode([]);
-                        break;
-                    }
-
-                    $id = $_GET['id'];
-
-                    $query = "SELECT
-                                h.ID_HISTORICO,
-                                sp.NUM_TIENDA,
-                                h.ESTADO_ANTERIOR,
-                                h.ESTADO_NUEVO,
-                                h.COMENTARIO_ANTERIOR,
-                                h.COMENTARIO_NUEVO,
-                                TO_CHAR(h.FECHA_CAMBIO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_CAMBIO
-                            FROM ROY_HISTORICO_SOLICITUD h
-                            JOIN ROY_SOLICITUD_PERSONAL sp ON h.ID_SOLICITUD = sp.ID_SOLICITUD
-                            WHERE h.ID_SOLICITUD = :id
-                            ORDER BY h.FECHA_CAMBIO DESC";
-
-                    $stmt = oci_parse($conn, $query);
-                    oci_bind_by_name($stmt, ':id', $id);
-                    oci_execute($stmt);
-
-                    $historial = [];
-                    while ($row = oci_fetch_assoc($stmt)) {
-                        $row['ARCHIVOS'] = [];
-
-                        // Buscar archivos relacionados a este ID_HISTORICO
-                        $query_archivos = "SELECT NOMBRE_ARCHIVO FROM ROY_ARCHIVOS_SOLICITUD WHERE ID_HISTORICO = :id_historico";
-                        $stmt_arch = oci_parse($conn, $query_archivos);
-                        oci_bind_by_name($stmt_arch, ':id_historico', $row['ID_HISTORICO']);
-                        oci_execute($stmt_arch);
-
-                        while ($arch = oci_fetch_assoc($stmt_arch)) {
-                            $row['ARCHIVOS'][] = $arch;
-                        }
-
-                        oci_free_statement($stmt_arch);
-                        $historial[] = $row;
-                    }
-
-                    oci_free_statement($stmt);
-                    oci_close($conn);
-
-                    header('Content-Type: application/json');
-                    echo json_encode($historial);
-                    break;
-
-                    //CASE FUNCIONALIDAD DE CHAT EMERGENTE "VER COMENTARIO"
-                // OBTENER COMENTARIOS DEL CHAT (UNIFICADO) - VERSIÓN RRHH CORREGIDA
+    //CHAT ENTRE RH Y SUPERVISION, JUNTO CON EL HISTORICO Y RESPUESTAS 
                 case 'get_comentarios_chat_rh':
                     $idHistorico = $_POST['id_historico'] ?? $_GET['id_historico'] ?? 0;
 
@@ -2627,647 +1325,735 @@ if (isset($_GET['action'])) {
                     }
                     break;
 
+//=========================================================================================
+// REGISTRO DE CANDIDATOS 
+//==========================================================================================
 
-                // 🆕 AGREGAR ESTE CASE DESPUÉS DE ver_resumen_cvs
-            case 'get_observaciones_completas_rrhh':
-                try {
-                    $id_solicitud = $_GET['id_solicitud'] ?? $_POST['id_solicitud'] ?? null;
-                    
-                    if (!$id_solicitud) {
-                        throw new Exception('ID de solicitud no proporcionado');
-                    }
-                    
-                    // ✅ OBTENER INFORMACIÓN BÁSICA DE LA SOLICITUD
-                    $querySolicitud = "SELECT 
-                                        ID_SOLICITUD,
-                                        NUM_TIENDA,
-                                        PUESTO_SOLICITADO,
-                                        ESTADO_SOLICITUD,
-                                        SOLICITADO_POR,
-                                        TO_CHAR(FECHA_SOLICITUD, 'DD/MM/YYYY') as FECHA_SOLICITUD
-                                    FROM ROY_SOLICITUD_PERSONAL 
-                                    WHERE ID_SOLICITUD = :id_solicitud";
-                    
-                    $stmtSolicitud = oci_parse($conn, $querySolicitud);
-                    oci_bind_by_name($stmtSolicitud, ':id_solicitud', $id_solicitud);
-                    oci_execute($stmtSolicitud);
-                    
-                    $solicitud = oci_fetch_assoc($stmtSolicitud);
-                    oci_free_statement($stmtSolicitud);
-                    
-                    if (!$solicitud) {
-                        throw new Exception('No se encontró la solicitud especificada');
-                    }
-                    
-                    // ✅ OBTENER TODOS LOS CICLOS DE "DÍA DE PRUEBA" 
-                    $queryCiclos = "SELECT 
-                                    ID_HISTORICO,
-                                    TO_CHAR(FECHA_CAMBIO, 'DD/MM/YYYY HH24:MI') as FECHA_CICLO,
-                                    COMENTARIO_NUEVO
-                                FROM ROY_HISTORICO_SOLICITUD 
-                                WHERE ID_SOLICITUD = :id_solicitud 
-                                AND (LOWER(ESTADO_NUEVO) LIKE '%día de prueba%' 
-                                    OR LOWER(ESTADO_NUEVO) LIKE '%dia de prueba%')
-                                ORDER BY FECHA_CAMBIO DESC";
-                    
-                    $stmtCiclos = oci_parse($conn, $queryCiclos);
-                    oci_bind_by_name($stmtCiclos, ':id_solicitud', $id_solicitud);
-                    oci_execute($stmtCiclos);
-                    
-                    $ciclos = [];
-                    while ($rowCiclo = oci_fetch_assoc($stmtCiclos)) {
-                        $ciclos[] = $rowCiclo;
-                    }
-                    oci_free_statement($stmtCiclos);
-                    
-                    // ✅ OBTENER TODAS LAS OBSERVACIONES CON SUS CICLOS
-                    $queryObservaciones = "SELECT 
-                                                o.ID_OBSERVACION,
-                                                o.ID_SOLICITUD,
-                                                o.SUPERVISOR_CODIGO,
-                                                o.SUPERVISOR_NOMBRE,
-                                                o.CANDIDATO_NOMBRE,
-                                                o.CANDIDATO_DOCUMENTO,
-                                                TO_CHAR(o.FECHA_DIA_PRUEBA, 'DD/MM/YYYY') as FECHA_DIA_PRUEBA,
-                                                o.HORA_INICIO,
-                                                o.HORA_FIN,
-                                                o.PUESTO_EVALUADO,
-                                                o.OBSERVACIONES_DET,
-                                                o.DESEMPENO_GENERAL,  
-                                                o.PUNTUALIDAD,
-                                                o.ACTITUD,
-                                                o.CONOCIMIENTOS,
-                                                o.RECOMENDACION_SUP,
-                                                TO_CHAR(o.FECHA_CREACION, 'DD/MM/YYYY HH24:MI') as FECHA_CREACION,
-                                                o.ESTADO,
-                                                o.ID_HIST_ASOCIADO,
-                                                h.FECHA_CAMBIO as FECHA_CICLO_COMPLETA
-                                            FROM ROY_OBSERVACIONES_DIA_PRUEBA o
-                                            LEFT JOIN ROY_HISTORICO_SOLICITUD h ON o.ID_HIST_ASOCIADO = h.ID_HISTORICO
-                                            WHERE o.ID_SOLICITUD = :id_solicitud 
-                                            AND o.ESTADO = 'ENVIADO'
-                                            AND o.ID_OBSERVACION = (
-                                                SELECT MAX(o2.ID_OBSERVACION)
-                                                FROM ROY_OBSERVACIONES_DIA_PRUEBA o2
-                                                WHERE o2.ID_SOLICITUD = :id_solicitud
-                                                AND o2.ESTADO = 'ENVIADO'
-                                            )
-                                            ORDER BY o.FECHA_CREACION DESC";
-                    
-                    $stmtObservaciones = oci_parse($conn, $queryObservaciones);
-                    oci_bind_by_name($stmtObservaciones, ':id_solicitud', $id_solicitud);
-                    oci_execute($stmtObservaciones);
-                    
-                    $observaciones = [];
-                    $totalObservaciones = 0;
-                    $recomendados = 0;
-                    $noRecomendados = 0;
-                    
-                    while ($rowObs = oci_fetch_assoc($stmtObservaciones)) {
-                        // 🔄 PROCESAR CLOB SI ES NECESARIO
-                        if (isset($rowObs['OBSERVACIONES_DET']) && is_object($rowObs['OBSERVACIONES_DET'])) {
-                            $rowObs['OBSERVACIONES_DET'] = $rowObs['OBSERVACIONES_DET']->load();
-                        }
-                        
-                        // 📊 ESTADÍSTICAS
-                        $totalObservaciones++;
-                        if ($rowObs['RECOMENDACION_SUP'] === 'RECOMENDADO') {
-                            $recomendados++;
-                        } else {
-                            $noRecomendados++;
-                        }
-                        
-                        $observaciones[] = $rowObs;
-                    }
-                    oci_free_statement($stmtObservaciones);
-                    
-                    // 📊 CALCULAR ESTADÍSTICAS GENERALES
-                    $estadisticas = [
-                        'total_observaciones' => $totalObservaciones,
-                        'total_ciclos' => count($ciclos),
-                        'recomendados' => $recomendados,
-                        'no_recomendados' => $noRecomendados,
-                        'porcentaje_recomendado' => $totalObservaciones > 0 ? round(($recomendados / $totalObservaciones) * 100, 1) : 0
-                    ];
-                    
-                    // ✅ RESPUESTA COMPLETA
-                    echo json_encode([
-                        'success' => true,
-                        'solicitud' => $solicitud,
-                        'ciclos' => $ciclos,
-                        'observaciones' => $observaciones,
-                        'estadisticas' => $estadisticas,
-                        'message' => 'Información completa obtenida correctamente'
-                    ]);
-                    
-                } catch (Exception $e) {
-                    echo json_encode([
-                        'success' => false,
-                        'error' => $e->getMessage(),
-                        'debug_info' => [
-                            'id_solicitud' => $id_solicitud ?? 'No proporcionado',
-                            'timestamp' => date('Y-m-d H:i:s')
-                        ]
-                    ]);
+                     //registrar candidatos iniciales 
+case 'registrar_candidatos_iniciales':
+    error_reporting(E_ERROR | E_PARSE); 
+    try {
+        error_log("=== INICIO REGISTRO CANDIDATOS SIN CV ===");
+        
+        $id_solicitud = $_POST['id_solicitud'] ?? null;
+        $nuevo_estado = $_POST['nuevo_estado'] ?? null;
+        $comentario = $_POST['comentario'] ?? '';
+        $candidatos_json = $_POST['candidatos'] ?? null;
+
+        // DECODIFICAR JSON
+        if ($candidatos_json) {
+            $candidatos = json_decode($candidatos_json, true);
+        } else {
+            $candidatos = null;
+        }
+
+        // VALIDACIÓN MEJORADA
+        if (!$id_solicitud || !$candidatos || !is_array($candidatos)) {
+            // Debug para ver qué está llegando
+            error_log("DEBUG - id_solicitud: " . var_export($id_solicitud, true));
+            error_log("DEBUG - candidatos_json: " . var_export($candidatos_json, true));
+            error_log("DEBUG - candidatos decodificado: " . var_export($candidatos, true));
+            throw new Exception('Datos incompletos para registrar candidatos');
+        }
+        
+        // VALIDACIÓN COMENTARIO OBLIGATORIO
+        if (empty(trim($comentario))) {
+            throw new Exception('El comentario es obligatorio para registrar candidatos');
+        }
+        
+        $id_solicitud = intval($id_solicitud);
+        
+        $candidatos_registrados = [];
+        $errores = [];
+        
+        // OBTENER PUESTO DE LA SOLICITUD
+        $queryPuesto = "SELECT PUESTO_SOLICITADO FROM ROY_SOLICITUD_PERSONAL WHERE ID_SOLICITUD = :id";
+        $stmtPuesto = oci_parse($conn, $queryPuesto);
+        oci_bind_by_name($stmtPuesto, ':id', $id_solicitud);
+        oci_execute($stmtPuesto);
+        $rowPuesto = oci_fetch_assoc($stmtPuesto);
+        $puesto_solicitado = isset($rowPuesto['PUESTO_SOLICITADO']) ? $rowPuesto['PUESTO_SOLICITADO'] : '';
+        oci_free_statement($stmtPuesto);
+        
+        foreach ($candidatos as $index => $candidato) {
+            try {
+                if (empty($candidato['nombre']) || empty($candidato['apellidos'])) {
+                    throw new Exception("Candidato " . ($index + 1) . ": Nombre y apellidos son obligatorios");
                 }
-                break; 
-                // CASE COMPLETO PARA ENVÍO A AVAL GERENCIA
-                        case 'enviar_aval_gerencia':
-                            try {
-                                $id_solicitud = $_POST['id_solicitud'] ?? null;
-                                $comentario_rrhh = $_POST['comentario'] ?? '';
-                                $enviado_por = $_POST['enviado_por'] ?? 'Sistema RRHH';
-                                
-                                if (!$id_solicitud) {
-                                    throw new Exception('ID de solicitud requerido');
-                                }
-                                
-                                // ✅ VERIFICAR ARCHIVOS REQUERIDOS
-                                if (!isset($_FILES['pdf_reporte']) || $_FILES['pdf_reporte']['error'] !== 0) {
-                                    throw new Exception('El archivo PDF del reporte de observaciones es requerido');
-                                }
-                                
-                                if (!isset($_FILES['cv_candidato']) || $_FILES['cv_candidato']['error'] !== 0) {
-                                    throw new Exception('El archivo CV del candidato es requerido');
-                                }
-                                
-                                // ✅ VERIFICAR QUE LA SOLICITUD EXISTE Y TIENE OBSERVACIONES (SIN BLOQUEAR MÚLTIPLES AVALES)
-                                $queryVerificar = "SELECT 
-                                                    s.ID_SOLICITUD,
-                                                    s.ESTADO_SOLICITUD,
-                                                    s.NUM_TIENDA,
-                                                    s.PUESTO_SOLICITADO,
-                                                    s.SOLICITADO_POR,
-                                                    (SELECT COUNT(*) FROM ROY_HISTORICO_SOLICITUD h 
-                                                    WHERE h.ID_SOLICITUD = s.ID_SOLICITUD 
-                                                    AND h.OBSERVACIONES_ENVIADAS = 'Y' 
-                                                    AND h.TIPO_EVENTO = 'OBSERVACIONES_ENVIADAS') as TIENE_OBSERVACIONES
-                                                FROM ROY_SOLICITUD_PERSONAL s 
-                                                WHERE s.ID_SOLICITUD = :id_solicitud";
-                                
-                                $stmtVerificar = oci_parse($conn, $queryVerificar);
-                                oci_bind_by_name($stmtVerificar, ':id_solicitud', $id_solicitud);
-                                oci_execute($stmtVerificar);
-                                
-                                $solicitudData = oci_fetch_assoc($stmtVerificar);
-                                if (!$solicitudData) {
-                                    throw new Exception('La solicitud especificada no existe');
-                                }
-                                
-                                if ($solicitudData['TIENE_OBSERVACIONES'] == 0) {
-                                    throw new Exception('Esta solicitud no tiene observaciones del supervisor. No se puede enviar a aval gerencia.');
-                                }
-                                
-                                // ✅ NUEVA LÓGICA: Permitir múltiples avales pero marcar los anteriores como inactivos
-                                $queryDesactivarAnteriores = "UPDATE ROY_AVALES_GERENCIA 
-                                                            SET ACTIVO = 'N',
-                                                                FECHA_MODIFICACION = SYSDATE
-                                                            WHERE ID_SOLICITUD = :id_solicitud 
-                                                            AND ESTADO_AVAL = 'PENDIENTE'
-                                                            AND ACTIVO = 'Y'";
-                                
-                                $stmtDesactivar = oci_parse($conn, $queryDesactivarAnteriores);
-                                oci_bind_by_name($stmtDesactivar, ':id_solicitud', $id_solicitud);
-                                oci_execute($stmtDesactivar);
-                                oci_free_statement($stmtDesactivar);
-                                
-                                $estadoAnterior = $solicitudData['ESTADO_SOLICITUD'];
-                                $estadoNuevo = "Pendiente Aval Gerencia";
-                                
-                                oci_free_statement($stmtVerificar);
-                                
-                                // ✅ OBTENER INFORMACIÓN DEL CANDIDATO DE LAS OBSERVACIONES
-                                $queryCandidato = "SELECT 
-                                                    o.CANDIDATO_NOMBRE,
-                                                    o.SUPERVISOR_NOMBRE
-                                                FROM ROY_OBSERVACIONES_DIA_PRUEBA o
-                                                WHERE o.ID_SOLICITUD = :id_solicitud
-                                                ORDER BY o.FECHA_CREACION DESC
-                                                FETCH FIRST 1 ROWS ONLY";
-                                
-                                $stmtCandidato = oci_parse($conn, $queryCandidato);
-                                oci_bind_by_name($stmtCandidato, ':id_solicitud', $id_solicitud);
-                                oci_execute($stmtCandidato);
-                                
-                                $candidatoData = oci_fetch_assoc($stmtCandidato);
-                                $candidato_nombre = $candidatoData['CANDIDATO_NOMBRE'] ?? 'No especificado';
-                                $supervisor_nombre = $candidatoData['SUPERVISOR_NOMBRE'] ?? $solicitudData['SOLICITADO_POR'];
-                                
-                                oci_free_statement($stmtCandidato);
-                                
-                                // ✅ SUBIR Y VALIDAR ARCHIVOS
-                                $archivoPDF = subirArchivoAval($_FILES['pdf_reporte'], $id_solicitud, 'REPORTE_PDF');
-                                $archivoCV = subirArchivoAval($_FILES['cv_candidato'], $id_solicitud, 'CV_CANDIDATO');
-                                
-                                // ✅ INSERTAR EN TABLA DE AVALES
-                                $queryAval = "INSERT INTO ROY_AVALES_GERENCIA (
-                                    ID_SOLICITUD,
-                                    FECHA_ENVIO,
-                                    ENVIADO_POR,
-                                    COMENTARIO_RRHH,
-                                    ARCHIVO_REPORTE_PDF,
-                                    ARCHIVO_CV_CANDIDATO,
-                                    CANDIDATO_NOMBRE,
-                                    PUESTO_SOLICITADO,
-                                    NUM_TIENDA,
-                                    SUPERVISOR_NOMBRE,
-                                    ESTADO_AVAL
-                                ) VALUES (
-                                    :id_solicitud,
-                                    SYSDATE,
-                                    :enviado_por,
-                                    :comentario_rrhh,
-                                    :archivo_pdf,
-                                    :archivo_cv,
-                                    :candidato_nombre,
-                                    :puesto_solicitado,
-                                    :num_tienda,
-                                    :supervisor_nombre,
-                                    'PENDIENTE'
-                                )";
-                                
-                                $stmtAval = oci_parse($conn, $queryAval);
-                                oci_bind_by_name($stmtAval, ':id_solicitud', $id_solicitud);
-                                oci_bind_by_name($stmtAval, ':enviado_por', $enviado_por);
-                                oci_bind_by_name($stmtAval, ':comentario_rrhh', $comentario_rrhh);
-                                oci_bind_by_name($stmtAval, ':archivo_pdf', $archivoPDF['ruta_relativa']);
-                                oci_bind_by_name($stmtAval, ':archivo_cv', $archivoCV['ruta_relativa']);
-                                oci_bind_by_name($stmtAval, ':candidato_nombre', $candidato_nombre);
-                                oci_bind_by_name($stmtAval, ':puesto_solicitado', $solicitudData['PUESTO_SOLICITADO']);
-                                oci_bind_by_name($stmtAval, ':num_tienda', $solicitudData['NUM_TIENDA']);
-                                oci_bind_by_name($stmtAval, ':supervisor_nombre', $supervisor_nombre);
-                                
-                                if (!oci_execute($stmtAval)) {
-                                    $error = oci_error($stmtAval);
-                                    throw new Exception('Error insertando aval: ' . $error['message']);
-                                }
-                                
-                                oci_free_statement($stmtAval);
-                                
-                                // ✅ REGISTRAR EN HISTORIAL (VERSIÓN SIMPLE)
-                                $comentarioHistorial = "Aval enviado para aprobación del gerente";
-                                
-                                $queryHistorial = "INSERT INTO ROY_HISTORICO_SOLICITUD (
-                                    ID_SOLICITUD,
-                                    ESTADO_ANTERIOR,
-                                    ESTADO_NUEVO,
-                                    COMENTARIO_NUEVO,
-                                    FECHA_CAMBIO,
-                                    AVAL_ENVIADO,
-                                    TIPO_EVENTO
-                                ) VALUES (
-                                    :id_solicitud,
-                                    :estado_anterior,
-                                    :estado_nuevo,
-                                    :comentario,
-                                    SYSDATE,
-                                    'Y',
-                                    'AVAL ENVIADO A GERENCIA'
-                                )";
-                                
-                                $stmtHistorial = oci_parse($conn, $queryHistorial);
-                                oci_bind_by_name($stmtHistorial, ':id_solicitud', $id_solicitud);
-                                oci_bind_by_name($stmtHistorial, ':estado_anterior', $estadoAnterior);
-                                oci_bind_by_name($stmtHistorial, ':estado_nuevo', $estadoNuevo);
-                                oci_bind_by_name($stmtHistorial, ':comentario', $comentarioHistorial);
-                                
-                                if (!oci_execute($stmtHistorial)) {
-                                    $error = oci_error($stmtHistorial);
-                                    throw new Exception('Error registrando en historial: ' . $error['message']);
-                                }
-                                
-                                // 🔧 CORRECCIÓN: Obtener ID del historial recién insertado de forma más confiable
-                                $queryGetId = "SELECT 
-                                                (SELECT MAX(ID_HISTORICO) FROM ROY_HISTORICO_SOLICITUD 
-                                                WHERE ID_SOLICITUD = :id_solicitud 
-                                                AND AVAL_ENVIADO = 'Y' 
-                                                AND TIPO_EVENTO = 'AVAL ENVIADO A GERENCIA') AS ID_HISTORICO
-                                            FROM DUAL";
-                                
-                                $stmtGetId = oci_parse($conn, $queryGetId);
-                                oci_bind_by_name($stmtGetId, ':id_solicitud', $id_solicitud);
-                                oci_execute($stmtGetId);
-                                $resultId = oci_fetch_assoc($stmtGetId);
-                                $idHistorico = $resultId['ID_HISTORICO'] ?? null;
-                                
-                                oci_free_statement($stmtHistorial);
-                                oci_free_statement($stmtGetId);
-                                
-                                // ✅ ACTUALIZAR REFERENCIA EN TABLA DE AVALES
-                                if ($idHistorico) {
-                                    $queryUpdateAval = "UPDATE ROY_AVALES_GERENCIA 
-                                                    SET ID_HISTORICO_ENVIO = :id_historico 
-                                                    WHERE ID_SOLICITUD = :id_solicitud 
-                                                    AND ESTADO_AVAL = 'PENDIENTE'
-                                                    AND ACTIVO = 'Y'";
-                                    
-                                    $stmtUpdateAval = oci_parse($conn, $queryUpdateAval);
-                                    oci_bind_by_name($stmtUpdateAval, ':id_historico', $idHistorico);
-                                    oci_bind_by_name($stmtUpdateAval, ':id_solicitud', $id_solicitud);
-                                    oci_execute($stmtUpdateAval);
-                                    oci_free_statement($stmtUpdateAval);
-                                }
-                                
-                                // ✅ ACTUALIZAR ESTADO DE LA SOLICITUD
-                                $queryUpdate = "UPDATE ROY_SOLICITUD_PERSONAL 
-                                            SET ESTADO_SOLICITUD = :estado_nuevo,
-                                                FECHA_MODIFICACION = SYSDATE
-                                            WHERE ID_SOLICITUD = :id_solicitud";
-                                
-                                $stmtUpdate = oci_parse($conn, $queryUpdate);
-                                oci_bind_by_name($stmtUpdate, ':estado_nuevo', $estadoNuevo);
-                                oci_bind_by_name($stmtUpdate, ':id_solicitud', $id_solicitud);
-                                
-                                if (!oci_execute($stmtUpdate)) {
-                                    $error = oci_error($stmtUpdate);
-                                    throw new Exception('Error actualizando estado: ' . $error['message']);
-                                }
-                                
-                                oci_free_statement($stmtUpdate);
-                                
-                                // Confirmar transacción
-                                oci_commit($conn);
-                                
-                                // ✅ RESPUESTA EXITOSA
-                                echo json_encode([
-                                    'success' => true,
-                                    'message' => 'Solicitud enviada a aval gerencia correctamente',
-                                    'data' => [
-                                        'id_solicitud' => $id_solicitud,
-                                        'estado_anterior' => $estadoAnterior,
-                                        'estado_nuevo' => $estadoNuevo,
-                                        'candidato' => $candidato_nombre,
-                                        'archivos' => [
-                                            'pdf_reporte' => $archivoPDF['nombre_archivo'],
-                                            'cv_candidato' => $archivoCV['nombre_archivo']
-                                        ],
-                                        'fecha_envio' => date('Y-m-d H:i:s'),
-                                        'enviado_por' => $enviado_por
-                                    ]
-                                ]);
-                                
-                            } catch (Exception $e) {
-                                oci_rollback($conn);
-                                error_log('❌ Error enviando aval gerencia: ' . $e->getMessage());
-                                
-                                echo json_encode([
-                                    'success' => false,
-                                    'error' => $e->getMessage()
-                                ]);
-                            }
-                            break;
+                
+                $nombre_candidato = $candidato['nombre'];
+                $apellidos_candidato = $candidato['apellidos'];
+                $documento_candidato = isset($candidato['documento']) ? $candidato['documento'] : '';
+                
+                // INSERTAR CANDIDATO SIN ARCHIVOS
+                $queryInsert = "INSERT INTO ROY_CANDIDATOS_SOLICITUD 
+                    (ID_SOLICITUD, NOMBRE_CANDIDATO, APELLIDOS_CANDIDATO, 
+                     DOCUMENTO_CANDIDATO, PUESTO_SOLICITADO, ESTADO_CANDIDATO) 
+                    VALUES (:id_solicitud, :nombre, :apellidos, :documento, :puesto, 'CV Enviado')
+                    RETURNING ID_CANDIDATO INTO :id_candidato";
+                
+                $stmtInsert = oci_parse($conn, $queryInsert);
+                $id_candidato = null;
+                
+                oci_bind_by_name($stmtInsert, ':id_solicitud', $id_solicitud);
+                oci_bind_by_name($stmtInsert, ':nombre', $nombre_candidato);
+                oci_bind_by_name($stmtInsert, ':apellidos', $apellidos_candidato);
+                oci_bind_by_name($stmtInsert, ':documento', $documento_candidato);
+                oci_bind_by_name($stmtInsert, ':puesto', $puesto_solicitado);
+                oci_bind_by_name($stmtInsert, ':id_candidato', $id_candidato, -1, SQLT_INT);
+                
+                if (!oci_execute($stmtInsert)) {
+                    $error = oci_error($stmtInsert);
+                    throw new Exception("Error insertando candidato: " . $error['message']);
+                }
+                
+                $candidatos_registrados[] = [
+                    'id_candidato' => $id_candidato,
+                    'nombre_completo' => $nombre_candidato . ' ' . $apellidos_candidato,
+                    'cv_subido' => false // SIEMPRE FALSE AHORA
+                ];
+                
+                oci_free_statement($stmtInsert);
+                
+            } catch (Exception $e) {
+                $errores[] = "Candidato " . ($index + 1) . ": " . $e->getMessage();
+            }
+        }
+        
+        // SOLO CREAR HISTORIAL SI SE REGISTRARON CANDIDATOS
+        if (count($candidatos_registrados) > 0) {
+            // OBTENER ESTADO ANTERIOR
+            $queryEstadoAnterior = "SELECT ESTADO_SOLICITUD FROM ROY_SOLICITUD_PERSONAL WHERE ID_SOLICITUD = :id";
+            $stmtEstadoAnterior = oci_parse($conn, $queryEstadoAnterior);
+            oci_bind_by_name($stmtEstadoAnterior, ':id', $id_solicitud);
+            oci_execute($stmtEstadoAnterior);
+            $rowEstadoAnterior = oci_fetch_assoc($stmtEstadoAnterior);
+            $estado_anterior = isset($rowEstadoAnterior['ESTADO_SOLICITUD']) ? $rowEstadoAnterior['ESTADO_SOLICITUD'] : 'Desconocido';
+            oci_free_statement($stmtEstadoAnterior);
 
-                            // CASE PARA OBTENER RESULTADO DEL AVAL
-                            case 'obtener_resultado_aval_recursos':
-                                    try {
-                                        if (ob_get_level()) ob_clean();
-                                        header('Content-Type: application/json; charset=utf-8');
-                                        
-                                        $id_solicitud = $_GET['id_solicitud'] ?? '';
-                                        if (empty($id_solicitud)) {
-                                            echo json_encode(['success' => false, 'error' => 'ID requerido']);
-                                            exit;
-                                        }
-                                        
-                                        // ✅ OBTENER INFORMACIÓN DE LA SOLICITUD
-                                        $querySolicitud = "SELECT 
-                                                            NUM_TIENDA,
-                                                            PUESTO_SOLICITADO,
-                                                            SOLICITADO_POR,
-                                                            RAZON,
-                                                            TO_CHAR(FECHA_SOLICITUD, 'DD-MM-YYYY') AS FECHA_SOLICITUD
-                                                        FROM ROY_SOLICITUD_PERSONAL
-                                                        WHERE ID_SOLICITUD = :id";
-                                        
-                                        $stmtSolicitud = oci_parse($conn, $querySolicitud);
-                                        oci_bind_by_name($stmtSolicitud, ':id', $id_solicitud);
-                                        oci_execute($stmtSolicitud);
-                                        $solicitud = oci_fetch_assoc($stmtSolicitud);
-                                        oci_free_statement($stmtSolicitud);
-                                        
-                                        // ✅ OBTENER RESULTADO DEL AVAL (ÚLTIMO PROCESADO)
-                                        $queryAval = "SELECT 
-                                                        a.DECISION_GERENTE,
-                                                        a.ESTADO_AVAL,
-                                                        a.GERENTE_NOMBRE,
-                                                        TO_CHAR(a.FECHA_RESPUESTA, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_DECISION,
-                                                        a.COMENTARIO_GERENTE
-                                                    FROM ROY_AVALES_GERENCIA a
-                                                    WHERE a.ID_SOLICITUD = :id 
-                                                    AND a.DECISION_GERENTE IS NOT NULL
-                                                    ORDER BY a.FECHA_RESPUESTA DESC
-                                                    FETCH FIRST 1 ROWS ONLY";
-                                        
-                                        $stmtAval = oci_parse($conn, $queryAval);
-                                        oci_bind_by_name($stmtAval, ':id', $id_solicitud);
-                                        oci_execute($stmtAval);
-                                        $aval = oci_fetch_assoc($stmtAval);
-                                        oci_free_statement($stmtAval);
-                                        
-                                        if (!$aval) {
-                                            echo json_encode(['success' => false, 'error' => 'No se encontró decisión del aval']);
-                                            exit;
-                                        }
-                                        
-                                        // ✅ PROCESAR CLOB SI ES NECESARIO
-                                        if (isset($aval['COMENTARIO_GERENTE']) && is_object($aval['COMENTARIO_GERENTE'])) {
-                                            $aval['COMENTARIO_GERENTE'] = $aval['COMENTARIO_GERENTE']->load();
-                                        }
-                                        
-                                        // ✅ RESPUESTA
-                                        $respuesta = [
-                                            'success' => true,
-                                            'data' => [
-                                                'solicitud' => [
-                                                    'id' => $id_solicitud,
-                                                    'tienda' => $solicitud['NUM_TIENDA'] ?? 'N/A',
-                                                    'puesto' => $solicitud['PUESTO_SOLICITADO'] ?? 'N/A',
-                                                    'supervisor' => $solicitud['SOLICITADO_POR'] ?? 'N/A',
-                                                    'razon' => $solicitud['RAZON'] ?? 'N/A',
-                                                    'fecha_solicitud' => $solicitud['FECHA_SOLICITUD'] ?? 'N/A'
-                                                ],
-                                                'aval' => [
-                                                    'decision' => $aval['DECISION_GERENTE'] ?? 'N/A',
-                                                    'estado' => $aval['ESTADO_AVAL'] ?? 'N/A',
-                                                    'gerente' => $aval['GERENTE_NOMBRE'] ?? 'N/A',
-                                                    'fecha_decision' => $aval['FECHA_DECISION'] ?? 'N/A',
-                                                    'comentario' => $aval['COMENTARIO_GERENTE'] ?? 'Sin comentarios'
-                                                ]
-                                            ]
-                                        ];
-                                        
-                                        echo json_encode($respuesta);
-                                        exit;
-                                        
-                                    } catch (Exception $e) {
-                                        echo json_encode(['success' => false, 'error' => 'Error: ' . $e->getMessage()]);
-                                        exit;
-                                    }
-                                    break;
+            oci_free_statement($stmtEstadoAnterior);
+            
+            // ACTUALIZAR EL ESTADO DE LA SOLICITUD
+            $queryUpdateSolicitud = "UPDATE ROY_SOLICITUD_PERSONAL 
+                                     SET ESTADO_SOLICITUD = :nuevo_estado,
+                                         FECHA_MODIFICACION = SYSDATE
+                                     WHERE ID_SOLICITUD = :id_solicitud";
+            
+            $stmtUpdateSolicitud = oci_parse($conn, $queryUpdateSolicitud);
+            oci_bind_by_name($stmtUpdateSolicitud, ':nuevo_estado', $nuevo_estado);
+            oci_bind_by_name($stmtUpdateSolicitud, ':id_solicitud', $id_solicitud);
+            
+            if (!oci_execute($stmtUpdateSolicitud)) {
+                $error = oci_error($stmtUpdateSolicitud);
+                throw new Exception("Error al actualizar estado de solicitud: " . $error['message']);
+            }
+            oci_free_statement($stmtUpdateSolicitud);
+            
+            // CREAR COMENTARIO PARA HISTORIAL
+            $comentario_historial = "CANDIDATOS REGISTRADOS:\n" . $comentario;
+            
+            $queryHistorial = "INSERT INTO ROY_HISTORICO_SOLICITUD 
+                (ID_SOLICITUD, ESTADO_ANTERIOR, ESTADO_NUEVO, COMENTARIO_NUEVO, FECHA_CAMBIO, TIPO_EVENTO)
+                VALUES (:id_solicitud, :estado_anterior, :estado_nuevo, :comentario, SYSDATE, 'CANDIDATOS_REGISTRADOS')";
+                
+            $stmtHistorial = oci_parse($conn, $queryHistorial);
+            oci_bind_by_name($stmtHistorial, ':id_solicitud', $id_solicitud);
+            oci_bind_by_name($stmtHistorial, ':estado_anterior', $estado_anterior);
+            oci_bind_by_name($stmtHistorial, ':estado_nuevo', $nuevo_estado);
+            oci_bind_by_name($stmtHistorial, ':comentario', $comentario_historial);
+            oci_execute($stmtHistorial);
+
+            // OBTENER EL ID_HISTORICO que se acaba de crear
+            $queryGetId = "SELECT MAX(ID_HISTORICO) AS ID_HISTORICO 
+                        FROM ROY_HISTORICO_SOLICITUD 
+                        WHERE ID_SOLICITUD = :id_solicitud 
+                        AND TIPO_EVENTO = 'CANDIDATOS_REGISTRADOS'";
+
+            $stmtGetId = oci_parse($conn, $queryGetId);
+            oci_bind_by_name($stmtGetId, ':id_solicitud', $id_solicitud);
+            oci_execute($stmtGetId);
+            $resultId = oci_fetch_assoc($stmtGetId);
+            $id_historico_creado = $resultId['ID_HISTORICO'];
+            oci_free_statement($stmtGetId);
+
+            // INSERTAR EN ROY_CHAT_HISTORICO para que aparezca en el chat
+            if ($id_historico_creado) {
+                $queryChat = "INSERT INTO ROY_CHAT_HISTORICO (
+                                ID_MENSAJE,
+                                ID_HISTORICO,
+                                ROL,
+                                MENSAJE,
+                                FECHA,
+                                REMITENTE,
+                                ES_LEIDO
+                            ) VALUES (
+                                SEQ_CHAT_MENSAJE.NEXTVAL,
+                                :id_historico,
+                                'RRHH',
+                                EMPTY_CLOB(),
+                                SYSDATE,
+                                'RRHH_SISTEMA',
+                                'N'
+                            ) RETURNING MENSAJE INTO :mensaje_clob";
+
+                $stmtChat = oci_parse($conn, $queryChat);
+                oci_bind_by_name($stmtChat, ':id_historico', $id_historico_creado);
+                
+                $clob = oci_new_descriptor($conn, OCI_D_LOB);
+                oci_bind_by_name($stmtChat, ':mensaje_clob', $clob, -1, OCI_B_CLOB);
+
+                if (oci_execute($stmtChat, OCI_DEFAULT)) {
+                    $clob->save($comentario); // EL COMENTARIO ORIGINAL DEL USUARIO
+                }
+                
+                $clob->free();
+                oci_free_statement($stmtChat);
+            }
+
+            oci_free_statement($stmtHistorial);
+        }
+        
+        oci_commit($conn);
+        
+        // RESPUESTA MODIFICADA - NO CERRAR MODAL
+        echo json_encode([
+            'success' => true,
+            'candidatos_registrados' => count($candidatos_registrados),
+            'candidatos_agregados' => count($ok),
+            'archivos_subidos' => 0,
+            'candidatos' => $ok,
+            'errores' => $errs,
+            'historial_creado' => true,
+            'mensaje' => 'Candidatos registrados exitosamente. Los CVs se pueden subir posteriormente mediante el sistema de carpetas.',
+            'mantener_modal_abierto' => true,
+            'candidatos_listos' => true,
+            'comentario_original' => $comentario,
+            'nuevo_estado' => $nuevo_estado
+        ]);
+        
+    } catch (Exception $e) {
+        oci_rollback($conn);
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+    break;
 
 
-                                    case 'obtener_resumen_procesar_gerente':
-                                            $id_solicitud = $_GET['id_solicitud'] ?? $_POST['id_solicitud'];
-                                            
-                                            try {
-                                                // Usar los nombres correctos de las columnas según tu tabla
-                                                $query = "SELECT 
-                                                            s.ID_SOLICITUD,
-                                                            s.NUM_TIENDA,
-                                                            s.PUESTO_SOLICITADO,
-                                                            s.SOLICITADO_POR,
-                                                            s.ESTADO_APROBACION,
-                                                            s.DIRIGIDO_RH,
-                                                            s.FECHA_SOLICITUD,
-                                                            ag.COMENTARIO_GERENTE,
-                                                            ag.GERENTE,
-                                                            ag.CODIGO_GERENTE,
-                                                            TO_CHAR(ag.FECHA_DECISION, 'DD/MM/YYYY HH24:MI:SS') as FECHA_DECISION_FORMATO
-                                                        FROM ROY_SOLICITUD_PERSONAL s
-                                                        LEFT JOIN ROY_APROBACIONES_GERENCIA ag ON s.ID_SOLICITUD = ag.ID_SOLICITUD
-                                                        WHERE s.ID_SOLICITUD = :id_solicitud";
-                                                
-                                                $stmt = oci_parse($conn, $query);
-                                                oci_bind_by_name($stmt, ':id_solicitud', $id_solicitud);
-                                                
-                                                if (!oci_execute($stmt)) {
-                                                    $error = oci_error($stmt);
-                                                    throw new Exception("Error en consulta: " . $error['message']);
-                                                }
-                                                
-                                                if ($row = oci_fetch_assoc($stmt)) {
-                                                    // Leer comentario CLOB
-                                                    $comentario_completo = '';
-                                                    if ($row['COMENTARIO_GERENTE']) {
-                                                        $comentario_completo = $row['COMENTARIO_GERENTE']->read($row['COMENTARIO_GERENTE']->size());
-                                                        $row['COMENTARIO_GERENTE']->free();
-                                                        
-                                                    // 🆕 OBTENER NOMBRE COMPLETO DEL GERENTE
-                                                    $nombre_gerente = 'No disponible';
-                                                    if (!empty($row['GERENTE'])) {
-                                                        $nombre_gerente = $row['GERENTE'];
-                                                    } elseif (!empty($row['CODIGO_GERENTE'])) {
-                                                        // Mapeo de códigos a nombres si el nombre no viene en GERENTE
-                                                        $gerente_nombres = [
-                                                            '5333' => 'Christian Quan', 
-                                                            '5210' => 'Giovanni Cardoza'
-                                                        ];
-                                                        $nombre_gerente = $gerente_nombres[$row['CODIGO_GERENTE']] ?? 'Gerente código ' . $row['CODIGO_GERENTE'];
-                                                    }
-                                                    }
-                                                    
-                                                    // Extraer solo el comentario limpio
-                                                    $comentario_limpio = 'Sin comentario adicional';
-                                                    if ($comentario_completo) {
-                                                        // Debug para ver qué contiene
-                                                        error_log("COMENTARIO COMPLETO DEBUG: " . $comentario_completo);
-                                                        
-                                                        // 🆕 MÉTODO MÁS DIRECTO: buscar y extraer solo después de los dos puntos
-                                                        if (strpos($comentario_completo, 'Comentario de aprobacion:') !== false) {
-                                                            $comentario_limpio = substr($comentario_completo, strpos($comentario_completo, 'Comentario de aprobacion:') + strlen('Comentario de aprobacion:'));
-                                                            $comentario_limpio = trim($comentario_limpio);
-                                                            // Quitar todo lo que viene después incluyendo saltos de línea
-                                                            $comentario_limpio = explode("\n", $comentario_limpio)[0];
-                                                            $comentario_limpio = trim($comentario_limpio);
-                                                        } elseif (strpos($comentario_completo, 'Motivo del rechazo:') !== false) {
-                                                            $comentario_limpio = substr($comentario_completo, strpos($comentario_completo, 'Motivo del rechazo:') + strlen('Motivo del rechazo:'));
-                                                            $comentario_limpio = trim($comentario_limpio);
-                                                            $comentario_limpio = explode("\n", $comentario_limpio)[0];
-                                                            $comentario_limpio = trim($comentario_limpio);
-                                                        } else {
-                                                            // Si no encuentra el patrón, tomar la línea más útil
-                                                            $lineas = explode("\n", $comentario_completo);
-                                                            foreach ($lineas as $linea) {
-                                                                $linea = trim($linea);
-                                                                if (!empty($linea) && 
-                                                                    stripos($linea, 'GERENCIAL') === false && 
-                                                                    stripos($linea, 'Procesado por') === false && 
-                                                                    stripos($linea, 'Asignado a RRHH') === false && 
-                                                                    stripos($linea, 'Fecha de procesamiento') === false &&
-                                                                    !preg_match('/^\d{4}-\d{2}-\d{2}/', $linea) &&
-                                                                    strlen($linea) > 3) {
-                                                                    
-                                                                    // Si la línea contiene dos puntos, tomar solo lo que está después
-                                                                    if (strpos($linea, ':') !== false) {
-                                                                        $partes = explode(':', $linea);
-                                                                        $comentario_limpio = trim(end($partes));
-                                                                    } else {
-                                                                        $comentario_limpio = $linea;
-                                                                    }
-                                                                    break;
-                                                                }
-                                                            }
-                                                        }
-                                                        
-                                                        // 🆕 ÚLTIMA LIMPIEZA: quitar caracteres extraños y fechas
-                                                        $comentario_limpio = str_replace(['?', '??'], '', $comentario_limpio);
-                                                        $comentario_limpio = preg_replace('/\s*Fecha de procesamiento:.*$/', '', $comentario_limpio);
-                                                        $comentario_limpio = trim($comentario_limpio);
-                                                        
-                                                        // Si después de todo sigue vacío, poner mensaje por defecto
-                                                        if (empty($comentario_limpio) || strlen($comentario_limpio) < 3) {
-                                                            $comentario_limpio = 'Aprobacion procesada';
-                                                        }
-                                                        
-                                                        error_log("COMENTARIO LIMPIO EXTRAIDO: " . $comentario_limpio);
-                                                    }
-                                                    
-                                                    // Formatear fecha de solicitud
-                                                    $fecha_solicitud_formato = '';
-                                                    if ($row['FECHA_SOLICITUD']) {
-                                                        if (is_object($row['FECHA_SOLICITUD'])) {
-                                                            $fecha_solicitud_formato = $row['FECHA_SOLICITUD']->format('d/m/Y');
-                                                        } else {
-                                                            $fecha_obj = DateTime::createFromFormat('d/M/y', $row['FECHA_SOLICITUD']);
-                                                            if ($fecha_obj) {
-                                                                $fecha_solicitud_formato = $fecha_obj->format('d/m/Y');
-                                                            } else {
-                                                                $fecha_solicitud_formato = $row['FECHA_SOLICITUD'];
-                                                            }
-                                                        }
-                                                    }
-                                                    
-                                                    echo json_encode([
-                                                        'success' => true,
-                                                        'solicitud' => [
-                                                            'id' => $row['ID_SOLICITUD'],
-                                                            'tienda' => $row['NUM_TIENDA'],
-                                                            'puesto_solicitado' => $row['PUESTO_SOLICITADO'],
-                                                            'supervisor' => $row['SOLICITADO_POR'],
-                                                            'estado_aprobacion' => $row['ESTADO_APROBACION'],
-                                                            'dirigido_rh' => $row['DIRIGIDO_RH'],
-                                                            'fecha_solicitud' => $fecha_solicitud_formato
-                                                        ],
-                                                        'resumen_aprobacion' => [
-                                                            'procesado_por' => $nombre_gerente,
-                                                            'asignado_a' => $row['DIRIGIDO_RH'],
-                                                            'comentario_aprobacion' => $comentario_limpio,
-                                                            'fecha_procesamiento' => $row['FECHA_DECISION_FORMATO']
-                                                        ]
-                                                    ]);
-                                                } else {
-                                                    echo json_encode(['success' => false, 'error' => 'Solicitud no encontrada']);
-                                                }
-                                                
-                                                oci_free_statement($stmt);
-                                                
-                                            } catch (Exception $e) {
-                                                echo json_encode(['success' => false, 'error' => $e->getMessage()]);
-                                            }
-                                            
-                                            oci_close($conn);
-                                            break;
+    
+// ========================================================================================
+//  AGREGAR CANDIDATOS ADICIONALES
+// ========================================================================================
 
-case 'obtener_resumen_rrhh':
-    // Limpiar cualquier output buffer antes de enviar JSON
-    if (ob_get_level()) {
-        ob_clean();
+
+//=========================================================================================
+// AGREGAR CANDIDATOS A SOLICITUD EXISTENTE
+//=========================================================================================
+//=========================================================================================
+// AGREGAR CANDIDATOS A SOLICITUD EXISTENTE (CORREGIDO)
+//=========================================================================================
+case 'agregar_candidatos_solicitud':
+    try {
+        $id_solicitud = $_POST['id_solicitud'] ?? null;
+        $candidatos_json = $_POST['candidatos'] ?? null;
+        
+        if (!$id_solicitud) {
+            throw new Exception('ID de solicitud no proporcionado');
+        }
+        
+        if (!$candidatos_json) {
+            throw new Exception('Datos de candidatos no proporcionados');
+        }
+        
+        // Decodificar JSON de candidatos
+        $candidatos = json_decode($candidatos_json, true);
+        if (!$candidatos || !is_array($candidatos)) {
+            throw new Exception('Formato de candidatos inválido');
+        }
+        
+        // Validar que haya candidatos
+        if (count($candidatos) === 0) {
+            throw new Exception('No hay candidatos para agregar');
+        }
+        
+        $candidatos_agregados = 0;
+        $id_solicitud = intval($id_solicitud);
+        
+        // Obtener el próximo ID disponible
+        $sql_max_id = "SELECT NVL(MAX(ID_CANDIDATO), 0) + 1 AS NEXT_ID FROM ROY_CANDIDATOS_SOLICITUD";
+        $stmt_max_id = oci_parse($conn, $sql_max_id);
+        oci_execute($stmt_max_id);
+        $row = oci_fetch_assoc($stmt_max_id);
+        $next_id = $row['NEXT_ID'];
+        oci_free_statement($stmt_max_id);
+        
+        foreach ($candidatos as $candidato) {
+            $nombre = trim($candidato['nombre'] ?? '');
+            $apellidos = trim($candidato['apellidos'] ?? '');
+            $documento = trim($candidato['documento'] ?? '');
+            
+            if (empty($nombre) || empty($apellidos)) {
+                continue; // Saltar candidatos incompletos
+            }
+            
+            // Insertar candidato usando la tabla real ROY_CANDIDATOS_SOLICITUD
+            $sql_insert = "INSERT INTO ROY_CANDIDATOS_SOLICITUD (
+                ID_CANDIDATO, 
+                ID_SOLICITUD, 
+                NOMBRE_CANDIDATO, 
+                APELLIDOS_CANDIDATO, 
+                DOCUMENTO_CANDIDATO,
+                ESTADO_CANDIDATO,
+                FECHA_REGISTRO,
+                ACTIVO
+            ) VALUES (
+                :id_candidato,
+                :id_solicitud,
+                :nombre,
+                :apellidos,
+                :documento,
+                'CV Enviado',
+                SYSDATE,
+                'Y'
+            )";
+            
+            $stmt_insert = oci_parse($conn, $sql_insert);
+            oci_bind_by_name($stmt_insert, ':id_candidato', $next_id);
+            oci_bind_by_name($stmt_insert, ':id_solicitud', $id_solicitud);
+            oci_bind_by_name($stmt_insert, ':nombre', $nombre);
+            oci_bind_by_name($stmt_insert, ':apellidos', $apellidos);
+            oci_bind_by_name($stmt_insert, ':documento', $documento);
+            
+            if (oci_execute($stmt_insert)) {
+                $candidatos_agregados++;
+                $next_id++; // Incrementar ID para el siguiente candidato
+            }
+            oci_free_statement($stmt_insert);
+        }
+        
+        if ($candidatos_agregados > 0) {
+            echo json_encode([
+                'success' => true,
+                'candidatos_agregados' => $candidatos_agregados,
+                'message' => "Se agregaron $candidatos_agregados candidato(s) exitosamente"
+            ]);
+        } else {
+            throw new Exception('No se pudo agregar ningún candidato');
+        }
+        
+    } catch (Exception $e) {
+        echo json_encode([
+            'success' => false,
+            'error' => $e->getMessage()
+        ]);
+    }
+    break;
+
+
+
+//=========================================================================================
+// OBTENER CANDIDATOS POR SOLICITUD
+//==========================================================================================
+                            //candidatos por solicitud
+case 'get_candidatos_por_solicitud':
+try {
+    $id_solicitud = $_GET['id_solicitud'] ?? null;
+    $filtro_estado = $_GET['filtro_estado'] ?? 'todos';
+    
+    // VALIDACIÓN
+    if (empty($id_solicitud)) {
+        throw new Exception('ID de solicitud no proporcionado');
     }
     
+    $id_solicitud = trim($id_solicitud);
+    
+    if (!is_numeric($id_solicitud)) {
+        throw new Exception('ID de solicitud debe ser numérico. Recibido: ' . $id_solicitud);
+    }
+    
+    $id_solicitud = intval($id_solicitud);
+    
+    if ($id_solicitud <= 0) {
+        throw new Exception('ID de solicitud debe ser mayor a 0');
+    }
+    
+    error_log("ID Solicitud validado correctamente: " . $id_solicitud);
+    error_log("Filtro aplicado: " . $filtro_estado);
+    
+    // PASO 1: Obtener información de la solicitud
+    $sql_solicitud = "SELECT 
+                        NUM_TIENDA,
+                        PUESTO_SOLICITADO,
+                        SOLICITADO_POR,
+                        ESTADO_SOLICITUD,
+                        REACTIVADA,
+                        MOTIVO_REACTIVACION,
+                        DIRIGIDO_RH,
+                        TO_CHAR(FECHA_SOLICITUD, 'DD-MM-YYYY') AS FECHA_SOLICITUD
+                    FROM ROY_SOLICITUD_PERSONAL 
+                    WHERE ID_SOLICITUD = :id_solicitud";
+    
+    $st_solicitud = oci_parse($conn, $sql_solicitud);
+    oci_bind_by_name($st_solicitud, ':id_solicitud', $id_solicitud);
+    oci_execute($st_solicitud);
+    $info_solicitud = oci_fetch_assoc($st_solicitud);
+    oci_free_statement($st_solicitud);
+
+    // PASO 2: Obtener candidatos según filtro
+    $candidatos_activos = [];
+    $candidatos_inactivos = [];
+
+    // DETECTAR SI ES PLAZA CUBIERTA O REACTIVADA
+    $es_plaza_cubierta = strtolower(trim($info_solicitud['ESTADO_SOLICITUD'])) === 'plaza cubierta';
+    $es_reactivada = isset($info_solicitud['REACTIVADA']) && $info_solicitud['REACTIVADA'] === 'Y';
+
+    // Condición para filtrar candidatos
+    $condicion_plaza_cubierta = "";
+
+    if ($es_plaza_cubierta && !$es_reactivada) {
+        // Plaza cubierta SIN reactivación: solo mostrar contratado
+        $condicion_plaza_cubierta = " AND c.ESTADO_CANDIDATO = 'Contratado'";
+    } elseif ($es_reactivada) {
+        // Solicitud reactivada: mostrar TODOS excepto el contratado
+        $condicion_plaza_cubierta = " AND c.ESTADO_CANDIDATO != 'Contratado'";
+    }
+
+    // CARGAR CANDIDATOS ACTIVOS
+    if ($filtro_estado === 'todos' || $filtro_estado === 'activos') {
+        $sql_activos = "SELECT 
+                            c.ID_CANDIDATO,
+                            c.NOMBRE_CANDIDATO,
+                            c.APELLIDOS_CANDIDATO,
+                            c.DOCUMENTO_CANDIDATO,
+                            c.ESTADO_CANDIDATO,
+                            c.APROBACION,
+                            c.REACTIVADO_POST_CONTRATACION,
+                            'Y' AS ACTIVO,
+                            NULL AS MOTIVO_DESCARTE,
+                            TO_CHAR(c.FECHA_REGISTRO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_REGISTRO,
+                            (SELECT COUNT(*) 
+                            FROM ROY_ARCHIVOS_SOLICITUD a 
+                            WHERE a.ID_CANDIDATO = c.ID_CANDIDATO) AS TOTAL_ARCHIVOS,
+                            -- NUEVO: Obtener información detallada de archivos (usando ESTADO_RELACIONADO)
+                            (SELECT LISTAGG(a.NOMBRE_ARCHIVO || '|' || 
+                                    NVL(a.ESTADO_RELACIONADO, c.ESTADO_CANDIDATO) || '|' || 
+                                    TO_CHAR(a.FECHA_SUBIDA, 'DD-MM-YYYY HH24:MI:SS') || '|' || 
+                                    NVL(a.TIPO_ARCHIVO, 'application/octet-stream'), ';;') 
+                                    WITHIN GROUP (ORDER BY a.FECHA_SUBIDA DESC)
+                            FROM ROY_ARCHIVOS_SOLICITUD a 
+                            WHERE a.ID_CANDIDATO = c.ID_CANDIDATO) AS INFO_ARCHIVOS,
+                            -- NUEVO: Obtener el último estado ANTES del descarte
+                            (SELECT h.ESTADO_ANTERIOR 
+                            FROM ROY_CANDIDATOS_HIST_EST h 
+                            WHERE h.ID_CANDIDATO = c.ID_CANDIDATO 
+                            AND h.ESTADO_NUEVO = 'Descartado'
+                            ORDER BY h.FECHA_CAMBIO DESC 
+                            FETCH FIRST 1 ROW ONLY) AS ULTIMO_ESTADO_ALCANZADO
+                        FROM ROY_CANDIDATOS_SOLICITUD c
+                        WHERE c.ID_SOLICITUD = :id_solicitud
+                        AND (c.ACTIVO = 'Y' OR c.ACTIVO IS NULL)
+                        AND c.ESTADO_CANDIDATO != 'Descartado'
+                        $condicion_plaza_cubierta
+                        ORDER BY 
+                        CASE 
+                            WHEN c.ESTADO_CANDIDATO = 'Aprobacion de Aval' THEN 1
+                            WHEN c.ESTADO_CANDIDATO = 'Aprobacion de Aval Enviado' AND c.APROBACION IS NULL THEN 2
+                            WHEN c.ESTADO_CANDIDATO = 'Aprobacion de Aval Enviado' THEN 3
+                            ELSE 4
+                        END,
+                        c.FECHA_MODIFICACION DESC NULLS LAST,
+                        c.ID_CANDIDATO DESC";
+
+        $st_activos = oci_parse($conn, $sql_activos);
+        oci_bind_by_name($st_activos, ':id_solicitud', $id_solicitud);
+        oci_execute($st_activos);
+
+        while ($row = oci_fetch_assoc($st_activos)) {
+            // Procesar información de archivos
+            $archivos = [];
+            $ultimoEstadoAlcanzado = $row['ULTIMO_ESTADO_ALCANZADO'];
+            
+            if (!empty($row['INFO_ARCHIVOS'])) {
+                $archivosArray = explode(';;', $row['INFO_ARCHIVOS']);
+                foreach ($archivosArray as $archivoInfo) {
+                    $partes = explode('|', $archivoInfo);
+                    if (count($partes) >= 4) {
+                        $archivos[] = [
+                            'nombre' => $partes[0],
+                            'estado' => $partes[1],
+                            'fecha' => $partes[2],
+                            'tipo' => $partes[3]
+                        ];
+                    }
+                }
+            }
+            
+            $candidatos_activos[] = [
+                'ID_CANDIDATO'        => $row['ID_CANDIDATO'],
+                'NOMBRE_COMPLETO'     => trim($row['NOMBRE_CANDIDATO'] . ' ' . $row['APELLIDOS_CANDIDATO']),
+                'NOMBRE_CANDIDATO'    => $row['NOMBRE_CANDIDATO'],
+                'APELLIDOS_CANDIDATO' => $row['APELLIDOS_CANDIDATO'],
+                'DOCUMENTO_CANDIDATO' => $row['DOCUMENTO_CANDIDATO'],
+                'PUESTO_SOLICITADO'   => $info_solicitud['PUESTO_SOLICITADO'],
+                'ESTADO_CANDIDATO'    => $row['ESTADO_CANDIDATO'],
+                'APROBACION'          => $row['APROBACION'],
+                'REACTIVADO_POST_CONTRATACION' => $row['REACTIVADO_POST_CONTRATACION'],
+                'ACTIVO'              => 'Y',
+                'MOTIVO_DESCARTE'     => null,
+                'FECHA_REGISTRO'      => $row['FECHA_REGISTRO'],
+                'TOTAL_ARCHIVOS'      => intval($row['TOTAL_ARCHIVOS']),
+                'ES_DESCARTADO'       => false,
+                // NUEVOS CAMPOS:
+                'ARCHIVOS'            => $archivos,
+                'ULTIMO_ESTADO_ALCANZADO' => $ultimoEstadoAlcanzado ?: $row['ESTADO_CANDIDATO']
+            ];
+        }
+        oci_free_statement($st_activos);
+    }
+
+    // CARGAR CANDIDATOS INACTIVOS (solo si es reactivada o filtro descartados)
+    if (($es_reactivada || $filtro_estado === 'descartados' || $filtro_estado === 'todos') && !$es_plaza_cubierta) {
+        $sql_inactivos = "SELECT 
+                            c.ID_CANDIDATO,
+                            c.NOMBRE_CANDIDATO,
+                            c.APELLIDOS_CANDIDATO,
+                            c.DOCUMENTO_CANDIDATO,
+                            c.ESTADO_CANDIDATO,
+                            c.APROBACION,
+                            c.MOTIVO_DESCARTE,
+                            c.REACTIVADO_POST_CONTRATACION,
+                            TO_CHAR(c.FECHA_REGISTRO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_REGISTRO,
+                            (SELECT COUNT(*) 
+                            FROM ROY_ARCHIVOS_SOLICITUD a 
+                            WHERE a.ID_CANDIDATO = c.ID_CANDIDATO) AS TOTAL_ARCHIVOS,
+                            -- MISMO FORMATO PARA ARCHIVOS
+                            (SELECT LISTAGG(a.NOMBRE_ARCHIVO || '|' || 
+                                    NVL(a.ESTADO_RELACIONADO, c.ESTADO_CANDIDATO) || '|' || 
+                                    TO_CHAR(a.FECHA_SUBIDA, 'DD-MM-YYYY HH24:MI:SS') || '|' || 
+                                    NVL(a.TIPO_ARCHIVO, 'application/octet-stream'), ';;') 
+                                    WITHIN GROUP (ORDER BY a.FECHA_SUBIDA DESC)
+                            FROM ROY_ARCHIVOS_SOLICITUD a 
+                            WHERE a.ID_CANDIDATO = c.ID_CANDIDATO) AS INFO_ARCHIVOS,
+                            (SELECT h.ESTADO_ANTERIOR 
+                            FROM ROY_CANDIDATOS_HIST_EST h 
+                            WHERE h.ID_CANDIDATO = c.ID_CANDIDATO 
+                            AND h.ESTADO_NUEVO = 'Descartado'
+                            ORDER BY h.FECHA_CAMBIO DESC 
+                            FETCH FIRST 1 ROW ONLY) AS ULTIMO_ESTADO_ALCANZADO
+                        FROM ROY_CANDIDATOS_SOLICITUD c
+                        WHERE c.ID_SOLICITUD = :id_solicitud
+                        AND c.ACTIVO = 'N'
+                        AND c.ESTADO_CANDIDATO != 'Contratado'
+                        ORDER BY c.FECHA_REGISTRO DESC";
+
+        $st_inactivos = oci_parse($conn, $sql_inactivos);
+        oci_bind_by_name($st_inactivos, ':id_solicitud', $id_solicitud);
+        
+        if (oci_execute($st_inactivos)) {
+            while ($row = oci_fetch_assoc($st_inactivos)) {
+                $motivo_descarte = '';
+                if ($row['MOTIVO_DESCARTE']) {
+                    if (is_object($row['MOTIVO_DESCARTE'])) {
+                        $motivo_descarte = $row['MOTIVO_DESCARTE']->load();
+                    } else {
+                        $motivo_descarte = $row['MOTIVO_DESCARTE'];
+                    }
+                }
+                
+                // 🔥 FALTA: Procesar información de archivos para inactivos
+                $archivos = [];
+                $ultimoEstadoAlcanzado = $row['ULTIMO_ESTADO_ALCANZADO'];
+                
+                if (!empty($row['INFO_ARCHIVOS'])) {
+                    $archivosArray = explode(';;', $row['INFO_ARCHIVOS']);
+                    foreach ($archivosArray as $archivoInfo) {
+                        $partes = explode('|', $archivoInfo);
+                        if (count($partes) >= 4) {
+                            $archivos[] = [
+                                'nombre' => $partes[0],
+                                'estado' => $partes[1],
+                                'fecha' => $partes[2],
+                                'tipo' => $partes[3]
+                            ];
+                        }
+                    }
+                }
+                
+                $candidatos_inactivos[] = [
+                    'ID_CANDIDATO'        => $row['ID_CANDIDATO'],
+                    'NOMBRE_COMPLETO'     => trim($row['NOMBRE_CANDIDATO'] . ' ' . $row['APELLIDOS_CANDIDATO']),
+                    'NOMBRE_CANDIDATO'    => $row['NOMBRE_CANDIDATO'],
+                    'APELLIDOS_CANDIDATO' => $row['APELLIDOS_CANDIDATO'],
+                    'DOCUMENTO_CANDIDATO' => $row['DOCUMENTO_CANDIDATO'],
+                    'PUESTO_SOLICITADO'   => $info_solicitud['PUESTO_SOLICITADO'],
+                    'ESTADO_CANDIDATO'    => 'Descartado',
+                    'APROBACION'          => $row['APROBACION'],
+                    'REACTIVADO_POST_CONTRATACION' => $row['REACTIVADO_POST_CONTRATACION'],
+                    'ACTIVO'              => 'N',
+                    'MOTIVO_DESCARTE'     => $motivo_descarte,
+                    'FECHA_REGISTRO'      => $row['FECHA_REGISTRO'],
+                    'TOTAL_ARCHIVOS'      => intval($row['TOTAL_ARCHIVOS']),
+                    'ES_DESCARTADO'       => true,
+                    // 🔥 AGREGAR: Campos de archivos para inactivos
+                    'ARCHIVOS'            => $archivos,
+                    'ULTIMO_ESTADO_ALCANZADO' => $ultimoEstadoAlcanzado ?: $row['ESTADO_CANDIDATO']
+                ];
+            }
+        }
+        oci_free_statement($st_inactivos);
+    }
+
+    // BUSCAR CANDIDATOS CON ESTADO_CANDIDATO = 'Descartado' AUNQUE TENGAN ACTIVO = 'Y'
+    if (($es_reactivada || $filtro_estado === 'todos' || $filtro_estado === 'descartados') && !$es_plaza_cubierta) {
+    $sql_descartados_por_estado = "SELECT 
+                                    c.ID_CANDIDATO,
+                                    c.NOMBRE_CANDIDATO,
+                                    c.APELLIDOS_CANDIDATO,
+                                    c.DOCUMENTO_CANDIDATO,
+                                    c.ESTADO_CANDIDATO,
+                                    c.APROBACION,
+                                    c.MOTIVO_DESCARTE,
+                                    c.REACTIVADO_POST_CONTRATACION,
+                                    TO_CHAR(c.FECHA_REGISTRO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_REGISTRO,
+                                    (SELECT COUNT(*) 
+                                    FROM ROY_ARCHIVOS_SOLICITUD a 
+                                    WHERE a.ID_CANDIDATO = c.ID_CANDIDATO) AS TOTAL_ARCHIVOS,
+                                    (SELECT LISTAGG(a.NOMBRE_ARCHIVO || '|' || 
+                                            NVL(a.ESTADO_RELACIONADO, c.ESTADO_CANDIDATO) || '|' || 
+                                            TO_CHAR(a.FECHA_SUBIDA, 'DD-MM-YYYY HH24:MI:SS') || '|' || 
+                                            NVL(a.TIPO_ARCHIVO, 'application/octet-stream'), ';;') 
+                                            WITHIN GROUP (ORDER BY a.FECHA_SUBIDA DESC)
+                                    FROM ROY_ARCHIVOS_SOLICITUD a 
+                                    WHERE a.ID_CANDIDATO = c.ID_CANDIDATO) AS INFO_ARCHIVOS,
+                                    (SELECT h.ESTADO_ANTERIOR 
+                                    FROM ROY_CANDIDATOS_HIST_EST h 
+                                    WHERE h.ID_CANDIDATO = c.ID_CANDIDATO 
+                                    AND h.ESTADO_NUEVO = 'Descartado'
+                                    ORDER BY h.FECHA_CAMBIO DESC 
+                                    FETCH FIRST 1 ROW ONLY) AS ULTIMO_ESTADO_ALCANZADO
+                                FROM ROY_CANDIDATOS_SOLICITUD c
+                                WHERE c.ID_SOLICITUD = :id_solicitud
+                                AND c.ESTADO_CANDIDATO = 'Descartado'
+                                AND (c.ACTIVO = 'Y' OR c.ACTIVO IS NULL)
+                                AND c.ESTADO_CANDIDATO != 'Contratado'
+                                ORDER BY c.FECHA_REGISTRO DESC";
+
+        $st_descartados = oci_parse($conn, $sql_descartados_por_estado);
+        oci_bind_by_name($st_descartados, ':id_solicitud', $id_solicitud);
+        
+        if (oci_execute($st_descartados)) {
+            while ($row = oci_fetch_assoc($st_descartados)) {
+                $motivo_descarte = '';
+                if ($row['MOTIVO_DESCARTE']) {
+                    if (is_object($row['MOTIVO_DESCARTE'])) {
+                        $motivo_descarte = $row['MOTIVO_DESCARTE']->load();
+                    } else {
+                        $motivo_descarte = $row['MOTIVO_DESCARTE'];
+                    }
+                }
+                
+                // 🔥 FALTA: Procesar información de archivos para descartados por estado
+                $archivos = [];
+                $ultimoEstadoAlcanzado = $row['ULTIMO_ESTADO_ALCANZADO'];
+                
+                if (!empty($row['INFO_ARCHIVOS'])) {
+                    $archivosArray = explode(';;', $row['INFO_ARCHIVOS']);
+                    foreach ($archivosArray as $archivoInfo) {
+                        $partes = explode('|', $archivoInfo);
+                        if (count($partes) >= 4) {
+                            $archivos[] = [
+                                'nombre' => $partes[0],
+                                'estado' => $partes[1],
+                                'fecha' => $partes[2],
+                                'tipo' => $partes[3]
+                            ];
+                        }
+                    }
+                }
+                
+                $candidatos_inactivos[] = [
+                    'ID_CANDIDATO'        => $row['ID_CANDIDATO'],
+                    'NOMBRE_COMPLETO'     => trim($row['NOMBRE_CANDIDATO'] . ' ' . $row['APELLIDOS_CANDIDATO']),
+                    'NOMBRE_CANDIDATO'    => $row['NOMBRE_CANDIDATO'],
+                    'APELLIDOS_CANDIDATO' => $row['APELLIDOS_CANDIDATO'],
+                    'DOCUMENTO_CANDIDATO' => $row['DOCUMENTO_CANDIDATO'],
+                    'PUESTO_SOLICITADO'   => $info_solicitud['PUESTO_SOLICITADO'],
+                    'ESTADO_CANDIDATO'    => 'Descartado',
+                    'APROBACION'          => $row['APROBACION'],
+                    'REACTIVADO_POST_CONTRATACION' => $row['REACTIVADO_POST_CONTRATACION'],
+                    'ACTIVO'              => $row['ACTIVO'] ?: 'Y',
+                    'MOTIVO_DESCARTE'     => $motivo_descarte,
+                    'FECHA_REGISTRO'      => $row['FECHA_REGISTRO'],
+                    'TOTAL_ARCHIVOS'      => intval($row['TOTAL_ARCHIVOS']),
+                    'ES_DESCARTADO'       => true,
+                    // 🔥 AGREGAR: Campos de archivos para descartados por estado
+                    'ARCHIVOS'            => $archivos,
+                    'ULTIMO_ESTADO_ALCANZADO' => $ultimoEstadoAlcanzado ?: $row['ESTADO_CANDIDATO']
+                ];
+            }
+        }
+        oci_free_statement($st_descartados);
+    }
+
+    $todos_candidatos = array_merge($candidatos_activos, $candidatos_inactivos);
+
+    // Procesar MOTIVO_REACTIVACION si es CLOB
+    $motivo_reactivacion = '';
+    if (isset($info_solicitud['MOTIVO_REACTIVACION']) && $info_solicitud['MOTIVO_REACTIVACION']) {
+        if (is_object($info_solicitud['MOTIVO_REACTIVACION'])) {
+            $motivo_reactivacion = $info_solicitud['MOTIVO_REACTIVACION']->load();
+        } else {
+            $motivo_reactivacion = $info_solicitud['MOTIVO_REACTIVACION'];
+        }
+    }
+
+    // RESPUESTA FINAL
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'success'               => true,
+        'solicitud'             => [
+            'id' => $id_solicitud,
+            'tienda' => $info_solicitud['NUM_TIENDA'],
+            'puesto' => $info_solicitud['PUESTO_SOLICITADO'],
+            'supervisor' => $info_solicitud['SOLICITADO_POR'],
+            'estado' => $info_solicitud['ESTADO_SOLICITUD'],
+            'fecha_solicitud' => $info_solicitud['FECHA_SOLICITUD'],
+            'reactivada' => $es_reactivada ? 'Y' : 'N',
+            'motivo_reactivacion' => $motivo_reactivacion,
+            'dirigido_rh' => $info_solicitud['DIRIGIDO_RH'] ?? null
+        ],
+        'candidatos'            => $todos_candidatos,
+        'candidatos_activos'    => $candidatos_activos,
+        'candidatos_inactivos'  => $candidatos_inactivos,
+        'total'                 => count($todos_candidatos),
+        'total_activos'         => count($candidatos_activos),
+        'total_inactivos'       => count($candidatos_inactivos),
+        'filtro_aplicado'       => $filtro_estado,
+        'conteos'               => [
+            'total' => count($todos_candidatos),
+            'activos' => count($candidatos_activos),
+            'descartados' => count($candidatos_inactivos)
+        ]
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+
+} catch (Throwable $e) {
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'success' => false, 
+        'error' => $e->getMessage(),
+        'line' => $e->getLine()
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+break;
+
+//=========================================================================================
+// VER RESULTADO DE APROBACION DE GERENTE 
+//==========================================================================================
+
+case 'obtener_resumen_rrhh':
     $id_solicitud = $_GET['id_solicitud'] ?? $_POST['id_solicitud'];
     
     try {
-        // Consulta sin validación de sesión para RRHH
         $query = "SELECT 
                     s.ID_SOLICITUD,
                     s.NUM_TIENDA,
@@ -3312,24 +2098,22 @@ case 'obtener_resumen_rrhh':
                 $nombre_gerente = $gerente_nombres[$row['CODIGO_GERENTE']] ?? 'Gerente código ' . $row['CODIGO_GERENTE'];
             }
             
-            // Extraer solo el comentario limpio - USAR LA MISMA LÓGICA QUE FUNCIONA EN GERENTES
+            // EXTRAER COMENTARIO LIMPIO - CORREGIDO SIN ERRORES DE REFERENCIA
             $comentario_limpio = 'Sin comentario adicional';
             if ($comentario_completo) {
-                // Debug para ver qué contiene
                 error_log("COMENTARIO COMPLETO DEBUG: " . $comentario_completo);
                 
-                // MÉTODO DIRECTO: buscar y extraer solo después de los dos puntos
+                // MÉTODO DIRECTO
                 if (strpos($comentario_completo, 'Comentario de aprobacion:') !== false) {
                     $comentario_limpio = substr($comentario_completo, strpos($comentario_completo, 'Comentario de aprobacion:') + strlen('Comentario de aprobacion:'));
                     $comentario_limpio = trim($comentario_limpio);
-                    // Quitar todo lo que viene después incluyendo saltos de línea
-                    $comentario_limpio = explode("\n", $comentario_limpio)[0];
-                    $comentario_limpio = trim($comentario_limpio);
+                    $lineas = explode("\n", $comentario_limpio);
+                    $comentario_limpio = trim($lineas[0]);
                 } elseif (strpos($comentario_completo, 'Motivo del rechazo:') !== false) {
                     $comentario_limpio = substr($comentario_completo, strpos($comentario_completo, 'Motivo del rechazo:') + strlen('Motivo del rechazo:'));
                     $comentario_limpio = trim($comentario_limpio);
-                    $comentario_limpio = explode("\n", $comentario_limpio)[0];
-                    $comentario_limpio = trim($comentario_limpio);
+                    $lineas = explode("\n", $comentario_limpio);
+                    $comentario_limpio = trim($lineas[0]);
                 } else {
                     // Si no encuentra el patrón, tomar la línea más útil
                     $lineas = explode("\n", $comentario_completo);
@@ -3343,10 +2127,10 @@ case 'obtener_resumen_rrhh':
                             !preg_match('/^\d{4}-\d{2}-\d{2}/', $linea) &&
                             strlen($linea) > 3) {
                             
-                            // Si la línea contiene dos puntos, tomar solo lo que está después
+                            // CORREGIDO: SIN ERROR DE REFERENCIA
                             if (strpos($linea, ':') !== false) {
                                 $partes = explode(':', $linea);
-                                $comentario_limpio = trim(end($partes));
+                                $comentario_limpio = trim($partes[count($partes) - 1]); // USAR ÍNDICE
                             } else {
                                 $comentario_limpio = $linea;
                             }
@@ -3355,12 +2139,11 @@ case 'obtener_resumen_rrhh':
                     }
                 }
                 
-                // ÚLTIMA LIMPIEZA: quitar caracteres extraños y fechas
+                // ÚLTIMA LIMPIEZA
                 $comentario_limpio = str_replace(['?', '??'], '', $comentario_limpio);
                 $comentario_limpio = preg_replace('/\s*Fecha de procesamiento:.*$/', '', $comentario_limpio);
                 $comentario_limpio = trim($comentario_limpio);
                 
-                // Si después de todo sigue vacío, poner mensaje por defecto
                 if (empty($comentario_limpio) || strlen($comentario_limpio) < 3) {
                     $comentario_limpio = 'Aprobacion procesada';
                 }
@@ -3383,7 +2166,6 @@ case 'obtener_resumen_rrhh':
                 }
             }
             
-            ob_clean(); // Limpiar cualquier output previo
             echo json_encode([
                 'success' => true,
                 'solicitud' => [
@@ -3402,25 +2184,2134 @@ case 'obtener_resumen_rrhh':
                     'fecha_procesamiento' => $row['FECHA_DECISION_FORMATO']
                 ]
             ]);
-            exit; // Evitar que se ejecute código adicional
         } else {
-            ob_clean();
             echo json_encode(['success' => false, 'error' => 'Solicitud no encontrada']);
-            exit;
         }
         
         oci_free_statement($stmt);
         
     } catch (Exception $e) {
-        ob_clean();
         echo json_encode(['success' => false, 'error' => $e->getMessage()]);
-        exit;
     }
     
     oci_close($conn);
     break;
 
+//=========================================================================================
+// CAMBIAR ESTADO POR CANDIDATO
+//==========================================================================================
 
+                            //cambiar estado por candidato
+                        case 'cambiar_estado_candidato':
+                            try {
+                                $id_candidato = intval($_POST['id_candidato'] ?? 0);
+                                $nuevo_estado = $_POST['nuevo_estado'] ?? '';
+                                $observaciones = $_POST['observaciones'] ?? '';
+                                $es_jefe = intval($_POST['es_jefe'] ?? 0);
+                                
+                                if (!$id_candidato || !$nuevo_estado) {
+                                    enviarJSON(['success' => false, 'error' => 'Datos incompletos']);
+                                }
+                                
+                                // *** NUEVA VALIDACIÓN DE PROGRESIÓN ***
+                                $flujoEstados = ['CV Enviado', 'Psicometrica', 'Entrevista RH', 'Entrevista Tecnica', 'Dia de Prueba'];
+                                if ($es_jefe) {
+                                    $flujoEstados[] = 'Poligrafo';
+                                }
+                                
+                                $estadosEspeciales = ['Aprobacion de Aval', 'Contratado'];
+                                
+                                // Validar que se puedan subir archivos al nuevo estado
+                                if (in_array($nuevo_estado, $estadosEspeciales)) {
+                                    // Validar que tiene archivos en TODOS los estados anteriores
+                                    foreach ($flujoEstados as $estadoRequerido) {
+                                        $stmtVal = oci_parse($conn, "SELECT COUNT(*) as TOTAL FROM ROY_ARCHIVOS_SOLICITUD WHERE ID_CANDIDATO = :id AND ESTADO_RELACIONADO = :estado");
+                                        oci_bind_by_name($stmtVal, ':id', $id_candidato);
+                                        oci_bind_by_name($stmtVal, ':estado', $estadoRequerido);
+                                        oci_execute($stmtVal);
+                                        $res = oci_fetch_assoc($stmtVal);
+                                        oci_free_statement($stmtVal);
+                                        
+                                        if ($res['TOTAL'] == 0) {
+                                            enviarJSON([
+                                                'success' => false,
+                                                'error' => "No se puede avanzar a '$nuevo_estado'. Falta documentación en el estado: $estadoRequerido"
+                                            ]);
+                                        }
+                                    }
+                                } else {
+                                    // Para estados normales, validar solo el anterior (si no es el primero)
+                                    $posicion = array_search($nuevo_estado, $flujoEstados);
+                                    if ($posicion !== false && $posicion > 0) {
+                                        $estadoAnterior = $flujoEstados[$posicion - 1];
+                                        $stmtVal = oci_parse($conn, "SELECT COUNT(*) as TOTAL FROM ROY_ARCHIVOS_SOLICITUD WHERE ID_CANDIDATO = :id AND ESTADO_RELACIONADO = :estado");
+                                        oci_bind_by_name($stmtVal, ':id', $id_candidato);
+                                        oci_bind_by_name($stmtVal, ':estado', $estadoAnterior);
+                                        oci_execute($stmtVal);
+                                        $res = oci_fetch_assoc($stmtVal);
+                                        oci_free_statement($stmtVal);
+                                        
+                                        if ($res['TOTAL'] == 0) {
+                                            enviarJSON([
+                                                'success' => false,
+                                                'error' => "Debe completar el estado '$estadoAnterior' antes de avanzar a '$nuevo_estado'"
+                                            ]);
+                                        }
+                                    }
+                                }
+                                // Obtener información del candidato y solicitud
+                                $queryInfo = "SELECT c.ID_SOLICITUD, c.ESTADO_CANDIDATO, c.NOMBRE_CANDIDATO, c.APELLIDOS_CANDIDATO,
+                                                    s.COMENTARIO_SOLICITUD
+                                            FROM ROY_CANDIDATOS_SOLICITUD c
+                                            JOIN ROY_SOLICITUD_PERSONAL s ON c.ID_SOLICITUD = s.ID_SOLICITUD
+                                            WHERE c.ID_CANDIDATO = :id";
+                                $stmtInfo = oci_parse($conn, $queryInfo);
+                                oci_bind_by_name($stmtInfo, ':id', $id_candidato);
+                                oci_execute($stmtInfo);
+                                $infoCandidate = oci_fetch_assoc($stmtInfo);
+                                oci_free_statement($stmtInfo);
+                                
+                                if (!$infoCandidate) {
+                                    throw new Exception('Candidato no encontrado');
+                                }
+                                
+                                $estadoAnterior = $infoCandidate['ESTADO_CANDIDATO'];
+                                $nombreCompleto = trim($infoCandidate['NOMBRE_CANDIDATO'] . ' ' . $infoCandidate['APELLIDOS_CANDIDATO']);
+                                $id_solicitud = intval($infoCandidate['ID_SOLICITUD']);
+                                $comentario_general_existente = $infoCandidate['COMENTARIO_SOLICITUD'];
+                                
+                                // ACTUALIZAR ESTADO DEL CANDIDATO
+                                $queryUpdate = "UPDATE ROY_CANDIDATOS_SOLICITUD 
+                                            SET ESTADO_CANDIDATO = :nuevo_estado, FECHA_MODIFICACION = SYSDATE
+                                            WHERE ID_CANDIDATO = :id_candidato";
+
+                                $stmtUpdate = oci_parse($conn, $queryUpdate);
+                                oci_bind_by_name($stmtUpdate, ':nuevo_estado', $nuevo_estado);
+                                oci_bind_by_name($stmtUpdate, ':id_candidato', $id_candidato);
+                                oci_execute($stmtUpdate);
+                                oci_free_statement($stmtUpdate);
+
+                                // ✅ GUARDAR EN HISTORIAL DEL CANDIDATO (ROY_CANDIDATOS_HIST_EST)
+                                $observacionCambio = !empty(trim($observaciones)) 
+                                    ? "Cambio de estado por RH: {$observaciones}" 
+                                    : "Cambio de estado realizado";
+
+                                $queryHistCandidato = "INSERT INTO ROY_CANDIDATOS_HIST_EST 
+                                    (ID_CANDIDATO, ESTADO_ANTERIOR, ESTADO_NUEVO, OBSERVACIONES, FECHA_CAMBIO, ACTIVO)
+                                    VALUES (:id_candidato, :estado_anterior, :estado_nuevo, :observaciones, SYSDATE, 'Y')";
+
+                                $stmtHistCandidato = oci_parse($conn, $queryHistCandidato);
+                                oci_bind_by_name($stmtHistCandidato, ':id_candidato', $id_candidato);
+                                oci_bind_by_name($stmtHistCandidato, ':estado_anterior', $estadoAnterior);
+                                oci_bind_by_name($stmtHistCandidato, ':estado_nuevo', $nuevo_estado);
+                                oci_bind_by_name($stmtHistCandidato, ':observaciones', $observacionCambio);
+                                oci_execute($stmtHistCandidato);
+                                oci_free_statement($stmtHistCandidato);
+
+                                // EL COMENTARIO GENERAL DE LA SOLICITUD NO SE TOCA
+
+                                oci_commit($conn);
+
+                                echo json_encode([
+                                    'success' => true,
+                                    'message' => 'Estado del candidato actualizado correctamente',
+                                    'comentario_general_preservado' => true
+                                ]);
+                                
+                            } catch (Exception $e) {
+                                oci_rollback($conn);
+                                echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+                            }
+                            break;
+//=========================================================================================
+// DESCARTAR CANDIDATO 
+//==========================================================================================
+case 'descartar_candidato_rh':
+    try {
+        $id_candidato = $_POST['id_candidato'] ?? null;
+        $motivo_descarte = $_POST['motivo_descarte'] ?? null;
+
+        if (!$id_candidato || !$motivo_descarte) {
+            echo json_encode(['success' => false, 'error' => 'ID de candidato y motivo de descarte son requeridos']);
+            exit;
+        }
+
+        $id_candidato = intval($id_candidato);
+
+        // OBTENER DATOS DEL CANDIDATO Y EL NOMBRE DE RH ASIGNADO
+        $queryDatos = "SELECT 
+                            c.ID_SOLICITUD, 
+                            c.ESTADO_CANDIDATO, 
+                            c.NOMBRE_CANDIDATO, 
+                            c.APELLIDOS_CANDIDATO,
+                            s.DIRIGIDO_RH,
+                            s.DIRIGIDO_A
+                       FROM ROY_CANDIDATOS_SOLICITUD c
+                       JOIN ROY_SOLICITUD_PERSONAL s ON c.ID_SOLICITUD = s.ID_SOLICITUD
+                       WHERE c.ID_CANDIDATO = :id";
+        
+        $stmtDatos = oci_parse($conn, $queryDatos);
+        oci_bind_by_name($stmtDatos, ':id', $id_candidato);
+        oci_execute($stmtDatos);
+        $dataDatos = oci_fetch_assoc($stmtDatos);
+        oci_free_statement($stmtDatos);
+
+        if (!$dataDatos) {
+            echo json_encode(['success' => false, 'error' => 'Candidato no encontrado']);
+            exit;
+        }
+
+        $estadoAnterior = $dataDatos['ESTADO_CANDIDATO'];
+        $nombreCompleto = trim($dataDatos['NOMBRE_CANDIDATO'] . ' ' . $dataDatos['APELLIDOS_CANDIDATO']);
+        $idSolicitud = intval($dataDatos['ID_SOLICITUD']);
+        
+        // OBTENER NOMBRE DE RH - PRIORIZAR DIRIGIDO_RH, LUEGO DIRIGIDO_A
+        $nombre_rh = null;
+        if (!empty($dataDatos['DIRIGIDO_RH'])) {
+            $nombre_rh = trim($dataDatos['DIRIGIDO_RH']);
+            error_log(" Nombre RH obtenido de DIRIGIDO_RH: $nombre_rh");
+        } elseif (!empty($dataDatos['DIRIGIDO_A'])) {
+            $nombre_rh = trim($dataDatos['DIRIGIDO_A']);
+            error_log(" Nombre RH obtenido de DIRIGIDO_A: $nombre_rh");
+        } else {
+            $nombre_rh = 'Recursos Humanos';
+            error_log(" No se encontró nombre RH, usando genérico");
+        }
+
+        // Validar que esté en Entrevista RH
+        $estadosPermitidos = [
+            'entrevista rh',
+            'entrevista tecnica',
+            'dia de prueba',
+            'poligrafo',
+            'expediente completo',
+            'expediente rh',
+            'confirmacion de contratacion'
+        ];
+
+        // Normalizar el estado a minúsculas para comparar
+        $estadoNormalizado = strtolower(trim($estadoAnterior));
+
+        // Buscar coincidencia parcial (en caso de acentos o espacios)
+        $estadoPermitido = false;
+        foreach ($estadosPermitidos as $estado) {
+            if (stripos($estadoNormalizado, str_replace(' ', '', $estado)) !== false || 
+                $estadoNormalizado === $estado) {
+                $estadoPermitido = true;
+                break;
+            }
+        }
+
+        if (!$estadoPermitido) {
+            echo json_encode([
+                'success' => false, 
+                'error' => "Solo se puede descartar candidatos desde 'Entrevista RH' en adelante (excepto Aprobación de Aval). Estado actual: $estadoAnterior"
+            ]);
+            exit;
+        }
+
+        // CREAR OBSERVACIÓN CON NOMBRE DE RH (igual que supervisión)
+        $observacionDescarte = "CANDIDATO DESCARTADO POR RRHH: {$nombre_rh} - Motivo: " . $motivo_descarte;
+        
+        $queryHistDescarte = "INSERT INTO ROY_CANDIDATOS_HIST_EST 
+                             (ID_CANDIDATO, ESTADO_ANTERIOR, ESTADO_NUEVO, OBSERVACIONES, FECHA_CAMBIO, ACTIVO)
+                             VALUES (:id_candidato, :estado_anterior, 'Descartado', :observaciones, SYSDATE, 'Y')";
+        
+        $stmtHistDescarte = oci_parse($conn, $queryHistDescarte);
+        oci_bind_by_name($stmtHistDescarte, ':id_candidato', $id_candidato);
+        oci_bind_by_name($stmtHistDescarte, ':estado_anterior', $estadoAnterior);
+        oci_bind_by_name($stmtHistDescarte, ':observaciones', $observacionDescarte);
+        oci_execute($stmtHistDescarte);
+        oci_free_statement($stmtHistDescarte);
+
+        // Insertar en historial general (igual que supervisión)
+      /*  $comentarioGeneral = "Candidato {$nombreCompleto} descartado por RRHH: {$nombre_rh} - Motivo: {$motivo_descarte}";
+        
+        $queryHistGeneral = "INSERT INTO ROY_HISTORICO_SOLICITUD 
+                            (ID_SOLICITUD, ESTADO_ANTERIOR, ESTADO_NUEVO, FECHA_CAMBIO, TIPO_EVENTO) 
+                            VALUES (:id_solicitud, :estado_anterior, 'Descartado', SYSDATE, 'CANDIDATO_DESCARTADO_RH')";
+        
+        $stmtHistGeneral = oci_parse($conn, $queryHistGeneral);
+        oci_bind_by_name($stmtHistGeneral, ':id_solicitud', $idSolicitud);
+        oci_bind_by_name($stmtHistGeneral, ':estado_anterior', $estadoAnterior);
+        oci_execute($stmtHistGeneral);
+        oci_free_statement($stmtHistGeneral);*/
+
+        // Actualizar candidato a descartado (igual que supervisión)
+        $queryUpdate = "UPDATE ROY_CANDIDATOS_SOLICITUD
+                       SET ESTADO_CANDIDATO = 'Descartado',
+                           ACTIVO = 'N',
+                           MOTIVO_DESCARTE = :motivo,
+                           FECHA_MODIFICACION = SYSDATE
+                       WHERE ID_CANDIDATO = :id";
+        $stmtUpdate = oci_parse($conn, $queryUpdate);
+        oci_bind_by_name($stmtUpdate, ':motivo', $motivo_descarte);
+        oci_bind_by_name($stmtUpdate, ':id', $id_candidato);
+        oci_execute($stmtUpdate);
+        oci_free_statement($stmtUpdate);
+
+        oci_commit($conn);
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Candidato descartado correctamente por Recursos Humanos',
+            'candidato' => $nombreCompleto,
+            'descartado_por' => $nombre_rh // NOMBRE OBTENIDO DE LA SOLICITUD
+        ]);
+
+    } catch (Exception $e) {
+        oci_rollback($conn);
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
     }
+    break;
+//=========================================================================================
+// CREAR CANDIDATOS ADICIONALES
+//==========================================================================================
+                            //cargar candidatos adicionales 
+                        case 'cargar_candidatos_adicionales':
+                            try {
+                                $id_solicitud = $_POST['id_solicitud'] ?? null;
+                                $candidatos = $_POST['candidatos'] ?? null;
+
+                                if (empty($id_solicitud) || !is_numeric($id_solicitud)) {
+                                    throw new Exception('ID de solicitud inválido o no proporcionado');
+                                }
+                                
+                                $id_solicitud = (int)$id_solicitud;
+                                if ($id_solicitud <= 0) {
+                                    throw new Exception('ID de solicitud debe ser mayor a 0');
+                                }
+                                
+                                if (!$candidatos || !is_array($candidatos) || count($candidatos) === 0) {
+                                    throw new Exception('Datos de candidatos son requeridos');
+                                }
+
+                                // Verificar solicitud y obtener puesto
+                                $sqlPuesto = "SELECT PUESTO_SOLICITADO FROM ROY_SOLICITUD_PERSONAL WHERE ID_SOLICITUD = :id";
+                                $stP = oci_parse($conn, $sqlPuesto);
+                                oci_bind_by_name($stP, ':id', $id_solicitud, -1, SQLT_INT);
+                                if (!oci_execute($stP)) { 
+                                    $e = oci_error($stP); 
+                                    throw new Exception('Error verificando solicitud: '.$e['message']); 
+                                }
+                                $rowP = oci_fetch_assoc($stP);
+                                oci_free_statement($stP);
+                                if (!$rowP) throw new Exception('La solicitud con ID '.$id_solicitud.' no existe');
+                                $puesto_solicitado = $rowP['PUESTO_SOLICITADO'] ?? '';
+
+                                //  INSERTAR SIN ARCHIVOS CV
+                                $sqlInsert = "INSERT INTO ROY_CANDIDATOS_SOLICITUD
+                                    (ID_SOLICITUD, NOMBRE_CANDIDATO, APELLIDOS_CANDIDATO,
+                                    DOCUMENTO_CANDIDATO, PUESTO_SOLICITADO, ESTADO_CANDIDATO)
+                                VALUES
+                                    (:id_solicitud, :nombre, :apellidos,
+                                    :documento, :puesto, :estado)
+                                RETURNING ID_CANDIDATO INTO :id_candidato";
+                                $stI = oci_parse($conn, $sqlInsert);
+
+                                $b_id_solicitud = $id_solicitud;
+                                $b_nombre = $b_apellidos = $b_documento = $b_puesto = $b_estado = null;
+                                $b_id_candidato = null;
+
+                                oci_bind_by_name($stI, ':id_solicitud', $b_id_solicitud, -1, SQLT_INT);
+                                oci_bind_by_name($stI, ':nombre',    $b_nombre, 200);
+                                oci_bind_by_name($stI, ':apellidos', $b_apellidos, 200);
+                                oci_bind_by_name($stI, ':documento', $b_documento, 200);
+                                $b_puesto = $puesto_solicitado;
+                                oci_bind_by_name($stI, ':puesto',    $b_puesto, 200);
+                                $b_estado = 'CV Enviado'; // ESTADO INICIAL SIN CV
+                                oci_bind_by_name($stI, ':estado',    $b_estado, 50);
+                                oci_bind_by_name($stI, ':id_candidato', $b_id_candidato, -1, SQLT_INT);
+
+                                $ok = [];
+                                $errs = [];
+
+                                foreach ($candidatos as $i => $c) {
+                                    try {
+                                        $b_nombre    = trim($c['nombre']    ?? '');
+                                        $b_apellidos = trim($c['apellidos'] ?? '');
+                                        $b_documento = isset($c['documento']) ? trim((string)$c['documento']) : null;
+
+                                        if ($b_nombre === '' || $b_apellidos === '') {
+                                            throw new Exception('Nombre y apellidos son obligatorios');
+                                        }
+
+                                        $b_id_candidato = null;
+                                        if (!oci_execute($stI, OCI_NO_AUTO_COMMIT)) {
+                                            $eI = oci_error($stI);
+                                            throw new Exception('Error insertando candidato: '.$eI['message']);
+                                        }
+
+                                        $ok[] = [
+                                            'id_candidato'   => $b_id_candidato,
+                                            'nombre_completo'=> $b_nombre.' '.$b_apellidos,
+                                            'cv_subido' => false //  SIEMPRE FALSE
+                                        ];
+                                    } catch (Exception $ex) {
+                                        $errs[] = 'Candidato '.($i+1).': '.$ex->getMessage();
+                                    }
+                                }
+
+                                if (count($ok) === 0 && count($errs) > 0) {
+                                    oci_rollback($conn);
+                                } else {
+                                    oci_commit($conn);
+                                }
+
+                                if ($stI) oci_free_statement($stI);
+
+                                echo json_encode([
+                                    'success' => true,
+                                    'candidatos_agregados' => count($ok),
+                                    'candidatos' => $ok,
+                                    'errores' => $errs,
+                                    'mensaje' => 'Candidatos agregados exitosamente. Los CVs se pueden subir posteriormente.'
+                                ]);
+                            } catch (Exception $e) {
+                                @oci_rollback($conn);
+                                echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+                            }
+                            break;
+//=========================================================================================
+// ENVIAR EXPEDIENTE PARA APROBACION DE AVAL
+//==========================================================================================
+                            //documentos para aval
+                            case 'validar_documentos_para_aval':
+                            try {
+                                $id_candidato = $_GET['id_candidato'] ?? null;
+                                
+                                if (!$id_candidato) {
+                                    throw new Exception('ID de candidato requerido');
+                                }
+                                
+                                // Verificar que todos los estados por los que pasó tengan archivos
+                                $query = "SELECT COUNT(*) as TOTAL_ARCHIVOS
+                                        FROM ROY_ARCHIVOS_SOLICITUD 
+                                        WHERE ID_CANDIDATO = :id_candidato";
+                                
+                                $stmt = oci_parse($conn, $query);
+                                oci_bind_by_name($stmt, ':id_candidato', $id_candidato);
+                                oci_execute($stmt);
+                                $resultado = oci_fetch_assoc($stmt);
+                                oci_free_statement($stmt);
+                                
+                                $puede_pasar = ($resultado['TOTAL_ARCHIVOS'] >= 3); // Mínimo 3 archivos
+                                
+                                echo json_encode([
+                                    'success' => true,
+                                    'puede_pasar_a_aval' => $puede_pasar,
+                                    'documentos_faltantes' => $puede_pasar ? [] : ['Faltan documentos mínimos']
+                                ]);
+                                
+                            } catch (Exception $e) {
+                                echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+                            }
+                            break;
+//=========================================================================================
+// OBTENER CARPETAS PROGRESIVAS CONFORME A ESTADO DE CANDIDATO
+//==========================================================================================
+                            case 'get_carpetas_progresivas_rh':
+                                header('Content-Type: application/json; charset=utf-8');
+                                try {
+                                    $id_candidato = $_GET['id_candidato'] ?? null;
+                                    
+                                    if (!$id_candidato) {
+                                        throw new Exception('ID de candidato requerido');
+                                    }
+                                    
+                                    // *** OBTENER EL PUESTO SOLICITADO DESDE LA BASE DE DATOS ***
+                                    $queryPuesto = "SELECT s.PUESTO_SOLICITADO 
+                                                FROM ROY_CANDIDATOS_SOLICITUD c 
+                                                JOIN ROY_SOLICITUD_PERSONAL s ON c.ID_SOLICITUD = s.ID_SOLICITUD 
+                                                WHERE c.ID_CANDIDATO = :id";
+                                    $stmtPuesto = oci_parse($conn, $queryPuesto);
+                                    oci_bind_by_name($stmtPuesto, ':id', $id_candidato);
+                                    oci_execute($stmtPuesto);
+                                    $rowPuesto = oci_fetch_assoc($stmtPuesto);
+                                    $puestoSolicitado = $rowPuesto ? $rowPuesto['PUESTO_SOLICITADO'] : '';
+                                    oci_free_statement($stmtPuesto);
+                                    
+                                    // *** CORRECCIÓN: Solo "JEFE DE TIENDA" exacto requiere Polígrafo ***
+                                    $esJefeTienda = strtoupper(trim($puestoSolicitado)) === 'JEFE DE TIENDA';
+                                    
+                                    // Obtener estado actual del candidato
+                                    $queryEstado = "SELECT ESTADO_CANDIDATO FROM ROY_CANDIDATOS_SOLICITUD WHERE ID_CANDIDATO = :id";
+                                    $stmtEstado = oci_parse($conn, $queryEstado);
+                                    oci_bind_by_name($stmtEstado, ':id', $id_candidato);
+                                    oci_execute($stmtEstado);
+                                    $rowEstado = oci_fetch_assoc($stmtEstado);
+                                    $estadoActual = $rowEstado ? $rowEstado['ESTADO_CANDIDATO'] : 'CV Enviado';
+                                    oci_free_statement($stmtEstado);
+                                    
+                                    // Obtener archivos existentes
+                                    $queryArchivos = "SELECT ESTADO_RELACIONADO, COUNT(*) as TOTAL FROM ROY_ARCHIVOS_SOLICITUD WHERE ID_CANDIDATO = :id GROUP BY ESTADO_RELACIONADO";
+                                    $stmtArchivos = oci_parse($conn, $queryArchivos);
+                                    oci_bind_by_name($stmtArchivos, ':id', $id_candidato);
+                                    oci_execute($stmtArchivos);
+                                    
+                                    $archivosExistentes = [];
+                                    while ($row = oci_fetch_assoc($stmtArchivos)) {
+                                        $archivosExistentes[$row['ESTADO_RELACIONADO']] = $row['TOTAL'];
+                                    }
+                                    oci_free_statement($stmtArchivos);
+                                    
+                                    // Estados en orden con sus números de progresión
+                                    $estadosBase = [
+                                        'CV Enviado' => 1,
+                                        'Psicometrica' => 2, 
+                                        'Entrevista RH' => 3,
+                                        'Entrevista Tecnica' => 4,
+                                        'Dia de Prueba' => 5
+                                    ];
+                                    
+                                    if ($esJefeTienda) {
+                                        $estadosBase['Poligrafo'] = 6;
+                                    }
+                                    
+                                    // Obtener el orden del estado actual
+                                    $ordenEstadoActual = isset($estadosBase[$estadoActual]) ? $estadosBase[$estadoActual] : 1;
+                                    
+                                    $carpetas = [];
+                                    
+                                    // *** LÓGICA PROGRESIVA: Disponible hasta el estado actual ***
+                                    foreach ($estadosBase as $nombreEstado => $orden) {
+                                        $tieneArchivos = isset($archivosExistentes[$nombreEstado]) && $archivosExistentes[$nombreEstado] > 0;
+                                        
+                                        // *** DISPONIBLE SI: orden <= ordenEstadoActual ***
+                                        $disponible = $orden <= $ordenEstadoActual;
+                                        
+                                        $motivo_bloqueo = null;
+                                        if (!$disponible) {
+                                            $motivo_bloqueo = "Debe avanzar el estado del candidato primero";
+                                        } else {
+                                            //  AGREGAR LÓGICA PARA MOSTRAR MENSAJES ESPECÍFICOS CUANDO ESTÁ DISPONIBLE PERO SIN ARCHIVOS
+                                            if (!$tieneArchivos && $disponible) {
+                                                // Obtener nombres del supervisor y gerente
+                                                $querySupervisor = "SELECT s.SOLICITADO_POR 
+                                                                FROM ROY_CANDIDATOS_SOLICITUD c
+                                                                JOIN ROY_SOLICITUD_PERSONAL s ON c.ID_SOLICITUD = s.ID_SOLICITUD
+                                                                WHERE c.ID_CANDIDATO = :id";
+                                                
+                                                $stmtSup = oci_parse($conn, $querySupervisor);
+                                                oci_bind_by_name($stmtSup, ':id', $id_candidato);
+                                                oci_execute($stmtSup);
+                                                $rowSup = oci_fetch_assoc($stmtSup);
+                                                $nombreSupervisor = $rowSup ? trim($rowSup['SOLICITADO_POR']) : 'el supervisor';
+                                                oci_free_statement($stmtSup);
+                                                
+// Buscar el gerente del supervisor
+$nombreGerente = 'Gerente de Operaciones';
+if ($nombreSupervisor !== 'el supervisor') {
+    $queryGerente = "SELECT DISTINCT udf4_string as NOMBRE_GERENTE 
+                    FROM RPS.STORE 
+                    WHERE sbs_sid = '680861302000159257' 
+                    AND UPPER(TRIM(udf2_string)) = UPPER(TRIM(:supervisor))
+                    AND udf4_string IS NOT NULL
+                    FETCH FIRST 1 ROWS ONLY";
+    
+    $stmtGerente = oci_parse($conn, $queryGerente);
+    oci_bind_by_name($stmtGerente, ':supervisor', $nombreSupervisor);
+    
+    if (oci_execute($stmtGerente)) {
+        $rowGerente = oci_fetch_assoc($stmtGerente);
+        if ($rowGerente && !empty($rowGerente['NOMBRE_GERENTE'])) {
+            $nombreGerente = trim($rowGerente['NOMBRE_GERENTE']);
+        }
+    }
+    oci_free_statement($stmtGerente);
+}
+
+// ✅ CONVERTIR CÓDIGO A NOMBRE SI ES NECESARIO
+$mapeoGerentes = [
+    '5210' => 'GIOVANNI CARDOZA',
+    '5333' => 'CHRISTIAN QUAN'
+];
+
+// Si el nombre es un código, reemplazarlo
+if (isset($mapeoGerentes[$nombreGerente])) {
+    $nombreGerente = $mapeoGerentes[$nombreGerente];
+    error_log("✅ Código de gerente convertido a nombre: $nombreGerente");
+}
+
+error_log("🎯 Nombre gerente FINAL: $nombreGerente");
+                                                
+                                                //  GENERAR MENSAJES ESPECÍFICOS PARA ENTREVISTA TÉCNICA Y DÍA DE PRUEBA
+                                    if ($nombreEstado === 'Entrevista Tecnica') {
+                                        if ($estadoActual === 'Entrevista Tecnica' || $estadoActual === 'Dia de Prueba' || $estadoActual === 'Poligrafo' || $estadoActual === 'Expediente RH') {
+                                            $motivo_bloqueo = "El supervisor {$nombreSupervisor} o el gerente {$nombreGerente} aún no ha subido los archivos correspondientes";
+                                        }
+                                    } elseif ($nombreEstado === 'Dia de Prueba') {
+                                        if ($estadoActual === 'Dia de Prueba' || $estadoActual === 'Poligrafo' || $estadoActual === 'Expediente RH') {
+                                            $motivo_bloqueo = "El supervisor {$nombreSupervisor} o el gerente {$nombreGerente} aún no ha subido los archivos correspondientes";
+                                        }
+                                    }
+                                            }
+                                        }
+                                        
+                                        $carpetas[] = [
+                                            'nombre' => $nombreEstado,
+                                            'completado' => $tieneArchivos,
+                                            'disponible' => $disponible,
+                                            'archivos' => $tieneArchivos ? $archivosExistentes[$nombreEstado] : 0,
+                                            'motivo_bloqueo' => $motivo_bloqueo,
+                                            'es_actual' => $nombreEstado === $estadoActual,
+                                            'orden' => $orden // Para debug
+                                        ];
+                                    }
+                                    
+                                    // Calcular progreso
+                                    $completados = count(array_filter($carpetas, function($c) { 
+                                        return $c['completado']; 
+                                    }));
+                                    $porcentajeProgreso = count($carpetas) > 0 ? 
+                                        round(($completados / count($carpetas)) * 100) : 0;
+                                    
+                                    echo json_encode([
+                                        'success' => true,
+                                        'estadoActual' => $estadoActual,
+                                        'carpetas' => $carpetas,
+                                        'porcentajeProgreso' => $porcentajeProgreso,
+                                        'totalCarpetas' => count($carpetas),
+                                        'carpetasCompletadas' => $completados,
+                                        'puestoSolicitado' => $puestoSolicitado, // *** AGREGAR PARA DEBUG ***
+                                        'esJefeTienda' => $esJefeTienda, // *** AGREGAR PARA DEBUG ***
+                                        'notaPoligrafo' => $esJefeTienda ? 'El Polígrafo aplica para JEFE DE TIENDA' : 'El Polígrafo solo aplica para JEFE DE TIENDA'
+                                    ]);
+                                    
+                                } catch (Exception $e) {
+                                    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+                                }
+                                break;
+//=========================================================================================
+// CAMBIO DE ESTADO CONFORME A CARPETAS PROGRESIVAS
+//========================================================================================== 
+                                case 'cambiar_estado_progresivo':
+                                try {
+                                    $id_candidato = $_POST['id_candidato'] ?? null;
+                                    $nuevo_estado = $_POST['nuevo_estado'] ?? null;
+                                    $comentario = $_POST['comentario'] ?? '';
+                                    
+                                    if (!$id_candidato || !$nuevo_estado) {
+                                        throw new Exception('ID de candidato y nuevo estado son requeridos');
+                                    }
+                                    
+                                    // *** NUEVA LÓGICA: SOLO VALIDAR PARA "APROBACION DE AVAL" ***
+                                    if ($nuevo_estado === 'APROBACION DE AVAL' || $nuevo_estado === 'Aprobado para Aval') {
+                                        // Definir estados que deben tener archivos OBLIGATORIOS según el puesto
+                                        $flujoEstados = ['CV Enviado', 'Psicometrica', 'Entrevista RH', 'Entrevista Tecnica', 'Dia de Prueba'];
+                                        
+                                        // *** CORRECCIÓN: Solo "JEFE DE TIENDA" específicamente requiere Polígrafo ***
+                                        $queryPuesto = "SELECT s.PUESTO_SOLICITADO FROM ROY_CANDIDATOS_SOLICITUD c JOIN ROY_SOLICITUD_PERSONAL s ON c.ID_SOLICITUD = s.ID_SOLICITUD WHERE c.ID_CANDIDATO = :id";
+                                        $stmtPuesto = oci_parse($conn, $queryPuesto);
+                                        oci_bind_by_name($stmtPuesto, ':id', $id_candidato);
+                                        oci_execute($stmtPuesto);
+                                        $rowPuesto = oci_fetch_assoc($stmtPuesto);
+                                        
+                                        // *** CAMBIO: Solo "JEFE DE TIENDA" exacto requiere Polígrafo ***
+                                        $esJefeTienda = $rowPuesto && strtoupper(trim($rowPuesto['PUESTO_SOLICITADO'])) === 'JEFE DE TIENDA';
+                                        oci_free_statement($stmtPuesto);
+                                        
+                                        if ($esJefeTienda) {
+                                            $flujoEstados[] = 'Poligrafo';
+                                        }
+                                        
+                                        // VALIDAR que TODOS los estados requeridos tengan archivos
+                                        $estadosSinArchivos = [];
+                                        foreach ($flujoEstados as $estadoRequerido) {
+                                            $queryValidar = "SELECT COUNT(*) as TOTAL FROM ROY_ARCHIVOS_SOLICITUD WHERE ID_CANDIDATO = :id AND ESTADO_RELACIONADO = :estado";
+                                            $stmtValidar = oci_parse($conn, $queryValidar);
+                                            oci_bind_by_name($stmtValidar, ':id', $id_candidato);
+                                            oci_bind_by_name($stmtValidar, ':estado', $estadoRequerido);
+                                            oci_execute($stmtValidar);
+                                            $resultado = oci_fetch_assoc($stmtValidar);
+                                            oci_free_statement($stmtValidar);
+                                            
+                                            if ($resultado['TOTAL'] == 0) {
+                                                $estadosSinArchivos[] = $estadoRequerido;
+                                            }
+                                        }
+                                        
+                                        // Si faltan archivos, no permitir el cambio
+                                        if (!empty($estadosSinArchivos)) {
+                                            throw new Exception("No se puede pasar a 'Aprobado para Aval'. Faltan documentos en los siguientes estados: " . implode(', ', $estadosSinArchivos));
+                                        }
+                                    }
+                                    
+                                    // Validar que el estado es válido en el flujo
+                                    $estadosValidos = [
+                                        'CV Enviado', 'Psicometrica', 'Entrevista RH', 'Entrevista Tecnica', 
+                                        'Dia de Prueba', 'Poligrafo', 'Aprobado para Aval'
+                                    ];
+                                    
+                                   /* if (!in_array($nuevo_estado, $estadosValidos)) {
+                                        throw new Exception('Estado no válido en el flujo progresivo');
+                                    }*/
+
+                                        // Solo validar que no esté vacío
+                                        if (empty(trim($nuevo_estado))) {
+                                            throw new Exception('Estado no puede estar vacío');
+                                        }
+                                    
+                                    // Obtener estado anterior
+                                    $queryAnterior = "SELECT ESTADO_CANDIDATO FROM ROY_CANDIDATOS_SOLICITUD WHERE ID_CANDIDATO = :id";
+                                    $stmtAnterior = oci_parse($conn, $queryAnterior);
+                                    oci_bind_by_name($stmtAnterior, ':id', $id_candidato);
+                                    oci_execute($stmtAnterior);
+                                    $rowAnterior = oci_fetch_assoc($stmtAnterior);
+                                    $estadoAnterior = $rowAnterior ? $rowAnterior['ESTADO_CANDIDATO'] : 'Inicial';
+                                    oci_free_statement($stmtAnterior);
+                                    
+                                    // *** CORRECCIÓN: Usar FECHA_MODIFICACION en lugar de FECHA_ACTUALIZACION ***
+                                    $queryUpdate = "UPDATE ROY_CANDIDATOS_SOLICITUD SET ESTADO_CANDIDATO = :estado, FECHA_MODIFICACION = SYSDATE WHERE ID_CANDIDATO = :id";
+                                    $stmtUpdate = oci_parse($conn, $queryUpdate);
+                                    oci_bind_by_name($stmtUpdate, ':estado', $nuevo_estado);
+                                    oci_bind_by_name($stmtUpdate, ':id', $id_candidato);
+                                    
+                                    if (!oci_execute($stmtUpdate)) {
+                                        throw new Exception('Error al actualizar el estado del candidato');
+                                    }
+                                    oci_free_statement($stmtUpdate);
+                                    
+                                    // Registrar en historial ROY_CANDIDATOS_HIST_EST
+                                    $queryHistorial = "INSERT INTO ROY_CANDIDATOS_HIST_EST 
+                                                    (ID_HISTORIAL, ID_CANDIDATO, ESTADO_ANTERIOR, ESTADO_NUEVO, FECHA_CAMBIO, OBSERVACIONES, ACTIVO) 
+                                                    VALUES (roy_candidatos_hist_est_seq.NEXTVAL, :id, :anterior, :nuevo, SYSDATE, :obs, 'Y')";
+
+                                    $stmtHistorial = oci_parse($conn, $queryHistorial);
+                                    oci_bind_by_name($stmtHistorial, ':id', $id_candidato);
+                                    oci_bind_by_name($stmtHistorial, ':anterior', $estadoAnterior);
+                                    oci_bind_by_name($stmtHistorial, ':nuevo', $nuevo_estado);
+                                    oci_bind_by_name($stmtHistorial, ':obs', $comentario);
+
+                                    if (!oci_execute($stmtHistorial)) {
+                                        $error = oci_error($stmtHistorial);
+                                        error_log('Error al registrar historial: ' . print_r($error, true));
+                                    }
+                                    oci_free_statement($stmtHistorial);
+                                    
+                                    // Confirmar transacción
+                                    oci_commit($conn);
+                                    
+                                    echo json_encode([
+                                        'success' => true,
+                                        'message' => 'Estado actualizado correctamente',
+                                        'estado_anterior' => $estadoAnterior,
+                                        'estado_nuevo' => $nuevo_estado
+                                    ]);
+                                    
+                                } catch (Exception $e) {
+                                    oci_rollback($conn);
+                                    echo json_encode([
+                                        'success' => false, 
+                                        'error' => $e->getMessage()
+                                    ]);
+                                }
+                                break;
+//=========================================================================================
+// ESTADOS MAESTROS
+//==========================================================================================
+                            //obtener estados maestros para combo
+                        case 'get_estados_master':
+                            try {
+                                // Consultar desde la base de datos con el orden correcto
+                                $query = "SELECT NOMBRE_ESTADO, ORDEN_PROCESO, SOLO_JEFES, PERMITE_ARCHIVOS
+                                        FROM ROY_ESTADOS_CANDIDATO 
+                                        WHERE ACTIVO = 'Y'
+                                        AND NOMBRE_ESTADO != 'Expediente RH'  -- Excluir explícitamente
+                                        ORDER BY ORDEN_PROCESO";
+                                
+                                $stmt = oci_parse($conn, $query);
+                                
+                                if (oci_execute($stmt)) {
+                                    $estados = [];
+                                    while ($row = oci_fetch_assoc($stmt)) {
+                                        $estados[] = [
+                                            'NOMBRE_ESTADO' => $row['NOMBRE_ESTADO'],
+                                            'ORDEN_PROCESO' => $row['ORDEN_PROCESO'],
+                                            'SOLO_JEFES' => $row['SOLO_JEFES'],
+                                            'PERMITE_ARCHIVOS' => $row['PERMITE_ARCHIVOS']
+                                        ];
+                                    }
+                                    oci_free_statement($stmt);
+                                    
+                                    echo json_encode([
+                                        'success' => true,
+                                        'estados' => $estados
+                                    ]);
+                                } else {
+                                    // Fallback con el orden correcto
+                                    $estadosDefault = [
+                                        ['NOMBRE_ESTADO' => 'CV Enviado', 'ORDEN_PROCESO' => 1, 'SOLO_JEFES' => 'N'],
+                                        ['NOMBRE_ESTADO' => 'Psicometrica', 'ORDEN_PROCESO' => 2, 'SOLO_JEFES' => 'N'],
+                                        ['NOMBRE_ESTADO' => 'Entrevista RH', 'ORDEN_PROCESO' => 3, 'SOLO_JEFES' => 'N'],
+                                        ['NOMBRE_ESTADO' => 'Entrevista Tecnica', 'ORDEN_PROCESO' => 4, 'SOLO_JEFES' => 'N'],
+                                        ['NOMBRE_ESTADO' => 'Dia de Prueba', 'ORDEN_PROCESO' => 5, 'SOLO_JEFES' => 'N'],
+                                        ['NOMBRE_ESTADO' => 'Poligrafo', 'ORDEN_PROCESO' => 6, 'SOLO_JEFES' => 'Y']
+                                    ];
+                                    
+                                    echo json_encode([
+                                        'success' => true,
+                                        'estados' => $estadosDefault
+                                    ]);
+                                }
+                                
+                            } catch (Exception $e) {
+                                echo json_encode([
+                                    'success' => false,
+                                    'error' => $e->getMessage()
+                                ]);
+                            }
+                            break;
+//=========================================================================================
+// CALCULO DE TOTALIDAD DE CANDIDATOS
+//==========================================================================================
+                            case 'get_total_candidatos':
+                            $id_solicitud = $_GET['id_solicitud'] ?? null;
+                            if (!$id_solicitud) {
+                                echo json_encode(['success' => false, 'error' => 'ID requerido']);
+                                break;
+                            }
+                            
+                            $query = "SELECT COUNT(*) as TOTAL FROM ROY_CANDIDATOS_SOLICITUD 
+                                    WHERE ID_SOLICITUD = :id AND ACTIVO = 'Y'";
+                            $stmt = oci_parse($conn, $query);
+                            oci_bind_by_name($stmt, ':id', $id_solicitud);
+                            oci_execute($stmt);
+                            $row = oci_fetch_assoc($stmt);
+                            oci_free_statement($stmt);
+                            
+                            echo json_encode([
+                                'success' => true,
+                                'total' => $row['TOTAL'] ?? 0
+                            ]);
+                            break;
+//=========================================================================================
+// HISTORIAL DE CANDIDATO POR SOLICITUD
+//==========================================================================================
+                        case 'get_historial_candidato':
+                            try {
+                                $id_candidato = $_GET['id_candidato'] ?? null;
+                                
+                                if (!$id_candidato) {
+                                    throw new Exception('ID de candidato requerido');
+                                }
+                                
+                                $id_candidato = intval($id_candidato);
+                                
+                                // Obtener información del candidato
+                                $queryCandidato = "SELECT c.NOMBRE_CANDIDATO, c.APELLIDOS_CANDIDATO, c.ESTADO_CANDIDATO,
+                                                        c.DOCUMENTO_CANDIDATO, s.NUM_TIENDA, s.PUESTO_SOLICITADO
+                                                FROM ROY_CANDIDATOS_SOLICITUD c
+                                                JOIN ROY_SOLICITUD_PERSONAL s ON c.ID_SOLICITUD = s.ID_SOLICITUD
+                                                WHERE c.ID_CANDIDATO = :id_candidato";
+                                
+                                $stmtCandidato = oci_parse($conn, $queryCandidato);
+                                oci_bind_by_name($stmtCandidato, ':id_candidato', $id_candidato, -1, SQLT_INT);
+                                oci_execute($stmtCandidato);
+                                $infoCandidato = oci_fetch_assoc($stmtCandidato);
+                                oci_free_statement($stmtCandidato);
+                                
+                                if (!$infoCandidato) {
+                                    throw new Exception('Candidato no encontrado');
+                                }
+                                
+                                // Obtener historial del candidato
+                                $query = "SELECT 
+                                            h.ID_HISTORIAL,
+                                            h.ESTADO_ANTERIOR,
+                                            h.ESTADO_NUEVO,
+                                            TO_CHAR(h.FECHA_CAMBIO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_CAMBIO,
+                                            h.OBSERVACIONES
+                                        FROM roy_candidatos_hist_est h
+                                        WHERE h.ID_CANDIDATO = :id_candidato
+                                        ORDER BY h.FECHA_CAMBIO ASC";
+                                
+                                $stmt = oci_parse($conn, $query);
+                                oci_bind_by_name($stmt, ':id_candidato', $id_candidato, -1, SQLT_INT);
+                                oci_execute($stmt);
+                                
+                                $historial = [];
+                                while ($row = oci_fetch_assoc($stmt)) {
+                                    $historial[] = [
+                                        'ID_HISTORIAL' => $row['ID_HISTORIAL'],
+                                        'ESTADO_ANTERIOR' => $row['ESTADO_ANTERIOR'] ?: 'Inicial',
+                                        'ESTADO_NUEVO' => $row['ESTADO_NUEVO'],
+                                        'FECHA_CAMBIO' => $row['FECHA_CAMBIO'],
+                                        'OBSERVACIONES' => $row['OBSERVACIONES']
+                                    ];
+                                }
+                                oci_free_statement($stmt);
+                                
+                                echo json_encode([
+                                    'success' => true,
+                                    'candidato' => [
+                                        'id' => $id_candidato,
+                                        'nombre' => trim($infoCandidato['NOMBRE_CANDIDATO'] . ' ' . $infoCandidato['APELLIDOS_CANDIDATO']),
+                                        'documento' => $infoCandidato['DOCUMENTO_CANDIDATO'],
+                                        'estado_actual' => $infoCandidato['ESTADO_CANDIDATO'],
+                                        'tienda' => $infoCandidato['NUM_TIENDA'],
+                                        'puesto' => $infoCandidato['PUESTO_SOLICITADO']
+                                    ],
+                                    'historial' => $historial,
+                                    'total' => count($historial)
+                                ]);
+                                
+                            } catch (Exception $e) {
+                                echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+                            }
+                            break;
+            //=========================================================================================
+            //PROGRESION DE ESTADOS POR CANDIDATO
+            //=========================================================================================
+                case 'validar_progresion_estado':
+                    try {
+                        $id_candidato = intval($_GET['id_candidato'] ?? 0);
+                        $estado_destino = $_GET['estado_destino'] ?? '';
+                        $es_jefe = intval($_GET['es_jefe'] ?? 0);
+                        
+                        if (!$id_candidato || !$estado_destino) {
+                            enviarJSON(['success' => false, 'error' => 'Parámetros faltantes']);
+                        }
+                        
+                        // Definir flujo de estados según tu estructura existente
+                        $flujoEstados = ['CV Enviado', 'Psicometrica', 'Entrevista RH', 'Entrevista Tecnica', 'Dia de Prueba'];
+                        if ($es_jefe) {
+                            $flujoEstados[] = 'Poligrafo';
+                        }
+                        
+                        // Estados especiales que requieren validación completa
+                        $estadosEspeciales = ['Aprobacion de Aval', 'Contratado'];
+                        
+                        $puedeAvanzar = true;
+                        $estadosFaltantes = [];
+                        $mensaje = '';
+                        
+                        if (in_array($estado_destino, $estadosEspeciales)) {
+                            // Para estados especiales: validar TODOS los estados anteriores
+                            foreach ($flujoEstados as $estadoRequerido) {
+                                $queryValidar = "SELECT COUNT(*) as TOTAL FROM ROY_ARCHIVOS_SOLICITUD 
+                                            WHERE ID_CANDIDATO = :id_candidato AND ESTADO_RELACIONADO = :estado";
+                                $stmtValidar = oci_parse($conn, $queryValidar);
+                                oci_bind_by_name($stmtValidar, ':id_candidato', $id_candidato);
+                                oci_bind_by_name($stmtValidar, ':estado', $estadoRequerido);
+                                oci_execute($stmtValidar);
+                                $resultado = oci_fetch_assoc($stmtValidar);
+                                oci_free_statement($stmtValidar);
+                                
+                                if ($resultado['TOTAL'] == 0) {
+                                    $puedeAvanzar = false;
+                                    $estadosFaltantes[] = $estadoRequerido;
+                                }
+                            }
+                            
+                            if (!$puedeAvanzar) {
+                                $mensaje = "Para avanzar a '$estado_destino' debe completar todos los estados: " . implode(', ', $estadosFaltantes);
+                            }
+                        } else {
+                            // Para estados normales: validar solo el anterior
+                            $posicionDestino = array_search($estado_destino, $flujoEstados);
+                            
+                            if ($posicionDestino !== false && $posicionDestino > 0) {
+                                $estadoAnterior = $flujoEstados[$posicionDestino - 1];
+                                
+                                $queryValidar = "SELECT COUNT(*) as TOTAL FROM ROY_ARCHIVOS_SOLICITUD 
+                                            WHERE ID_CANDIDATO = :id_candidato AND ESTADO_RELACIONADO = :estado";
+                                $stmtValidar = oci_parse($conn, $queryValidar);
+                                oci_bind_by_name($stmtValidar, ':id_candidato', $id_candidato);
+                                oci_bind_by_name($stmtValidar, ':estado', $estadoAnterior);
+                                oci_execute($stmtValidar);
+                                $resultado = oci_fetch_assoc($stmtValidar);
+                                oci_free_statement($stmtValidar);
+                                
+                                if ($resultado['TOTAL'] == 0) {
+                                    $puedeAvanzar = false;
+                                    $mensaje = "Debe completar el estado '$estadoAnterior' antes de avanzar a '$estado_destino'";
+                                }
+                            }
+                        }
+                        
+                        enviarJSON([
+                            'success' => true,
+                            'puede_avanzar' => $puedeAvanzar,
+                            'mensaje' => $mensaje,
+                            'estados_faltantes' => $estadosFaltantes
+                        ]);
+                        
+                    } catch (Exception $e) {
+                        enviarJSON(['success' => false, 'error' => $e->getMessage()]);
+                    }
+                    break;
+
+                    case 'validar_antes_cambio_estado':
+                        try {
+                            $id_candidato = intval($_GET['id_candidato'] ?? 0);
+                            $nuevo_estado = $_GET['nuevo_estado'] ?? '';
+                            $es_jefe = intval($_GET['es_jefe'] ?? 0);
+                            
+                            if (!$id_candidato || !$nuevo_estado) {
+                                echo json_encode(['success' => false, 'error' => 'Parámetros faltantes']);
+                                exit;
+                            }
+                            
+                            // Estados en orden de tu flujo
+                            $flujoEstados = ['CV Enviado', 'Psicometrica', 'Entrevista RH', 'Entrevista Tecnica', 'Dia de Prueba'];
+                            if ($es_jefe) {
+                                $flujoEstados[] = 'Poligrafo';
+                            }
+                            
+                            $estadosEspeciales = ['Aprobado para Aval', 'Contratado'];
+                            $puedeAvanzar = true;
+                            $mensaje = '';
+                            
+                            if (in_array($nuevo_estado, $estadosEspeciales)) {
+                                // Para estados especiales: necesita TODOS los documentos
+                                foreach ($flujoEstados as $estadoRequerido) {
+                                    $queryValidar = "SELECT COUNT(*) as TOTAL FROM ROY_ARCHIVOS_SOLICITUD WHERE ID_CANDIDATO = :id AND ESTADO_RELACIONADO = :estado";
+                                    $stmtValidar = oci_parse($conn, $queryValidar);
+                                    oci_bind_by_name($stmtValidar, ':id', $id_candidato);
+                                    oci_bind_by_name($stmtValidar, ':estado', $estadoRequerido);
+                                    oci_execute($stmtValidar);
+                                    $resultado = oci_fetch_assoc($stmtValidar);
+                                    oci_free_statement($stmtValidar);
+                                    
+                                    if ($resultado['TOTAL'] == 0) {
+                                        $puedeAvanzar = false;
+                                        $mensaje = "Falta documentación en: $estadoRequerido";
+                                        break;
+                                    }
+                                }
+                            } else {
+                                // Para estados normales: validar solo el anterior
+                                $posicion = array_search($nuevo_estado, $flujoEstados);
+                                if ($posicion !== false && $posicion > 0) {
+                                    $estadoAnterior = $flujoEstados[$posicion - 1];
+                                    $queryValidar = "SELECT COUNT(*) as TOTAL FROM ROY_ARCHIVOS_SOLICITUD WHERE ID_CANDIDATO = :id AND ESTADO_RELACIONADO = :estado";
+                                    $stmtValidar = oci_parse($conn, $queryValidar);
+                                    oci_bind_by_name($stmtValidar, ':id', $id_candidato);
+                                    oci_bind_by_name($stmtValidar, ':estado', $estadoAnterior);
+                                    oci_execute($stmtValidar);
+                                    $resultado = oci_fetch_assoc($stmtValidar);
+                                    oci_free_statement($stmtValidar);
+                                    
+                                    if ($resultado['TOTAL'] == 0) {
+                                        $puedeAvanzar = false;
+                                        $mensaje = "Debe completar: $estadoAnterior";
+                                    }
+                                }
+                            }
+                            
+                            echo json_encode([
+                                'success' => true,
+                                'puede_avanzar' => $puedeAvanzar,
+                                'mensaje' => $mensaje
+                            ]);
+                            exit;
+                            
+                        } catch (Exception $e) {
+                            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+                            exit;
+                        }
+                        break;
+//=========================================================================================
+// DESCARGAR ARCHIVO Y VER ARCHIVO
+//=========================================================================================
+
+                    case 'ver_archivo':
+                        $nombre_archivo = $_GET['archivo'] ?? '';
+                        if (empty($nombre_archivo)) {
+                            http_response_code(404);
+                            echo "Archivo no especificado";
+                            exit;
+                        }
+                        
+                        $rutaArchivo = __DIR__ . "/archivos_candidatos/" . $nombre_archivo;
+                        if (!file_exists($rutaArchivo)) {
+                            http_response_code(404);
+                            echo "Archivo no encontrado";
+                            exit;
+                        }
+                        
+                        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                        $mimeType = finfo_file($finfo, $rutaArchivo);
+                        finfo_close($finfo);
+                        
+                        while (ob_get_level()) { ob_end_clean(); }
+                        header('Content-Type: ' . $mimeType);
+                        header('Content-Disposition: inline; filename="' . basename($rutaArchivo) . '"');
+                        readfile($rutaArchivo);
+                        exit;
+
+                    case 'descargar_archivo':
+                        $nombre_archivo = $_GET['archivo'] ?? '';
+                        if (empty($nombre_archivo)) {
+                            http_response_code(404);
+                            echo "Archivo no especificado";
+                            exit;
+                        }
+                        
+                        $rutaArchivo = __DIR__ . "/archivos_candidatos/" . $nombre_archivo;
+                        if (!file_exists($rutaArchivo)) {
+                            http_response_code(404);
+                            echo "Archivo no encontrado";
+                            exit;
+                        }
+                        
+                        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                        $mimeType = finfo_file($finfo, $rutaArchivo);
+                        finfo_close($finfo);
+                        
+                        while (ob_get_level()) { ob_end_clean(); }
+                        header('Content-Type: ' . $mimeType);
+                        header('Content-Disposition: attachment; filename="' . basename($rutaArchivo) . '"');
+                        readfile($rutaArchivo);
+                        exit;
+
+
+//=========================================================================================
+// OBTENER ARCHIVOS DE CANDIDATO
+//=========================================================================================                               
+                        case 'obtener_archivos_candidato':
+                            try {
+                                $id_candidato = intval($_GET['id_candidato'] ?? 0);
+                                
+                                if (!$id_candidato) {
+                                    throw new Exception('ID de candidato requerido');
+                                }
+                                
+                                $query = "SELECT a.ID_ARCHIVO, a.NOMBRE_ARCHIVO, a.ESTADO_RELACIONADO, a.TIPO_ARCHIVO,
+                                                a.SUBIDO_POR_ROL, TO_CHAR(a.FECHA_SUBIDA, 'DD/MM/YYYY HH24:MI') as FECHA_SUBIDA,
+                                                c.NOMBRE_CANDIDATO, c.APELLIDOS_CANDIDATO
+                                        FROM ROY_ARCHIVOS_SOLICITUD a
+                                        JOIN ROY_CANDIDATOS_SOLICITUD c ON a.ID_CANDIDATO = c.ID_CANDIDATO
+                                        WHERE a.ID_CANDIDATO = :id_candidato
+                                        ORDER BY a.FECHA_SUBIDA DESC";
+                                
+                                $stmt = oci_parse($conn, $query);
+                                oci_bind_by_name($stmt, ':id_candidato', $id_candidato);
+                                oci_execute($stmt);
+                                
+                                $archivos = [];
+                                while ($row = oci_fetch_assoc($stmt)) {
+                                    // Verificar si el archivo físico existe usando tu estructura
+                                    $rutaCompleta = __DIR__ . "/archivos_candidatos/" . $row['NOMBRE_ARCHIVO'];
+                                    $archivoExiste = file_exists($rutaCompleta);
+                                    $tamaño = $archivoExiste ? filesize($rutaCompleta) : 0;
+                                    
+                                    $archivos[] = [
+                                        'ID_ARCHIVO' => $row['ID_ARCHIVO'],
+                                        'NOMBRE_ARCHIVO' => $row['NOMBRE_ARCHIVO'],
+                                        'TIPO_ARCHIVO' => $row['TIPO_ARCHIVO'],
+                                        'ESTADO_RELACIONADO' => $row['ESTADO_RELACIONADO'],
+                                        'SUBIDO_POR_ROL' => $row['SUBIDO_POR_ROL'],
+                                        'FECHA_SUBIDA' => $row['FECHA_SUBIDA'],
+                                        'NOMBRE_CANDIDATO' => $row['NOMBRE_CANDIDATO'],
+                                        'APELLIDOS_CANDIDATO' => $row['APELLIDOS_CANDIDATO'],
+                                        'TAMAÑO_BYTES' => $tamaño,
+                                        'TAMAÑO_FORMATTED' => $archivoExiste ? formatearTamaño($tamaño) : 'N/A',
+                                        'EXISTE' => $archivoExiste,
+                                        'URL_DESCARGA' => $archivoExiste ? './gestionhumana/crudsolicitudesrh.php?action=descargar_archivo&archivo=' . urlencode($row['NOMBRE_ARCHIVO']) : null,
+                                        'URL_VER' => $archivoExiste ? './gestionhumana/crudsolicitudesrh.php?action=ver_archivo&archivo=' . urlencode($row['NOMBRE_ARCHIVO']) : null
+                                    ];
+                                }
+                                
+                                oci_free_statement($stmt);
+                                
+                                enviarJSON([
+                                    'success' => true,
+                                    'archivos' => $archivos,
+                                    'total' => count($archivos)
+                                ]);
+                                
+                            } catch (Exception $e) {
+                                enviarJSON(['success' => false, 'error' => $e->getMessage()]);
+                            }
+                            break;
+
+//=========================================================================================
+// ELIMINAR ARCHIVO DE CANDIDATO
+//==========================================================================================
+
+                            case 'eliminar_archivo_individual':
+                                try {
+                                    $id_archivo = intval($_POST['id_archivo'] ?? 0);
+                                    $nombre_archivo = $_POST['nombre_archivo'] ?? '';
+                                    
+                                    if (!$id_archivo || !$nombre_archivo) {
+                                        enviarJSON(['success' => false, 'error' => 'Datos incompletos - ID archivo y nombre requeridos']);
+                                    }
+                                    
+                                    // Eliminar archivo físico
+                                    $rutaArchivo = __DIR__ . "/archivos_candidatos/" . $nombre_archivo;
+                                    if (file_exists($rutaArchivo)) {
+                                        unlink($rutaArchivo);
+                                    }
+                                    
+                                    // Eliminar registro de BD
+                                    $queryEliminar = "DELETE FROM ROY_ARCHIVOS_SOLICITUD WHERE ID_ARCHIVO = :id_archivo";
+                                    $stmtEliminar = oci_parse($conn, $queryEliminar);
+                                    oci_bind_by_name($stmtEliminar, ':id_archivo', $id_archivo);
+                                    
+                                    if (oci_execute($stmtEliminar)) {
+                                        oci_commit($conn);
+                                        enviarJSON([
+                                            'success' => true, 
+                                            'mensaje' => 'Archivo eliminado correctamente'
+                                        ]);
+                                    } else {
+                                        $error = oci_error($stmtEliminar);
+                                        enviarJSON(['success' => false, 'error' => 'Error en BD: ' . $error['message']]);
+                                    }
+                                    
+                                    oci_free_statement($stmtEliminar);
+                                    
+                                } catch (Exception $e) {
+                                    enviarJSON(['success' => false, 'error' => $e->getMessage()]);
+                                }
+                                break;
+//=========================================================================================
+// RESULTADO DE APROBACION DE AVAL RH 
+//==========================================================================================
+
+// ===================================================================================
+// OBTENER INFORMACIÓN COMPLETA DEL AVAL PROCESADO - RH
+// ===================================================================================
+case 'get_info_aval_completa_rh':
+    try {
+        $id_candidato = $_GET['id_candidato'] ?? null;
+        
+        if (!$id_candidato) {
+            throw new Exception('ID de candidato requerido');
+        }
+        
+        error_log("=== DEBUG RH - ID Candidato: $id_candidato ===");
+        
+        // CONSULTA PRINCIPAL
+        $query = "SELECT 
+                    c.ID_CANDIDATO,
+                    c.NOMBRE_CANDIDATO,
+                    c.APELLIDOS_CANDIDATO,
+                    c.DOCUMENTO_CANDIDATO,
+                    c.ESTADO_CANDIDATO,
+                    c.APROBACION,
+                    c.MOTIVO_DECISION,
+                    TO_CHAR(c.FECHA_DECISION, 'DD-MM-YYYY HH24:MI:SS') as FECHA_DECISION_FORMATEADA,
+                    s.PUESTO_SOLICITADO,
+                    s.NUM_TIENDA,
+                    s.SOLICITADO_POR as SUPERVISOR,
+                    (SELECT COUNT(*) FROM ROY_ARCHIVOS_SOLICITUD a 
+                     WHERE a.ID_CANDIDATO = c.ID_CANDIDATO 
+                     AND a.ESTADO_RELACIONADO = 'CV Enviado') as ARCHIVOS_CV,
+                    (SELECT COUNT(*) FROM ROY_ARCHIVOS_SOLICITUD a 
+                     WHERE a.ID_CANDIDATO = c.ID_CANDIDATO 
+                     AND a.ESTADO_RELACIONADO = 'Psicometrica') as ARCHIVOS_PSICOMETRICA,
+                    (SELECT COUNT(*) FROM ROY_ARCHIVOS_SOLICITUD a 
+                     WHERE a.ID_CANDIDATO = c.ID_CANDIDATO 
+                     AND a.ESTADO_RELACIONADO = 'Entrevista RH') as ARCHIVOS_ENTREVISTA_RH,
+                    (SELECT COUNT(*) FROM ROY_ARCHIVOS_SOLICITUD a 
+                     WHERE a.ID_CANDIDATO = c.ID_CANDIDATO 
+                     AND a.ESTADO_RELACIONADO = 'Entrevista Tecnica') as ARCHIVOS_ENTREVISTA_TECNICA,
+                    (SELECT COUNT(*) FROM ROY_ARCHIVOS_SOLICITUD a 
+                     WHERE a.ID_CANDIDATO = c.ID_CANDIDATO 
+                     AND a.ESTADO_RELACIONADO = 'Dia de Prueba') as ARCHIVOS_DIA_PRUEBA,
+                    (SELECT COUNT(*) FROM ROY_ARCHIVOS_SOLICITUD a 
+                     WHERE a.ID_CANDIDATO = c.ID_CANDIDATO 
+                     AND a.ESTADO_RELACIONADO = 'Poligrafo') as ARCHIVOS_POLIGRAFO
+                FROM ROY_CANDIDATOS_SOLICITUD c
+                JOIN ROY_SOLICITUD_PERSONAL s ON c.ID_SOLICITUD = s.ID_SOLICITUD
+                WHERE c.ID_CANDIDATO = :id_candidato
+                AND c.ESTADO_CANDIDATO = 'Aprobacion de Aval Enviado'";
+        
+        $stmt = oci_parse($conn, $query);
+        oci_bind_by_name($stmt, ':id_candidato', $id_candidato);
+        
+        if (!oci_execute($stmt)) {
+            $error = oci_error($stmt);
+            throw new Exception('Error ejecutando consulta: ' . $error['message']);
+        }
+        
+        $candidato = oci_fetch_assoc($stmt);
+        oci_free_statement($stmt);
+        
+        if (!$candidato) {
+            throw new Exception('Candidato no encontrado o no está en estado "Aprobacion de Aval Enviado"');
+        }
+        
+        error_log("DEBUG RH - Candidato encontrado: " . $candidato['NOMBRE_CANDIDATO'] . " " . $candidato['APELLIDOS_CANDIDATO']);
+        
+        // Procesar MOTIVO_DECISION como CLOB
+        $motivo_decision = '';
+        if ($candidato['MOTIVO_DECISION']) {
+            if (is_object($candidato['MOTIVO_DECISION'])) {
+                $motivo_decision = $candidato['MOTIVO_DECISION']->load();
+            } else {
+                $motivo_decision = $candidato['MOTIVO_DECISION'];
+            }
+        }
+
+        // INICIALIZAR NOMBRE DEL GERENTE
+        $nombreGerente = 'GERENTE DE OPERACIONES';
+        error_log("DEBUG RH - Nombre inicial del gerente: $nombreGerente");
+        
+        // CONSULTA DEBUG HISTORIAL
+        $queryDebugHistorial = "SELECT 
+                                h.ID_HISTORIAL,
+                                h.OBSERVACIONES, 
+                                h.USUARIO_CAMBIO,
+                                TO_CHAR(h.FECHA_CAMBIO, 'DD-MON-YYYY HH24:MI:SS') as FECHA_CAMBIO
+                               FROM ROY_CANDIDATOS_HIST_EST h 
+                               WHERE h.ID_CANDIDATO = :id_candidato 
+                               AND h.ESTADO_NUEVO = 'Aprobacion de Aval Enviado' 
+                               ORDER BY h.FECHA_CAMBIO DESC";
+
+        $stmtDebugHistorial = oci_parse($conn, $queryDebugHistorial);
+        oci_bind_by_name($stmtDebugHistorial, ':id_candidato', $id_candidato);
+        
+        $debug_registros = [];
+        if (oci_execute($stmtDebugHistorial)) {
+            while ($row = oci_fetch_assoc($stmtDebugHistorial)) {
+                $observaciones = $row['OBSERVACIONES'];
+                if (is_object($observaciones)) {
+                    $observaciones = $observaciones->load();
+                }
+                
+                $debug_registros[] = [
+                    'id_historial' => $row['ID_HISTORIAL'],
+                    'observaciones' => $observaciones,
+                    'usuario_cambio' => $row['USUARIO_CAMBIO'],
+                    'fecha_cambio' => $row['FECHA_CAMBIO']
+                ];
+            }
+            
+            error_log("DEBUG RH - Total registros historial: " . count($debug_registros));
+            error_log("DEBUG RH - Registros completos: " . print_r($debug_registros, true));
+        } else {
+            $error = oci_error($stmtDebugHistorial);
+            error_log("DEBUG RH - Error en consulta historial: " . print_r($error, true));
+        }
+        oci_free_statement($stmtDebugHistorial);
+        
+        // BUSCAR NOMBRE DEL GERENTE EN EL PRIMER REGISTRO
+        $queryGerente = "SELECT h.OBSERVACIONES, h.USUARIO_CAMBIO
+                        FROM ROY_CANDIDATOS_HIST_EST h 
+                        WHERE h.ID_CANDIDATO = :id_candidato 
+                        AND h.ESTADO_NUEVO = 'Aprobacion de Aval Enviado' 
+                        ORDER BY h.FECHA_CAMBIO DESC
+                        FETCH FIRST 1 ROWS ONLY";
+
+        $stmtGerente = oci_parse($conn, $queryGerente);
+        oci_bind_by_name($stmtGerente, ':id_candidato', $id_candidato);
+        
+        if (oci_execute($stmtGerente)) {
+            $infoGerente = oci_fetch_assoc($stmtGerente);
+            
+            if ($infoGerente) {
+                error_log("DEBUG RH - Info gerente encontrada - Usuario: " . ($infoGerente['USUARIO_CAMBIO'] ?? 'NULL'));
+                
+                // PASO 1: Intentar extraer nombre de las observaciones
+                if (!empty($infoGerente['OBSERVACIONES'])) {
+                    $observaciones = $infoGerente['OBSERVACIONES'];
+                    
+                    if (is_object($observaciones)) {
+                        $observaciones = $observaciones->load();
+                    }
+                    
+                    error_log("DEBUG RH - Observaciones a procesar: " . $observaciones);
+                    
+                    // Patrones mejorados para extraer el nombre del gerente
+                    $patronesGerente = [
+                        '/Decisión del gerente\s+([^:]+):\s*/',
+                        '/Decisi[oó]n del gerente\s+([^:]+):\s*/',
+                        '/Decisi\?\?n del gerente\s+([^:]+):\s*/',
+                        '/GERENTE:\s*([^-\n\r]+)/i',
+                        '/Gerente\s*([^:]+):\s*/',
+                        '/Procesado por[:\s]*([^-\n\r]+)/i'
+                    ];
+                    
+                    foreach ($patronesGerente as $index => $patron) {
+                        error_log("DEBUG RH - Probando patrón $index: $patron");
+                        if (preg_match($patron, $observaciones, $matches)) {
+                            error_log("DEBUG RH - Patrón $index COINCIDIÓ: " . print_r($matches, true));
+                            $nombreExtraido = trim($matches[1]);
+                            if (!empty($nombreExtraido) && strlen($nombreExtraido) > 2) {
+                                $nombreGerente = $nombreExtraido;
+                                error_log("DEBUG RH - NOMBRE EXTRAÍDO: $nombreGerente");
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // PASO 2: Si se extrajo un nombre, validarlo
+                if ($nombreGerente !== 'GERENTE DE OPERACIONES') {
+                    error_log("DEBUG RH - Validando nombre extraído: $nombreGerente");
+                    
+                    $gerente_nombres = [
+                        '5333' => 'Christian Quan', 
+                        '5210' => 'Giovanni Cardoza'
+                    ];
+                    
+                    foreach ($gerente_nombres as $codigo => $nombre) {
+                        if (stripos($nombre, $nombreGerente) !== false || stripos($nombreGerente, $nombre) !== false) {
+                            $nombreGerente = $nombre;
+                            error_log("DEBUG RH - Nombre validado: $nombreGerente");
+                            break;
+                        }
+                    }
+                }
+            } else {
+                error_log("DEBUG RH - NO se encontró información del gerente");
+            }
+        } else {
+            $error = oci_error($stmtGerente);
+            error_log("DEBUG RH - Error en consulta: " . print_r($error, true));
+        }
+        oci_free_statement($stmtGerente);
+        
+        error_log("DEBUG RH - NOMBRE GERENTE FINAL: '$nombreGerente'");
+        
+        // CREAR ARRAY CON TODOS LOS DATOS
+        $candidatoFormateado = [
+            'ID_CANDIDATO' => $candidato['ID_CANDIDATO'],
+            'NOMBRE_CANDIDATO' => $candidato['NOMBRE_CANDIDATO'],
+            'APELLIDOS_CANDIDATO' => $candidato['APELLIDOS_CANDIDATO'],
+            'DOCUMENTO_CANDIDATO' => $candidato['DOCUMENTO_CANDIDATO'],
+            'ESTADO_CANDIDATO' => $candidato['ESTADO_CANDIDATO'],
+            'APROBACION' => $candidato['APROBACION'],
+            'MOTIVO_DECISION' => $motivo_decision,
+            'FECHA_DECISION_FORMATEADA' => $candidato['FECHA_DECISION_FORMATEADA'],
+            'PUESTO_SOLICITADO' => $candidato['PUESTO_SOLICITADO'],
+            'NUM_TIENDA' => $candidato['NUM_TIENDA'],
+            'SUPERVISOR' => $candidato['SUPERVISOR'],
+            'ARCHIVOS_CV' => intval($candidato['ARCHIVOS_CV']),
+            'ARCHIVOS_PSICOMETRICA' => intval($candidato['ARCHIVOS_PSICOMETRICA']),
+            'ARCHIVOS_ENTREVISTA_RH' => intval($candidato['ARCHIVOS_ENTREVISTA_RH']),
+            'ARCHIVOS_ENTREVISTA_TECNICA' => intval($candidato['ARCHIVOS_ENTREVISTA_TECNICA']),
+            'ARCHIVOS_DIA_PRUEBA' => intval($candidato['ARCHIVOS_DIA_PRUEBA']),
+            'ARCHIVOS_POLIGRAFO' => intval($candidato['ARCHIVOS_POLIGRAFO']),
+            'NOMBRE_GERENTE' => $nombreGerente
+        ];
+        
+        error_log("DEBUG RH - Array formateado con NOMBRE_GERENTE: " . $candidatoFormateado['NOMBRE_GERENTE']);
+        
+        echo json_encode([
+            'success' => true,
+            'candidato' => $candidatoFormateado
+        ]);
+        
+        error_log("=== DEBUG RH FIN ===");
+        
+    } catch (Exception $e) {
+        error_log("ERROR RH: " . $e->getMessage());
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+    break;
+
+// ===================================================================================
+// NUEVO CASE: MARCAR CANDIDATO COMO CONTRATADO
+// ===================================================================================
+case 'marcar_candidato_contratado':
+    try {
+        if (ob_get_level()) ob_clean();
+        header('Content-Type: application/json; charset=utf-8');
+        
+        $id_candidato = $_POST['id_candidato'] ?? null;
+        
+        if (!$id_candidato) {
+            throw new Exception('ID de candidato es requerido');
+        }
+        
+        $id_candidato = intval($id_candidato);
+        
+        // Obtener información del candidato y la solicitud
+        $queryInfo = "SELECT c.ID_SOLICITUD, 
+                             c.NOMBRE_CANDIDATO, 
+                             c.APELLIDOS_CANDIDATO,
+                             c.ESTADO_CANDIDATO,
+                             c.APROBACION,
+                             s.ESTADO_SOLICITUD  -- ✅ AGREGADO: Obtener estado actual de la solicitud
+                      FROM ROY_CANDIDATOS_SOLICITUD c
+                      JOIN ROY_SOLICITUD_PERSONAL s ON c.ID_SOLICITUD = s.ID_SOLICITUD
+                      WHERE c.ID_CANDIDATO = :id_candidato 
+                      AND c.ACTIVO = 'Y'";
+        
+        $stmtInfo = oci_parse($conn, $queryInfo);
+        oci_bind_by_name($stmtInfo, ':id_candidato', $id_candidato);
+        oci_execute($stmtInfo);
+        $dataInfo = oci_fetch_assoc($stmtInfo);
+        oci_free_statement($stmtInfo);
+        
+        if (!$dataInfo) {
+            throw new Exception('Candidato no encontrado o inactivo');
+        }
+        
+        // Validar que el candidato esté aprobado
+        if ($dataInfo['APROBACION'] !== 'Y') {
+            throw new Exception('Solo se pueden contratar candidatos que hayan sido aprobados por el gerente');
+        }
+        
+        $id_solicitud = $dataInfo['ID_SOLICITUD'];
+        $nombre_completo = trim($dataInfo['NOMBRE_CANDIDATO'] . ' ' . $dataInfo['APELLIDOS_CANDIDATO']);
+        $estado_anterior_candidato = $dataInfo['ESTADO_CANDIDATO'];
+        $estado_anterior_solicitud = $dataInfo['ESTADO_SOLICITUD']; // ✅ Estado anterior de la solicitud
+        
+        // Obtener nombre de la asesora de RH de la sesión
+        $nombre_rh = $_SESSION['user'][3] ?? 'Recursos Humanos';
+        
+        // Actualizar estado del candidato a "Contratado"
+        $queryUpdateCandidato = "UPDATE ROY_CANDIDATOS_SOLICITUD 
+                                 SET ESTADO_CANDIDATO = 'Contratado',
+                                     FECHA_MODIFICACION = SYSDATE
+                                 WHERE ID_CANDIDATO = :id_candidato";
+        
+        $stmtUpdateCandidato = oci_parse($conn, $queryUpdateCandidato);
+        oci_bind_by_name($stmtUpdateCandidato, ':id_candidato', $id_candidato);
+        
+        if (!oci_execute($stmtUpdateCandidato)) {
+            $error = oci_error($stmtUpdateCandidato);
+            throw new Exception('Error al actualizar candidato: ' . $error['message']);
+        }
+        oci_free_statement($stmtUpdateCandidato);
+        
+        // Registrar en el historial de candidatos
+        $observacion_historial = "Candidato CONTRATADO por RRHH: $nombre_rh - El candidato $nombre_completo fue contratado exitosamente";
+
+        $id_candidato_int = intval($id_candidato);
+
+        $queryHistorial = "INSERT INTO ROY_CANDIDATOS_HIST_EST 
+                        (ID_CANDIDATO, ESTADO_ANTERIOR, ESTADO_NUEVO, FECHA_CAMBIO, OBSERVACIONES)
+                        VALUES ($id_candidato_int, '$estado_anterior_candidato', 'Contratado', SYSDATE, '$observacion_historial')";
+
+        $stmtHistorial = oci_parse($conn, $queryHistorial);
+
+        if (!oci_execute($stmtHistorial)) {
+            $error = oci_error($stmtHistorial);
+            throw new Exception('Error al registrar historial: ' . $error['message']);
+        }
+        oci_free_statement($stmtHistorial);
+                
+        // Actualizar el estado de la solicitud a "Plaza Cubierta"
+        $queryUpdateSolicitud = "UPDATE ROY_SOLICITUD_PERSONAL 
+                                 SET ESTADO_SOLICITUD = 'Plaza Cubierta',
+                                     FECHA_MODIFICACION = SYSDATE
+                                 WHERE ID_SOLICITUD = :id_solicitud";
+        
+        $stmtUpdateSolicitud = oci_parse($conn, $queryUpdateSolicitud);
+        oci_bind_by_name($stmtUpdateSolicitud, ':id_solicitud', $id_solicitud);
+        
+        if (!oci_execute($stmtUpdateSolicitud)) {
+            $error = oci_error($stmtUpdateSolicitud);
+            throw new Exception('Error al actualizar solicitud: ' . $error['message']);
+        }
+        oci_free_statement($stmtUpdateSolicitud);
+        
+        // ✅ INSERTAR EN HISTORIAL GENERAL DE LA SOLICITUD (CORREGIDO)
+        $queryHistGeneral = "INSERT INTO ROY_HISTORICO_SOLICITUD 
+                            (ID_SOLICITUD, ESTADO_ANTERIOR, ESTADO_NUEVO, FECHA_CAMBIO, TIPO_EVENTO) 
+                            VALUES (:id_solicitud, :estado_anterior, 'Plaza Cubierta', SYSDATE, 'CANDIDATO_CONTRATADO_RH')";
+        
+        $stmtHistGeneral = oci_parse($conn, $queryHistGeneral);
+        oci_bind_by_name($stmtHistGeneral, ':id_solicitud', $id_solicitud); // ✅ Variable correcta
+        oci_bind_by_name($stmtHistGeneral, ':estado_anterior', $estado_anterior_solicitud); // ✅ Variable correcta
+        
+        if (!oci_execute($stmtHistGeneral)) {
+            $error = oci_error($stmtHistGeneral);
+            throw new Exception('Error al registrar historial de solicitud: ' . $error['message']);
+        }
+        oci_free_statement($stmtHistGeneral);
+        
+        oci_commit($conn);
+        
+        echo json_encode([
+            'success' => true,
+            'message' => "Candidato $nombre_completo marcado como CONTRATADO exitosamente",
+            'candidato' => $nombre_completo
+        ]);
+        
+    } catch (Exception $e) {
+        oci_rollback($conn);
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+    break;
+
+// ===================================================================================
+// REACTIVAR CANDIDATOS AL REACTIVAR SOLICITUD - RH
+// ===================================================================================
+
+case 'confirmar_reactivacion_rh':
+    $idSolicitud = $_POST['id_solicitud'] ?? null;
+    $candidatosIds = json_decode($_POST['candidatos_ids'] ?? '[]', true);
+    $usuarioRH = $_SESSION['nombre_completo'] ?? $_SESSION['usuario'] ?? 'RH';
+
+    if (!$idSolicitud || empty($candidatosIds)) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'Datos incompletos para confirmar reactivación'
+        ]);
+        exit;
+    }
+
+    try {
+        $totalReactivados = 0;
+        $candidatosReactivadosInfo = [];
+
+        foreach ($candidatosIds as $idCandidato) {
+            // 1. Obtener estado actual del candidato E HISTORIAL
+            $sqlEstado = "SELECT 
+                c.ESTADO_CANDIDATO,
+                c.ACTIVO,
+                c.NOMBRE_CANDIDATO,
+                c.APELLIDOS_CANDIDATO,
+                (SELECT h.ESTADO_ANTERIOR 
+                 FROM ROY_CANDIDATOS_HIST_EST h 
+                 WHERE h.ID_CANDIDATO = c.ID_CANDIDATO 
+                 AND h.ESTADO_NUEVO = 'Descartado'
+                 ORDER BY h.FECHA_CAMBIO DESC 
+                 FETCH FIRST 1 ROW ONLY) AS ULTIMO_ESTADO_ANTES_DESCARTE
+            FROM ROY_CANDIDATOS_SOLICITUD c
+            WHERE c.ID_CANDIDATO = :id_candidato";
+            
+            $stmtEstado = oci_parse($conn, $sqlEstado);
+            oci_bind_by_name($stmtEstado, ':id_candidato', $idCandidato);
+            oci_execute($stmtEstado);
+            $candidato = oci_fetch_assoc($stmtEstado);
+            oci_free_statement($stmtEstado);
+
+            if (!$candidato) {
+                continue;
+            }
+
+            $estadoActual = $candidato['ESTADO_CANDIDATO'];
+            $activoActual = $candidato['ACTIVO'];
+            $ultimoEstadoAntes = $candidato['ULTIMO_ESTADO_ANTES_DESCARTE'];
+            $nombreCompleto = trim($candidato['NOMBRE_CANDIDATO'] . ' ' . $candidato['APELLIDOS_CANDIDATO']);
+
+            // 2. Determinar nuevo estado según lógica de reactivación
+            $nuevoEstado = $estadoActual;
+            $nuevoActivo = 'Y';
+
+            if ($activoActual === 'N' || $estadoActual === 'Descartado') {
+                // Era descartado → Restaurar al último estado donde estuvo
+                $nuevoEstado = $ultimoEstadoAntes ?: 'CV Enviado';
+            } elseif (stripos($estadoActual, 'No Aprobado') !== false) {
+                // Rechazado de aval → Volver a Aprobación de Aval para re-evaluación
+                $nuevoEstado = 'Aprobacion de Aval';
+            } elseif (stripos($estadoActual, 'Aprobacion de Aval Enviado') !== false) {
+                // Enviado para aval → Volver a Aprobación de Aval para NUEVA evaluación
+                $nuevoEstado = 'Aprobacion de Aval';
+            }
+            // Si estaba en otro estado activo → NO CAMBIAR
+
+            // 3. Actualizar candidato
+            $sqlUpdate = "UPDATE ROY_CANDIDATOS_SOLICITUD SET
+                ACTIVO = :nuevo_activo,
+                ESTADO_CANDIDATO = :nuevo_estado,
+                REACTIVADO_POST_CONTRATACION = 'Y',
+                FECHA_REACTIVACION_CANDIDATO = SYSDATE,
+                FECHA_MODIFICACION = SYSDATE,
+                APROBACION = :aprobacion_null,
+                MOTIVO_DECISION = :motivo_null
+            WHERE ID_CANDIDATO = :id_candidato";
+            
+            $stmtUpdate = oci_parse($conn, $sqlUpdate);
+            
+            // Limpiar aprobación solo si vuelve a "Aprobacion de Aval"
+            $aprobacionNull = ($nuevoEstado === 'Aprobacion de Aval') ? null : null;
+            $motivoNull = ($nuevoEstado === 'Aprobacion de Aval') ? null : null;
+            
+            oci_bind_by_name($stmtUpdate, ':nuevo_activo', $nuevoActivo);
+            oci_bind_by_name($stmtUpdate, ':nuevo_estado', $nuevoEstado);
+            oci_bind_by_name($stmtUpdate, ':aprobacion_null', $aprobacionNull);
+            oci_bind_by_name($stmtUpdate, ':motivo_null', $motivoNull);
+            oci_bind_by_name($stmtUpdate, ':id_candidato', $idCandidato);
+            
+            if (oci_execute($stmtUpdate, OCI_NO_AUTO_COMMIT)) {
+                oci_free_statement($stmtUpdate);
+                
+                // 4. Registrar en historial solo si hubo cambio de estado
+                if ($estadoActual !== $nuevoEstado || $activoActual !== $nuevoActivo) {
+                    $sqlHistorial = "INSERT INTO ROY_CANDIDATOS_HIST_EST (
+                        ID_HISTORIAL, ID_CANDIDATO, 
+                        ESTADO_ANTERIOR, ESTADO_NUEVO, 
+                        FECHA_CAMBIO, OBSERVACIONES, ACTIVO
+                    ) VALUES (
+                        roy_candidatos_hist_est_seq.NEXTVAL, :id_candidato,
+                        :estado_anterior, :estado_nuevo,
+                        SYSDATE, :observaciones, 'Y'
+                    )";
+                    
+                    $stmtHist = oci_parse($conn, $sqlHistorial);
+                    $observaciones = "RECURSOS HUMANOS: $usuarioRH - Candidato reactivado tras reactivación de solicitud. Estado restaurado a: $nuevoEstado";
+                    
+                    oci_bind_by_name($stmtHist, ':id_candidato', $idCandidato);
+                    oci_bind_by_name($stmtHist, ':estado_anterior', $estadoActual);
+                    oci_bind_by_name($stmtHist, ':estado_nuevo', $nuevoEstado);
+                    oci_bind_by_name($stmtHist, ':observaciones', $observaciones);
+                    oci_execute($stmtHist, OCI_NO_AUTO_COMMIT);
+                    oci_free_statement($stmtHist);
+                }
+
+                $totalReactivados++;
+                $candidatosReactivadosInfo[] = [
+                    'id' => $idCandidato,
+                    'nombre' => $nombreCompleto,
+                    'estado_anterior' => $estadoActual,
+                    'estado_nuevo' => $nuevoEstado
+                ];
+            }
+        }
+
+        // ✅ FIX #4: Validar que al menos se reactivó un candidato
+        if ($totalReactivados === 0) {
+            oci_rollback($conn);
+            echo json_encode([
+                'success' => false,
+                'error' => 'No se pudo reactivar ningún candidato'
+            ]);
+            exit;
+        }
+
+        // 5. ✅ FIX #1: Actualizar historial de reactivaciones (CORREGIDO)
+        // Primero obtener el ID de la reactivación pendiente
+        $sqlGetIdReact = "SELECT ID_REACTIVACION 
+                         FROM ROY_HIST_REACTIVACIONES 
+                         WHERE ID_SOLICITUD = :id_solicitud 
+                         AND ESTADO_REACT = 'Pendiente'
+                         ORDER BY FECHA_REACTIVACION DESC 
+                         FETCH FIRST 1 ROWS ONLY";
+        
+        $stmtGetId = oci_parse($conn, $sqlGetIdReact);
+        oci_bind_by_name($stmtGetId, ':id_solicitud', $idSolicitud);
+        oci_execute($stmtGetId);
+        $reactRow = oci_fetch_assoc($stmtGetId);
+        $idReactivacion = $reactRow['ID_REACTIVACION'] ?? null;
+        oci_free_statement($stmtGetId);
+
+        if ($idReactivacion) {
+            $sqlUpdateReact = "UPDATE ROY_HIST_REACTIVACIONES SET
+                ESTADO_REACT = 'Confirmada',
+                FECHA_CONF_RH = SYSDATE,
+                TOTAL_CAND_REACT = :total
+            WHERE ID_REACTIVACION = :id_reactivacion";
+            
+            $stmtUpdateReact = oci_parse($conn, $sqlUpdateReact);
+            oci_bind_by_name($stmtUpdateReact, ':total', $totalReactivados);
+            oci_bind_by_name($stmtUpdateReact, ':id_reactivacion', $idReactivacion);
+            oci_execute($stmtUpdateReact, OCI_NO_AUTO_COMMIT);
+            oci_free_statement($stmtUpdateReact);
+        }
+
+        // 6. Actualizar solicitud - SIEMPRE volver a "Candidatos en Seleccion"
+        $sqlUpdateSol = "UPDATE ROY_SOLICITUD_PERSONAL SET
+            REACTIVADA = 'N',
+            ESTADO_SOLICITUD = 'Candidatos en Seleccion',
+            FECHA_MODIFICACION = SYSDATE
+        WHERE ID_SOLICITUD = :id_solicitud";
+        
+        $stmtUpdateSol = oci_parse($conn, $sqlUpdateSol);
+        oci_bind_by_name($stmtUpdateSol, ':id_solicitud', $idSolicitud);
+        oci_execute($stmtUpdateSol, OCI_NO_AUTO_COMMIT);
+        oci_free_statement($stmtUpdateSol);
+
+        // Confirmar transacción
+        oci_commit($conn);
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Candidatos reactivados correctamente',
+            'total_reactivados' => $totalReactivados,
+            'candidatos' => $candidatosReactivadosInfo,
+            'reactivacion_finalizada' => true
+        ]);
+
+    } catch (Exception $e) {
+        oci_rollback($conn);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Error al confirmar reactivación: ' . $e->getMessage()
+        ]);
+    }
+    break;
+
+
+    //=========================================================================================
+    // GENERAR HISTORIAL GENERAL E INDIVIDUAL 
+    //=========================================================================================
+case 'get_proceso_solicitudes':
+    try {
+        if (ob_get_level()) ob_clean();
+        
+        // Parámetros recibidos
+        $filtro_tienda = $_GET['filtro_tienda'] ?? '';
+        $filtro_supervisor = $_GET['filtro_supervisor'] ?? '';
+        $filtro_puesto = $_GET['filtro_puesto'] ?? '';
+        
+        $usuario_logueado = $_SESSION['user'][12] ?? '';
+        
+        // Determinar si es individual o general
+        $es_individual = !empty($filtro_tienda) || !empty($filtro_supervisor) || !empty($filtro_puesto);
+        
+        // Construir condiciones WHERE
+        $whereConditions = ["1=1"];
+        
+        // Filtro de gerente (seguridad)
+        if (in_array($usuario_logueado, ['5333', '5210'])) {
+            $gerente_nombres = ['5333' => 'Christian Quan', '5210' => 'Giovanni Cardoza'];
+            $nombre_gerente = $gerente_nombres[$usuario_logueado];
+            $whereConditions[] = "EXISTS (
+                SELECT 1 FROM RPS.STORE rps 
+                WHERE rps.udf2_string = s.SOLICITADO_POR 
+                AND UPPER(TRIM(rps.udf4_string)) = UPPER(TRIM('$nombre_gerente'))
+                AND rps.sbs_sid = '680861302000159257'
+            )";
+        }
+        
+        // Aplicar filtros adicionales
+        if (!empty($filtro_tienda)) {
+            $whereConditions[] = "s.NUM_TIENDA = '$filtro_tienda'";
+        }
+        
+        if (!empty($filtro_supervisor)) {
+            // Buscar el nombre del supervisor por su código
+            $query_sup = "SELECT DISTINCT udf2_string 
+                        FROM RPS.STORE 
+                        WHERE udf1_string = :codigo_supervisor 
+                        AND sbs_sid = '680861302000159257'
+                        FETCH FIRST 1 ROWS ONLY";
+            
+            $stmt_sup = oci_parse($conn, $query_sup);
+            oci_bind_by_name($stmt_sup, ':codigo_supervisor', $filtro_supervisor);
+            oci_execute($stmt_sup);
+            $row_sup = oci_fetch_assoc($stmt_sup);
+            
+            if ($row_sup) {
+                $nombre_supervisor = trim($row_sup['UDF2_STRING']);
+                $whereConditions[] = "s.SOLICITADO_POR = '$nombre_supervisor'";
+            }
+            
+            oci_free_statement($stmt_sup);
+        }
+        
+        if (!empty($filtro_puesto)) {
+            $whereConditions[] = "UPPER(s.PUESTO_SOLICITADO) LIKE UPPER('%$filtro_puesto%')";
+        }
+        
+        $whereClause = implode(' AND ', $whereConditions);
+        
+        // Query principal
+        $query = "
+        SELECT
+            s.ID_SOLICITUD,
+            s.NUM_TIENDA,
+            s.PUESTO_SOLICITADO,
+            s.SOLICITADO_POR,
+            s.ESTADO_SOLICITUD,
+            TO_CHAR(s.FECHA_SOLICITUD, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_SOLICITUD,
+            
+            NVL(s.REACTIVADA, 'N') as REACTIVADA,
+            s.MOTIVO_REACTIVACION,
+            TO_CHAR(s.FECHA_REACTIVACION, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_REACTIVACION,
+            
+            (SELECT hr.USUARIO_REACTIVO
+            FROM ROY_HIST_REACTIVACIONES hr
+            WHERE hr.ID_SOLICITUD = s.ID_SOLICITUD
+            AND hr.ESTADO_REACT = 'Confirmada'
+            ORDER BY hr.FECHA_REACTIVACION DESC
+            FETCH FIRST 1 ROWS ONLY) AS USUARIO_REACTIVACION,
+            
+            (SELECT TO_CHAR(h.FECHA_CAMBIO, 'DD-MM-YYYY HH24:MI:SS')
+             FROM ROY_HISTORICO_SOLICITUD h
+             WHERE h.ID_SOLICITUD = s.ID_SOLICITUD
+             AND h.ESTADO_NUEVO = 'Plaza Cubierta'
+             ORDER BY h.FECHA_CAMBIO DESC
+             FETCH FIRST 1 ROWS ONLY) AS FECHA_PLAZA_CUBIERTA,
+            
+            (SELECT COUNT(*)
+             FROM ROY_CANDIDATOS_SOLICITUD c
+             WHERE c.ID_SOLICITUD = s.ID_SOLICITUD
+             AND c.ACTIVO = 'Y') AS TOTAL_CANDIDATOS,
+            
+            (SELECT COUNT(*)
+             FROM ROY_HIST_REACTIVACIONES hr
+             WHERE hr.ID_SOLICITUD = s.ID_SOLICITUD
+             AND hr.ESTADO_REACT = 'Confirmada') AS NUM_REACTIVACIONES
+            
+        FROM ROY_SOLICITUD_PERSONAL s
+        WHERE $whereClause
+        ORDER BY s.FECHA_SOLICITUD DESC
+        ";
+        
+        $stmt = oci_parse($conn, $query);
+        
+        if (!oci_execute($stmt)) {
+            $error = oci_error($stmt);
+            throw new Exception('Error en query: ' . $error['message']);
+        }
+        
+        $solicitudes = [];
+        
+        while ($row = oci_fetch_assoc($stmt)) {
+            $id_solicitud = $row['ID_SOLICITUD'];
+            
+            // Calcular tiempos
+            $fechaFin = $row['FECHA_PLAZA_CUBIERTA'] ?: null;
+            $tiempoTotal = calcularTiempo($row['FECHA_SOLICITUD'], $fechaFin);
+            
+            $tiempoReactivacion = '';
+            if ($row['REACTIVADA'] === 'Y' && $row['FECHA_REACTIVACION']) {
+                $tiempoReactivacion = calcularTiempo($row['FECHA_REACTIVACION'], $fechaFin);
+            }
+            
+            // Obtener estado anterior
+            $query_estado = "
+            SELECT ESTADO_ANTERIOR
+            FROM ROY_HISTORICO_SOLICITUD
+            WHERE ID_SOLICITUD = :id
+            ORDER BY FECHA_CAMBIO DESC
+            FETCH FIRST 1 ROWS ONLY
+            ";
+            
+            $stmt_estado = oci_parse($conn, $query_estado);
+            oci_bind_by_name($stmt_estado, ':id', $id_solicitud);
+            oci_execute($stmt_estado);
+            $estado_data = oci_fetch_assoc($stmt_estado);
+            $estado_anterior = $estado_data ? $estado_data['ESTADO_ANTERIOR'] : 'Estado Inicial';
+            oci_free_statement($stmt_estado);
+            
+            // Calcular tiempo en estado anterior
+            $tiempoEstadoAnterior = calcularTiempo($row['FECHA_SOLICITUD'], $row['FECHA_PLAZA_CUBIERTA']);
+            
+            // ✅ OBTENER TODAS LAS REACTIVACIONES DE LA SOLICITUD
+            $query_reactivaciones = "
+            SELECT 
+                hr.ID_REACTIVACION,
+                hr.NUM_REACTIVACION,
+                TO_CHAR(hr.FECHA_REACTIVACION, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_REACTIVACION,
+                hr.MOTIVO_REACT,
+                hr.NOMBRE_CAND_ANT,
+                hr.USUARIO_REACTIVO
+            FROM ROY_HIST_REACTIVACIONES hr
+            WHERE hr.ID_SOLICITUD = :id_solicitud
+            AND hr.ESTADO_REACT = 'Confirmada'
+            ORDER BY hr.NUM_REACTIVACION ASC
+            ";
+            
+            $stmt_react = oci_parse($conn, $query_reactivaciones);
+            oci_bind_by_name($stmt_react, ':id_solicitud', $id_solicitud);
+            oci_execute($stmt_react);
+            
+            $reactivaciones = [];
+            while ($react = oci_fetch_assoc($stmt_react)) {
+                // Procesar CLOB para motivo
+                $motivo_react = '';
+                if (isset($react['MOTIVO_REACT']) && $react['MOTIVO_REACT']) {
+                    if (is_object($react['MOTIVO_REACT'])) {
+                        $motivo_react = $react['MOTIVO_REACT']->load();
+                    } else {
+                        $motivo_react = $react['MOTIVO_REACT'];
+                    }
+                }
+                
+                $reactivaciones[] = [
+                    'ID_REACTIVACION' => $react['ID_REACTIVACION'],
+                    'NUM_REACTIVACION' => $react['NUM_REACTIVACION'],
+                    'FECHA_REACTIVACION' => $react['FECHA_REACTIVACION'],
+                    'MOTIVO_REACT' => $motivo_react,
+                    'NOMBRE_CAND_ANT' => $react['NOMBRE_CAND_ANT'],
+                    'USUARIO_REACTIVO' => $react['USUARIO_REACTIVO']
+                ];
+            }
+            oci_free_statement($stmt_react);
+            
+            // ✅ OBTENER CANDIDATOS AGRUPADOS POR REACTIVACIÓN
+            $query_candidatos = "
+            SELECT 
+                c.ID_CANDIDATO,
+                c.NOMBRE_CANDIDATO,
+                c.APELLIDOS_CANDIDATO,
+                c.ESTADO_CANDIDATO,
+                c.REACTIVADO_POST_CONTRATACION,
+                TO_CHAR(c.FECHA_REGISTRO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_REGISTRO,
+                TO_CHAR(c.FECHA_REACTIVACION_CANDIDATO, 'DD-MM-YYYY HH24:MI:SS') AS FECHA_REACTIVACION_CANDIDATO,
+                c.MOTIVO_DESCARTE,
+                (SELECT h.ESTADO_ANTERIOR
+                 FROM ROY_CANDIDATOS_HIST_EST h
+                 WHERE h.ID_CANDIDATO = c.ID_CANDIDATO
+                 ORDER BY h.FECHA_CAMBIO DESC
+                 FETCH FIRST 1 ROWS ONLY) AS ESTADO_ANTERIOR
+            FROM ROY_CANDIDATOS_SOLICITUD c
+            WHERE c.ID_SOLICITUD = :id_solicitud
+            AND c.ACTIVO = 'Y'
+            ORDER BY c.FECHA_REGISTRO ASC
+            ";
+            
+            $stmt_cand = oci_parse($conn, $query_candidatos);
+            oci_bind_by_name($stmt_cand, ':id_solicitud', $id_solicitud);
+            oci_execute($stmt_cand);
+            
+            // ✅ AGRUPAR CANDIDATOS: PROCESO ORIGINAL vs CADA REACTIVACIÓN
+            $candidatos_proceso_original = [];
+            $candidatos_por_reactivacion = [];
+            
+            while ($cand = oci_fetch_assoc($stmt_cand)) {
+                $tiempoCandidato = calcularTiempo($cand['FECHA_REGISTRO']);
+                
+                // Procesar CLOB para motivo descarte
+                $motivo_descarte = '';
+                if (isset($cand['MOTIVO_DESCARTE']) && $cand['MOTIVO_DESCARTE']) {
+                    if (is_object($cand['MOTIVO_DESCARTE'])) {
+                        $motivo_descarte = $cand['MOTIVO_DESCARTE']->load();
+                    } else {
+                        $motivo_descarte = $cand['MOTIVO_DESCARTE'];
+                    }
+                }
+                
+                $candidato_data = [
+                    'ID_CANDIDATO' => $cand['ID_CANDIDATO'],
+                    'NOMBRE_COMPLETO' => trim($cand['NOMBRE_CANDIDATO'] . ' ' . $cand['APELLIDOS_CANDIDATO']),
+                    'ESTADO_ANTERIOR' => $cand['ESTADO_ANTERIOR'] ?: 'Inicial',
+                    'ESTADO_ACTUAL' => $cand['ESTADO_CANDIDATO'],
+                    'MOTIVO_DESCARTE' => $motivo_descarte,
+                    'FECHA_REGISTRO' => $cand['FECHA_REGISTRO'],
+                    'TIEMPO_EN_PROCESO' => $tiempoCandidato,
+                    'ES_REACTIVADO' => $cand['REACTIVADO_POST_CONTRATACION'] === 'Y' ? 'Y' : 'N'
+                ];
+                
+                // ✅ CLASIFICAR: ¿Proceso original o reactivación?
+                if ($cand['REACTIVADO_POST_CONTRATACION'] !== 'Y' || !$cand['FECHA_REACTIVACION_CANDIDATO']) {
+                    // PROCESO ORIGINAL
+                    $candidatos_proceso_original[] = $candidato_data;
+                } else {
+                    // REACTIVADO - Determinar a qué reactivación pertenece
+                    $fecha_react_cand = $cand['FECHA_REACTIVACION_CANDIDATO'];
+                    
+                    $reactivacion_asignada = null;
+                    foreach ($reactivaciones as $idx => $react) {
+                        $fecha_react_solicitud = $react['FECHA_REACTIVACION'];
+                        
+                        // Si es la última reactivación, o si la fecha del candidato está antes de la siguiente reactivación
+                        $es_ultima = ($idx === count($reactivaciones) - 1);
+                        
+                        if ($es_ultima) {
+                            // Última reactivación - tomar todos los posteriores
+                            if ($fecha_react_cand >= $fecha_react_solicitud) {
+                                $reactivacion_asignada = $react['NUM_REACTIVACION'];
+                                break;
+                            }
+                        } else {
+                            // Comparar con la siguiente reactivación
+                            $siguiente_react = $reactivaciones[$idx + 1];
+                            $fecha_siguiente = $siguiente_react['FECHA_REACTIVACION'];
+                            
+                            if ($fecha_react_cand >= $fecha_react_solicitud && $fecha_react_cand < $fecha_siguiente) {
+                                $reactivacion_asignada = $react['NUM_REACTIVACION'];
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if ($reactivacion_asignada !== null) {
+                        if (!isset($candidatos_por_reactivacion[$reactivacion_asignada])) {
+                            $candidatos_por_reactivacion[$reactivacion_asignada] = [];
+                        }
+                        $candidatos_por_reactivacion[$reactivacion_asignada][] = $candidato_data;
+                    }
+                }
+            }
+            oci_free_statement($stmt_cand);
+            
+            // ✅ CONSTRUIR ARRAY FINAL CON ESTRUCTURA JERÁRQUICA
+            $candidatos = [
+                'proceso_original' => $candidatos_proceso_original,
+                'reactivaciones' => []
+            ];
+            
+            foreach ($reactivaciones as $react) {
+                $num_react = $react['NUM_REACTIVACION'];
+                $candidatos['reactivaciones'][] = [
+                    'info_reactivacion' => $react,
+                    'candidatos' => $candidatos_por_reactivacion[$num_react] ?? []
+                ];
+            }
+            
+            // Procesar CLOB para motivo de reactivación
+            $motivo_reactivacion = '';
+            if (isset($row['MOTIVO_REACTIVACION']) && $row['MOTIVO_REACTIVACION']) {
+                if (is_object($row['MOTIVO_REACTIVACION'])) {
+                    $motivo_reactivacion = $row['MOTIVO_REACTIVACION']->load();
+                } else {
+                    $motivo_reactivacion = $row['MOTIVO_REACTIVACION'];
+                }
+            }
+            
+            // ✅ CALCULAR TOTALES DE CANDIDATOS
+            $total_candidatos_original = count($candidatos['proceso_original']);
+            $total_candidatos_reactivados = 0;
+            foreach ($candidatos['reactivaciones'] as $react_data) {
+                $total_candidatos_reactivados += count($react_data['candidatos']);
+            }
+            $total_candidatos_global = $total_candidatos_original + $total_candidatos_reactivados;
+            
+            $solicitudes[] = [
+                'ID_SOLICITUD' => $id_solicitud,
+                'NUM_TIENDA' => $row['NUM_TIENDA'],
+                'PUESTO_SOLICITADO' => $row['PUESTO_SOLICITADO'],
+                'SOLICITADO_POR' => $row['SOLICITADO_POR'],
+                'ESTADO_ANTERIOR' => $estado_anterior,
+                'ESTADO_ACTUAL' => $row['ESTADO_SOLICITUD'],
+                'FECHA_SOLICITUD' => $row['FECHA_SOLICITUD'],
+                
+                'REACTIVADA' => $row['REACTIVADA'],
+                'MOTIVO_REACTIVACION' => $motivo_reactivacion,
+                'FECHA_REACTIVACION' => $row['FECHA_REACTIVACION'],
+                'USUARIO_REACTIVACION' => $row['USUARIO_REACTIVACION'],
+                'NUM_REACTIVACIONES' => isset($row['NUM_REACTIVACIONES']) ? intval($row['NUM_REACTIVACIONES']) : 0,
+                'FECHA_PLAZA_CUBIERTA' => $row['FECHA_PLAZA_CUBIERTA'],
+                
+                'TIEMPO_TOTAL' => $tiempoTotal,
+                'TIEMPO_REACTIVACION' => $tiempoReactivacion,
+                'TIEMPO_ESTADO_ANTERIOR' => $tiempoEstadoAnterior,
+                
+                // ✅ ESTRUCTURA MEJORADA: CANDIDATOS AGRUPADOS
+                'CANDIDATOS' => $candidatos,
+                'TOTAL_CANDIDATOS' => $total_candidatos_global,
+                'TOTAL_CANDIDATOS_ORIGINAL' => $total_candidatos_original,
+                'TOTAL_CANDIDATOS_REACTIVADOS' => $total_candidatos_reactivados
+            ];
+        }
+        
+        oci_free_statement($stmt);
+        
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => true,
+            'tipo' => $es_individual ? 'individual' : 'general',
+            'total_registros' => count($solicitudes),
+            'filtros' => [
+                'tienda' => $filtro_tienda,
+                'supervisor' => $filtro_supervisor,
+                'puesto' => $filtro_puesto
+            ],
+            'datos' => $solicitudes
+        ]);
+        
+    } catch (Exception $e) {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'error' => $e->getMessage()
+        ]);
+    }
+    break;
+//=========================================================================================
+// FINALIZACION
+//==========================================================================================
+    default:
+        enviarJSON(['success' => false, 'error' => 'Acción no reconocida: ' . $action]);
+        break;
+}
+
+// Cerrar conexión si existe
+if ($conn) {
+    oci_close($conn);
 }
 ?>

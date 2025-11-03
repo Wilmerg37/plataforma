@@ -16,324 +16,537 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <style>
-    /* ESTILOS MEJORADOS PARA VISTA PROFESIONAL */
-    body {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      min-height: 100vh;
-    }
+/* =====================================================
+   ESTILOS CORPORATIVOS MODERNOS - SISTEMA COMPLETO
+   Paleta: Azul Corporativo + Grises Profesionales
+   ===================================================== */
 
-    .main-container {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(10px);
-      margin: 20px;
-      padding: 30px;
-    }
+/* ========================================
+   BASE Y CONTENEDORES PRINCIPALES
+   ======================================== */
+body {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden !important;
+}
 
-    .header-section {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 25px;
-      border-radius: 15px;
-      margin-bottom: 30px;
-      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-    }
+.main-container {
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 24px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(20px);
+  margin: 20px;
+  padding: 35px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
 
-    .header-title {
-      font-size: 2.2rem;
-      font-weight: 700;
-      margin: 0;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
+/* ========================================
+   HEADER SECTION
+   ======================================== */
+.header-section {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 18px;
+  margin-bottom: 30px;
+  box-shadow: 0 12px 35px rgba(30, 58, 138, 0.25);
+  position: relative;
+  overflow: hidden;
+}
 
-    .header-subtitle {
-      font-size: 1.1rem;
-      opacity: 0.9;
-      margin: 5px 0 0 0;
-    }
+.header-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 300px;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  filter: blur(60px);
+}
 
-    .controls-section {
-      background: white;
-      padding: 25px;
-      border-radius: 15px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-      margin-bottom: 25px;
-      border: 1px solid #e9ecef;
-    }
+.header-title {
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  letter-spacing: -0.5px;
+}
 
-    .btn-custom {
-      border-radius: 10px;
-      padding: 12px 25px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      transition: all 0.3s ease;
-      border: none;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    }
+.header-subtitle {
+  font-size: 1.1rem;
+  opacity: 0.92;
+  margin: 8px 0 0 0;
+  font-weight: 400;
+}
 
-    .btn-custom:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
+/* ========================================
+   CONTROLS SECTION
+   ======================================== */
+.controls-section {
+  background: white;
+  padding: 28px;
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  margin-bottom: 28px;
+  border: 1px solid #f1f5f9;
+}
 
-    .btn-create {
-      background: linear-gradient(135deg, #28a745, #20c997);
-      color: white;
-    }
+/* ========================================
+   BOTONES PERSONALIZADOS
+   ======================================== */
+.btn-custom {
+  border-radius: 12px;
+  padding: 13px 28px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  font-size: 0.9rem;
+}
 
-    .btn-history {
-      background: linear-gradient(135deg, #007bff, #6610f2);
-      color: white;
-    }
+.btn-custom:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
 
-    .search-container {
-      background: #f8f9fa;
-      padding: 20px;
-      border-radius: 12px;
-      border: 2px solid #e9ecef;
-    }
+.btn-custom:active {
+  transform: translateY(-1px);
+}
 
-    .search-input {
-      border-radius: 10px;
-      border: 2px solid #dee2e6;
-      padding: 12px 20px;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-    }
+.btn-create {
+  background: linear-gradient(135deg, #047857 0%, #10b981 100%);
+  color: white;
+}
 
-    .search-input:focus {
-      border-color: #667eea;
-      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-    }
+.btn-create:hover {
+  box-shadow: 0 10px 30px rgba(4, 120, 87, 0.3);
+}
 
-    .table-container {
-      background: white;
-      border-radius: 15px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      border: 1px solid #e9ecef;
-    }
+.btn-history {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  color: white;
+}
 
-    .table-modern {
-      margin: 0;
-      font-size: 0.95rem;
-    }
+.btn-history:hover {
+  box-shadow: 0 10px 30px rgba(30, 64, 175, 0.3);
+}
 
-    .table-modern thead {
-      background: linear-gradient(135deg, #495057, #6c757d);
-      color: white;
-    }
+/* ========================================
+   BÚSQUEDA
+   ======================================== */
+.search-container {
+  background: #f8fafc;
+  padding: 22px;
+  border-radius: 14px;
+  border: 2px solid #e2e8f0;
+}
 
-    .table-modern thead th {
-      border: none;
-      padding: 18px 15px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-size: 0.85rem;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
+.search-input {
+  border-radius: 12px;
+  border: 2px solid #cbd5e1;
+  padding: 13px 22px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+}
 
-    .table-modern tbody tr {
-      transition: all 0.3s ease;
-      border-bottom: 1px solid #f1f3f4;
-    }
+.search-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
 
-    .table-modern tbody tr:hover {
-      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-      transform: scale(1.01);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    }
+.search-input::placeholder {
+  color: #94a3b8;
+}
 
-    .table-modern td {
-      padding: 15px;
-      vertical-align: middle;
-      border: none;
-    }
+/* ========================================
+   TABLA
+   ======================================== */
+.table-container {
+  background: white;
+  border-radius: 18px;
+  overflow: visible !important;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f1f5f9;
+}
 
-    .status-badge {
-      display: inline-block;
-      white-space: nowrap; /* evita el salto de línea */
-      padding: 9px 12px;
-      border-radius: 20px;
-      font-weight: bold;
-      color: white;
-      font-size: 15px;
-      max-width: 100%; /* permite crecer dentro del contenedor */
-      text-align: center;
-      margin: 0 auto;
-    }
+.table-responsive {
+  max-height: 600px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  position: relative;
+}
 
-    .btn-action {
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin: 2px;
-      border: none;
-      transition: all 0.3s ease;
-    }
+/* Columnas específicas */
+.table-modern td:nth-child(1),
+.table-modern th:nth-child(1) {
+  width: 50px;
+  text-align: center;
+}
 
-    .btn-action:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
+.table-modern td:nth-child(2),
+.table-modern th:nth-child(2) {
+  width: 80px;
+  text-align: center;
+}
 
-    .btn-edit {
-      background: linear-gradient(135deg, #17a2b8, #6610f2);
-      color: white;
-    }
+.table-modern td:nth-child(12),
+.table-modern th:nth-child(12) {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-    .btn-review {
-      background: linear-gradient(135deg, #fd7e14, #e83e8c);
-      color: white;
-    }
+/* ========================================
+   TABLA HEADER
+   ======================================== */
+.table-modern thead {
+  background: linear-gradient(135deg, #334155 0%, #475569 100%);
+  color: white;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+}
 
-    .btn-expand {
-      background: linear-gradient(135deg, #6c757d, #495057);
-      color: white;
-      border-radius: 50%;
-      width: 35px;
-      height: 35px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+.table-modern thead th {
+  border: none;
+  padding: 20px 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-size: 0.82rem;
+  background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
 
-    .actions-container {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+/* ========================================
+   TABLA BODY
+   ======================================== */
+.table-modern tbody tr {
+  transition: all 0.25s ease;
+  border-bottom: 1px solid #f1f5f9;
+}
 
-    .pagination {
-      justify-content: center;
-      margin-top: 25px;
-    }
+.table-modern tbody tr:hover {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  transform: scale(1.005);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
 
-    .pagination .page-link {
-      border-radius: 8px;
-      margin: 0 3px;
-      border: 2px solid #dee2e6;
-      color: #667eea;
-      font-weight: 600;
-      padding: 10px 15px;
-    }
+.table-modern td {
+  padding: 16px;
+  vertical-align: middle;
+  border: none;
+}
 
-    .pagination .page-item.active .page-link {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      border-color: #667eea;
-      color: white;
-    }
+/* ========================================
+   STATUS BADGES - MODERNIZADOS
+   ======================================== */
+.status-badge {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 10px 18px;
+  border-radius: 24px;
+  font-weight: 700;
+  color: white;
+  font-size: 0.85rem;
+  max-width: 100%;
+  text-align: center;
+  margin: 0 auto;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
 
-    .pagination .page-link:hover {
-      background: #f8f9fa;
-      border-color: #667eea;
-      color: #495057;
-    }
+.status-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
 
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: #6c757d;
-    }
+/* Pendiente - Amarillo Corporativo */
+.status-badge.estado-pendiente {
+  background: linear-gradient(135deg, #d97706 0%, #fbbf24 100%);
+  color: #1c1c1c;
+}
 
-    .empty-state i {
-      font-size: 4rem;
-      margin-bottom: 20px;
-      opacity: 0.5;
-    }
+/* Plaza Cubierta - Verde Corporativo */
+.status-badge.estado-plaza-cubierta {
+  background: linear-gradient(135deg, #047857 0%, #10b981 100%) !important;
+  color: white !important;
+}
 
-    .loading-state {
-      text-align: center;
-      padding: 40px;
-      color: #667eea;
-    }
+/* Activa - Azul Corporativo */
+.status-badge.estado-activa {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  color: white;
+}
 
-    .loading-state i {
-      font-size: 2rem;
-      animation: spin 1s linear infinite;
-    }
+/* CVs - Verde Azulado */
+.status-badge.estado-cvs {
+  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+  color: white;
+}
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+/* Psicométricas - Púrpura Corporativo */
+.status-badge.estado-psico {
+  background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+  color: white;
+}
 
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .main-container {
-        margin: 10px;
-        padding: 20px;
-      }
+/* RH - Cian Corporativo */
+.status-badge.estado-rh {
+  background: linear-gradient(135deg, #0891b2 0%, #22d3ee 100%);
+  color: white;
+}
 
-      .header-title {
-        font-size: 1.8rem;
-      }
+/* Técnica - Índigo Corporativo */
+.status-badge.estado-tecnica {
+  background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+  color: white;
+}
 
-      .table-container {
-        overflow-x: auto;
-      }
+/* Prueba - Naranja Corporativo */
+.status-badge.estado-prueba {
+  background: linear-gradient(135deg, #ea580c 0%, #fb923c 100%);
+  color: white;
+}
 
-      .actions-container {
-        flex-direction: column;
-      }
+/* Polígrafo - Café Corporativo */
+.status-badge.estado-poligrafo {
+  background: linear-gradient(135deg, #78350f 0%, #a16207 100%);
+  color: white;
+}
 
-      .btn-custom {
-        width: 100%;
-        margin-bottom: 10px;
-      }
-    }
+/* Expediente - Violeta Corporativo */
+.status-badge.estado-expediente {
+  background: linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%);
+  color: white;
+}
 
-    /* Mejoras adicionales para sistema*/
-    .swal-wide { 
-      max-width: 90vw !important; 
-    }
+/* Confirmación - Gris Azulado */
+.status-badge.estado-confirmacion {
+  background: linear-gradient(135deg, #475569 0%, #64748b 100%);
+  color: white;
+}
 
-    .swal-wide-files {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
+/* Contratada - Verde Éxito */
+.status-badge.estado-contratada {
+  background: linear-gradient(135deg, #047857 0%, #10b981 100%);
+  color: white;
+}
 
-    .swal-wide-files .swal2-html-container {
-      padding: 0 !important;
-      margin: 0 !important;
-    }
+/* CANDIDATOS EN SELECCIÓN - ALERTA MÁXIMA */
+.status-badge.estado-candidatos-seleccion {
+  background: linear-gradient(45deg, #b91c1c, #ef4444, #b91c1c);
+  background-size: 400% 400%;
+  animation: gradient-alert 3s ease-in-out infinite;
+  color: white !important;
+  font-weight: 800;
+  box-shadow: 0 0 20px rgba(185, 28, 28, 0.8), 0 4px 16px rgba(0, 0, 0, 0.3);
+  border: 2px solid #991b1b;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 
-    .swal-wide-files .swal2-content {
-      text-align: left !important;
-    }
+@keyframes gradient-alert {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
 
-    /* Scrollbar personalizado */
-    .swal-wide-files div[style*="overflow-y: auto"]::-webkit-scrollbar {
-      width: 8px;
-    }
+/* ========================================
+   BOTONES DE ACCIÓN
+   ======================================== */
+.btn-action {
+  border-radius: 10px;
+  padding: 9px 18px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin: 2px;
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
 
-    .swal-wide-files div[style*="overflow-y: auto"]::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 4px;
-    }
+.btn-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
 
-    .swal-wide-files div[style*="overflow-y: auto"]::-webkit-scrollbar-thumb {
-      background: #c1c1c1;
-      border-radius: 4px;
-    }
+.btn-edit {
+  background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+  color: white;
+}
 
-    .swal-wide-files div[style*="overflow-y: auto"]::-webkit-scrollbar-thumb:hover {
-      background: #a8a8a8;
-    }
+.btn-review {
+  background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+  color: white;
+}
 
+.btn-expand {
+  background: linear-gradient(135deg, #475569 0%, #64748b 100%);
+  color: white;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.actions-container {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ========================================
+   PAGINACIÓN
+   ======================================== */
+.pagination {
+  justify-content: center;
+  margin-top: 28px;
+}
+
+.pagination .page-link {
+  border-radius: 10px;
+  margin: 0 4px;
+  border: 2px solid #e2e8f0;
+  color: #1e3a8a;
+  font-weight: 600;
+  padding: 11px 17px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.pagination .page-item.active .page-link {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  border-color: #1e3a8a;
+  color: white;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+}
+
+.pagination .page-link:hover {
+  background: #f8fafc;
+  border-color: #3b82f6;
+  color: #1e40af;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   ESTADOS VACÍOS Y CARGA
+   ======================================== */
+.empty-state {
+  text-align: center;
+  padding: 70px 20px;
+  color: #64748b;
+}
+
+.empty-state i {
+  font-size: 5rem;
+  margin-bottom: 24px;
+  opacity: 0.4;
+  color: #cbd5e1;
+}
+
+.empty-state h4 {
+  color: #334155;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.empty-state p {
+  color: #64748b;
+  font-size: 1.05rem;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 50px;
+  color: #3b82f6;
+}
+
+.loading-state i {
+  font-size: 2.5rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ========================================
+   SWEET ALERT CUSTOMIZATION
+   ======================================== */
+.swal-wide { 
+  max-width: 90vw !important;
+  border-radius: 18px !important;
+}
+
+.swal-wide-files {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.swal-wide-files .swal2-html-container {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.swal-wide-files .swal2-content {
+  text-align: left !important;
+}
+
+/* Scrollbar personalizado moderno */
+.swal-wide-files div[style*="overflow-y: auto"]::-webkit-scrollbar,
+.table-responsive::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.swal-wide-files div[style*="overflow-y: auto"]::-webkit-scrollbar-track,
+.table-responsive::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 6px;
+}
+
+.swal-wide-files div[style*="overflow-y: auto"]::-webkit-scrollbar-thumb,
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 6px;
+  transition: background 0.3s ease;
+}
+
+.swal-wide-files div[style*="overflow-y: auto"]::-webkit-scrollbar-thumb:hover,
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ========================================
+   SELECT ESTADO
+   ======================================== */
 .select-estado {
   border: none;
-  border-radius: 25px;
-  padding: 5px 18px;
-  font-weight: bold;
+  border-radius: 24px;
+  padding: 8px 20px;
+  font-weight: 700;
   color: white !important;
   text-align: center;
   text-transform: uppercase;
@@ -341,125 +554,80 @@
   max-width: 300px;
   min-width: 220px;
   appearance: none;
-  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   background-size: 100% 100%;
-  font-size: 13px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-/* Aplicar mismo degradado a los badges dentro de la tabla */
-/* Amarillo para Pendiente */
-.status-badge.estado-pendiente {
-  background: linear-gradient(to right, #FFB300, #FFD54F);
-  color: #1c1c1c; /* Texto oscuro para mejor contraste */
+.select-estado:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* Azul para Activa */
-.status-badge.estado-activa {
-  background: linear-gradient(to right, #1976D2, #64B5F6);
-  color: white;
-}
-
-/* Verde azulado (Teal) para CVs */
-.status-badge.estado-cvs {
-  background: linear-gradient(to right, #00897B, #4DB6AC);
-  color: white;
-}
-
-/* Morado para Psicométricas */
-.status-badge.estado-psico {
-  background: linear-gradient(to right, #8E24AA, #BA68C8);
-  color: white;
-}
-
-/* Cian para RH */
-.status-badge.estado-rh {
-  background: linear-gradient(to right, #00ACC1, #4DD0E1);
-  color: white;
-}
-
-/* Índigo para Técnica */
-.status-badge.estado-tecnica {
-  background: linear-gradient(to right, #3949AB, #7986CB);
-  color: white;
-}
-
-/* Naranja intenso para Prueba */
-.status-badge.estado-prueba {
-  background: linear-gradient(to right, #E64A19, #FF8A65);
-  color: white;
-}
-
-/* Café para Polígrafo */
-.status-badge.estado-poligrafo {
-  background: linear-gradient(to right, #6D4C41, #A1887F);
-  color: white;
-}
-
-/* Violeta para Expediente */
-.status-badge.estado-expediente {
-  background: linear-gradient(to right, #512DA8, #9575CD);
-  color: white;
-}
-
-/* Gris azulado para Confirmación */
-.status-badge.estado-confirmacion {
-  background: linear-gradient(to right, #546E7A, #90A4AE);
-  color: white;
-}
-
-/* Verde para Contratada (éxito) */
-.status-badge.estado-contratada {
-  background: linear-gradient(to right, #388E3C, #81C784);
-  color: white;
-}
-
-
-
-
-/*ESTILOS DEL COMENTARIO*/
+/* ========================================
+   COMENTARIOS
+   ======================================== */
 .comentario-cell {
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.btnVerComentarioSuper{
-    padding: 3px 8px;
-    font-size: 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-    display: inline-block;
+.btnVerComentarioSuper {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  display: inline-block;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%);
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
 }
 
-/*CHAT EMERGENTE*/
+.btnVerComentarioSuper:hover {
+  background: linear-gradient(135deg, #475569 0%, #64748b 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ========================================
+   CHAT EMERGENTE
+   ======================================== */
 .chat-burbuja {
   max-width: 75%;
-  padding: 10px;
-  margin-bottom: 8px;
-  border-radius: 10px;
-  line-height: 1.4;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  border-radius: 16px;
+  line-height: 1.5;
   word-wrap: break-word;
-  font-size: 14px;
+  font-size: 0.92rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .chat-burbuja.izquierda {
-  background-color: #e0e0e0;
-  color: #000;
-  border-top-left-radius: 0;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  color: #1e293b;
+  border-top-left-radius: 4px;
   margin-right: auto;
 }
 
 .chat-burbuja.derecha {
-  background-color: #007bff;
-  color: #fff;
-  border-top-right-radius: 0;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  color: white;
+  border-top-right-radius: 4px;
   margin-left: auto;
 }
 
-/* CSS mejorado para el badge de notificaciones */
+/* ========================================
+   BADGES DE NOTIFICACIÓN
+   ======================================== */
 .badge-container {
   position: relative;
   display: inline-block;
@@ -467,23 +635,431 @@
 
 .notification-badge {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  background-color: red;
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, #b91c1c 0%, #ef4444 100%);
   color: white;
-  font-size: 10px;
-  padding: 3px 6px;
+  font-size: 0.7rem;
+  padding: 4px 7px;
   border-radius: 50%;
-  font-weight: bold;
+  font-weight: 700;
   z-index: 1000;
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(185, 28, 28, 0.4);
+  border: 2px solid white;
+  animation: pulse-badge 2s ease-in-out infinite;
 }
 
 .notification-badge.wide {
-  padding: 3px 8px;
+  padding: 4px 9px;
+  border-radius: 12px;
+}
+
+@keyframes pulse-badge {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+@media (max-width: 768px) {
+  .main-container {
+    margin: 12px;
+    padding: 22px;
+    border-radius: 18px;
+  }
+
+  .header-title {
+    font-size: 1.9rem;
+  }
+
+  .header-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .actions-container {
+    flex-direction: column;
+  }
+
+  .btn-custom {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .status-badge {
+    font-size: 0.75rem;
+    padding: 8px 14px;
+  }
+}
+
+@media (max-width: 576px) {
+  .header-title {
+    font-size: 1.6rem;
+  }
+
+  .controls-section {
+    padding: 20px;
+  }
+
+  .btn-custom {
+    padding: 11px 20px;
+    font-size: 0.85rem;
+  }
 }
 
 
+
+
+/* ========================================
+   PESTAÑAS ESTILO CARDS PREMIUM PARA LOS FILTROS DE ESTADO
+   ======================================== */
+.tabs-container {
+  background: transparent;
+  padding: 0;
+  margin-bottom: 30px;
+}
+
+.tabs-filter {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 0;
+}
+
+.tab-item {
+  background: white;
+  border-radius: 16px;
+  padding: 24px 20px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  min-height: 140px;
+  justify-content: center;
+}
+
+.tab-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #e0e0e0, #f5f5f5);
+  transition: all 0.4s ease;
+}
+
+.tab-item:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
+
+.tab-item:hover::before {
+  height: 6px;
+}
+
+/* Iconos grandes y llamativos */
+.tab-item i {
+  font-size: 2.8rem;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.tab-item:hover i {
+  transform: scale(1.15);
+}
+
+/* Texto de la pestaña */
+.tab-item span:not(.tab-counter) {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: #2c3e50;
+  text-transform: uppercase;
+}
+
+/* Contador grande y destacado */
+.tab-counter {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 8px 0;
+  padding: 0;
+  min-width: auto;
+  background: none;
+  border-radius: 0;
+  transition: all 0.3s ease;
+}
+
+/* ========================================
+   COLORES ESPECÍFICOS POR PESTAÑA
+   ======================================== */
+
+/* TODAS - Azul Corporativo */
+.tab-todas i {
+  color: #1e3a8a;
+}
+
+.tab-todas .tab-counter {
+  color: #1e3a8a;
+}
+
+.tab-todas::before {
+  background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+}
+
+.tab-todas.active {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  box-shadow: 0 12px 32px rgba(30, 58, 138, 0.35);
+}
+
+.tab-todas.active span:not(.tab-counter),
+.tab-todas.active i,
+.tab-todas.active .tab-counter {
+  color: white !important;
+}
+
+/* PENDIENTES - Amarillo Profesional */
+.tab-pendientes i {
+  color: #d97706;
+}
+
+.tab-pendientes .tab-counter {
+  color: #d97706;
+}
+
+.tab-pendientes::before {
+  background: linear-gradient(90deg, #d97706, #fbbf24);
+}
+
+.tab-pendientes.active {
+  background: linear-gradient(135deg, #d97706 0%, #fbbf24 100%);
+  box-shadow: 0 12px 32px rgba(217, 119, 6, 0.35);
+}
+
+.tab-pendientes.active span:not(.tab-counter),
+.tab-pendientes.active i,
+.tab-pendientes.active .tab-counter {
+  color: white !important;
+}
+
+/* APROBADAS - Verde Corporativo */
+.tab-aprobadas i {
+  color: #047857;
+}
+
+.tab-aprobadas .tab-counter {
+  color: #047857;
+}
+
+.tab-aprobadas::before {
+  background: linear-gradient(90deg, #047857, #10b981);
+}
+
+.tab-aprobadas.active {
+  background: linear-gradient(135deg, #047857 0%, #10b981 100%);
+  box-shadow: 0 12px 32px rgba(4, 120, 87, 0.35);
+}
+
+.tab-aprobadas.active span:not(.tab-counter),
+.tab-aprobadas.active i,
+.tab-aprobadas.active .tab-counter {
+  color: white !important;
+}
+
+/* EN PROCESO - Rojo Profesional */
+.tab-proceso i {
+  color: #b91c1c;
+}
+
+.tab-proceso .tab-counter {
+  color: #b91c1c;
+}
+
+.tab-proceso::before {
+  background: linear-gradient(90deg, #b91c1c, #ef4444);
+}
+
+.tab-proceso.active {
+  background: linear-gradient(135deg, #b91c1c 0%, #ef4444 100%);
+  box-shadow: 0 12px 32px rgba(185, 28, 28, 0.35);
+}
+
+.tab-proceso.active span:not(.tab-counter),
+.tab-proceso.active i,
+.tab-proceso.active .tab-counter {
+  color: white !important;
+}
+
+/* PLAZA CUBIERTA - Verde Azulado */
+.tab-cubierta i {
+  color: #0d9488;
+}
+
+.tab-cubierta .tab-counter {
+  color: #0d9488;
+}
+
+.tab-cubierta::before {
+  background: linear-gradient(90deg, #0d9488, #14b8a6);
+}
+
+.tab-cubierta.active {
+  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+  box-shadow: 0 12px 32px rgba(13, 148, 136, 0.35);
+}
+
+.tab-cubierta.active span:not(.tab-counter),
+.tab-cubierta.active i,
+.tab-cubierta.active .tab-counter {
+  color: white !important;
+}
+
+/* RECHAZADAS - Rojo Oscuro */
+.tab-rechazadas i {
+  color: #991b1b;
+}
+
+.tab-rechazadas .tab-counter {
+  color: #991b1b;
+}
+
+.tab-rechazadas::before {
+  background: linear-gradient(90deg, #991b1b, #dc2626);
+}
+
+.tab-rechazadas.active {
+  background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%);
+  box-shadow: 0 12px 32px rgba(153, 27, 27, 0.35);
+}
+
+.tab-rechazadas.active span:not(.tab-counter),
+.tab-rechazadas.active i,
+.tab-rechazadas.active .tab-counter {
+  color: white !important;
+}
+
+/* ========================================
+   ANIMACIONES ADICIONALES
+   ======================================== */
+
+/* Animación de pulso en el contador */
+@keyframes pulse-counter {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.tab-item.active .tab-counter {
+  animation: pulse-counter 2s ease-in-out infinite;
+}
+
+/* Efecto ripple al hacer click */
+.tab-item::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.tab-item:active::after {
+  width: 300px;
+  height: 300px;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 1400px) {
+  .tabs-filter {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .tabs-filter {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+  
+  .tab-item {
+    min-height: 120px;
+    padding: 20px 15px;
+  }
+  
+  .tab-item i {
+    font-size: 2.2rem;
+  }
+  
+  .tab-counter {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .tabs-filter {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .tab-item {
+    min-height: 100px;
+    padding: 16px 12px;
+  }
+  
+  .tab-item i {
+    font-size: 1.8rem;
+  }
+  
+  .tab-counter {
+    font-size: 1.8rem;
+  }
+  
+  .tab-item span:not(.tab-counter) {
+    font-size: 0.85rem;
+  }
+}
+
+/* ========================================
+   LOADING STATE
+   ======================================== */
+.tab-item.loading .tab-counter {
+  opacity: 0.5;
+}
+
+.tab-item.loading i {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 
 
   </style>
@@ -507,6 +1083,42 @@
               <i class="fas fa-calendar-alt mr-2"></i>
               <span id="current-date"></span>
             </div>
+          </div>
+        </div>
+      </div>
+
+                    <!-- Pestañas de Filtro -->
+      <div class="tabs-container">
+        <div class="tabs-filter">
+          <div class="tab-item active tab-todas" data-filter="todas">
+            <i class="fas fa-th-large"></i>
+            <span>Todas</span>
+            <span class="tab-counter" id="counter-todas">0</span>
+          </div>
+          <div class="tab-item tab-pendientes" data-filter="pendientes">
+            <i class="fas fa-clock"></i>
+            <span>Pendientes</span>
+            <span class="tab-counter" id="counter-pendientes">0</span>
+          </div>
+          <div class="tab-item tab-aprobadas" data-filter="aprobadas">
+            <i class="fas fa-check-circle"></i>
+            <span>Aprobadas</span>
+            <span class="tab-counter" id="counter-aprobadas">0</span>
+          </div>
+          <div class="tab-item tab-proceso" data-filter="proceso">
+            <i class="fas fa-spinner"></i>
+            <span>En Proceso</span>
+            <span class="tab-counter" id="counter-proceso">0</span>
+          </div>
+          <div class="tab-item tab-cubierta" data-filter="cubierta">
+            <i class="fas fa-trophy"></i>
+            <span>Plaza Cubierta</span>
+            <span class="tab-counter" id="counter-cubierta">0</span>
+          </div>
+          <div class="tab-item tab-rechazadas" data-filter="rechazadas">
+            <i class="fas fa-times-circle"></i>
+            <span>Rechazadas</span>
+            <span class="tab-counter" id="counter-rechazadas">0</span>
           </div>
         </div>
       </div>
@@ -540,39 +1152,42 @@
       </div>
 
       <!-- Table Section -->
-      <div class="table-container">
-        <div id="loading-indicator" class="loading-state">
-          <i class="fas fa-spinner fa-spin"></i>
-          <p class="mt-3">Cargando solicitudes...</p>
-        </div>
-        
-        <table id="tblSolicitudes" class="table table-modern" style="display: none;">
-          <thead>
-            <tr>
-              <th width="25"><i class="fas fa-expand-alt"></i></th>
-              <th width="50">Tienda</th>
-              <th width="160">Puesto</th>
-              <th width="155">Supervisor</th>
-              <th width="155">Gerente</th>
-              <th width="155">Asesora RH asignada</th>
-              <th width="120">Fecha Solicitud</th>
-              <th width="155">Última Edición</th>
-              <th width="170">Estado</th>
-              <th width="130">Estado de Aprobacion</th>
-              <th width="150">Razón</th>
-              <th width="20">Comentario</th>
-              <th width="300">Acciones</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-
-        <div id="empty-state" class="empty-state" style="display: none;">
-          <i class="fas fa-inbox"></i>
-          <h4>No hay solicitudes</h4>
-          <p>No se encontraron solicitudes que coincidan con los criterios de búsqueda.</p>
-        </div>
-      </div>
+<!-- Table Section -->
+<div class="table-container">
+  <div id="loading-indicator" class="loading-state">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p class="mt-3">Cargando solicitudes...</p>
+  </div>
+  
+  <div class="table-responsive">
+    <table id="tblSolicitudes" class="table table-modern" style="display: none;">
+      <thead>
+        <tr>
+          <th width="25"><i class="fas fa-expand-alt"></i></th>
+          <th width="50">Tienda</th>
+          <th width="160">Puesto</th>
+          <th width="155">Supervisor</th>
+          <th width="155">Gerente</th>
+          <th width="155">Asesora RH asignada</th>
+          <th width="120">Fecha Solicitud</th>
+          <th width="155">Última Edición</th>
+          <th width="170">Estado</th>
+          <th width="130">Estado de Aprobacion</th>
+          <th width="150">Razón</th>
+          <th width="20">Comentario</th>
+          <th width="300">Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  
+  <div id="empty-state" class="empty-state" style="display: none;">
+    <i class="fas fa-inbox"></i>
+    <h4>No hay solicitudes</h4>
+    <p>No se encontraron solicitudes que coincidan con los criterios de búsqueda.</p>
+  </div>
+</div>
 
       <!-- Pagination -->
       <nav>
@@ -648,10 +1263,68 @@
   </div>
 </div>
 
-
-
-
-
+<!--MODAL DE REACTIVACION DEL CANDIDATO-->
+<!-- Modal Reactivar Solicitud SUPERVISORES -->
+<div class="modal fade" id="modalReactivarSolicitud" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="fas fa-redo mr-2"></i>Reactivar Solicitud
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <strong>Información de la solicitud:</strong>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Tienda:</strong> <span id="reactivarTienda"></span></p>
+                            <p class="mb-1"><strong>Puesto:</strong> <span id="reactivarPuesto"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Estado Actual:</strong> <span class="badge badge-success">Plaza Cubierta</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <strong>¿Qué sucederá al reactivar?</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>La solicitud volverá a estado "Candidatos en Selección"</li>
+                        <li>El candidato contratado se ocultará del proceso</li>
+                        <li>RRHH podrá reactivar candidatos anteriores o agregar nuevos</li>
+                        <li>El proceso de selección continuará normalmente</li>
+                    </ul>
+                </div>
+                
+                <div class="form-group">
+                    <label for="motivoReactivacion">
+                        <strong>Motivo de la reactivación: <span class="text-danger">*</span></strong>
+                    </label>
+                    <textarea class="form-control" 
+                              id="motivoReactivacion" 
+                              rows="4" 
+                              placeholder="Ejemplo: El candidato renunció antes de completar el período de prueba..."
+                              maxlength="500"></textarea>
+                    <small class="text-muted">Mínimo 10 caracteres, máximo 500</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times mr-2"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-warning" id="btnConfirmarReactivacion">
+                    <i class="fas fa-redo mr-2"></i>Confirmar Reactivación
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
   <!-- JavaScript Principal -->
 
   <script>
@@ -682,7 +1355,7 @@ function cargarResultadoAvalSupervisor(idSolicitud, tienda, puesto, supervisor, 
       Swal.close(); // Cerrar loading
       
       if (response.success) {
-        mostrarModalResultadoAval(response.data, idSolicitud, tienda, puesto, supervisor, razon);
+        mostrarModalResultadoAvalSupervisor(response.data, idSolicitud, tienda, puesto, supervisor, razon);
       } else {
         Swal.fire({
           icon: 'error',
@@ -977,16 +1650,36 @@ function agregarBotonResultadoAval(idSolicitud, tienda, puesto, supervisor, razo
     //=================================================================================
     // INICIALIZACION DE TODO EL PROGRAMA
     //=================================================================================
-    $(document).ready(function () {
+$(document).ready(function() {
+    window.ROL_USUARIO = 'SUPERVISOR';
+    window.CANDIDATOS_INDEX = {};
+    
+    // Event delegation para candidatos - SUPERVISIÓN
+    $(document).off('click', '.candidate-card .card').on('click', '.candidate-card .card', function(e) {
+        e.preventDefault();
+        if (window.ROL_USUARIO === 'SUPERVISOR') {
+            const idCandidato = $(this).closest('.candidate-card').data('candidato-id');
+            seleccionarCandidatoSupervisor(idCandidato);
+        }
+    });
+    
+    console.log('Vista SUPERVISOR inicializada');
 
       let archivosOriginales =[];
       let archivosSeleccionados = new Set();
       let solicitudActual =null;
       let solicitudes = [];
       let idSolicitudActual = null;
-      let rowsPerPage = 10;
+      let rowsPerPage = 12;
       let currentPage = 1;
       let modalAbierto = false;
+
+        // ========================================
+        // VARIABLES GLOBALES PARA FILTRADO
+        // ========================================
+        let filtroActual = 'todas';
+        let solicitudesOriginales = [];
+
 
       // Mostrar fecha actual
       $('#current-date').text(new Date().toLocaleDateString('es-ES', {
@@ -997,6 +1690,143 @@ function agregarBotonResultadoAval(idSolicitud, tienda, puesto, supervisor, razo
       }));
 
 
+
+// ========================================
+// FUNCIÓN PARA FILTRAR SOLICITUDES
+// ========================================
+function filtrarSolicitudes(filtro) {
+  filtroActual = filtro;
+  
+  let solicitudesFiltradas = [];
+  
+  switch(filtro) {
+    case 'todas':
+      solicitudesFiltradas = solicitudesOriginales;
+      break;
+      
+    case 'pendientes':
+      // Estado: Pendiente + Estado Aprobación: Por Aprobar
+      solicitudesFiltradas = solicitudesOriginales.filter(sol => {
+        const estado = (sol.ESTADO_SOLICITUD || '').toLowerCase();
+        const estadoAprob = (sol.ESTADO_APROBACION || '').toLowerCase();
+        return estado.includes('pendiente') && 
+               (estadoAprob.includes('por aprobar') || estadoAprob === '');
+      });
+      break;
+      
+    case 'aprobadas':
+      // Estado: Vacante Activa O Pendiente + Estado Aprobación: Aprobado
+      solicitudesFiltradas = solicitudesOriginales.filter(sol => {
+        const estado = (sol.ESTADO_SOLICITUD || '').toLowerCase();
+        const estadoAprob = (sol.ESTADO_APROBACION || '').toLowerCase();
+        return (estado.includes('activa') || estado.includes('pendiente')) && 
+               estadoAprob === 'aprobado';
+      });
+      break;
+      
+    case 'proceso':
+      // Estado: Candidatos en Selección
+      solicitudesFiltradas = solicitudesOriginales.filter(sol => {
+        const estado = (sol.ESTADO_SOLICITUD || '').toLowerCase();
+        return estado.includes('candidatos en seleccion');
+      });
+      break;
+      
+    case 'cubierta':
+      // Estado: Plaza Cubierta
+      solicitudesFiltradas = solicitudesOriginales.filter(sol => {
+        const estado = (sol.ESTADO_SOLICITUD || '').toLowerCase();
+        return estado.includes('plaza cubierta');
+      });
+      break;
+      
+    case 'rechazadas':
+      // Estado Aprobación: No Aprobado
+      solicitudesFiltradas = solicitudesOriginales.filter(sol => {
+        const estadoAprob = (sol.ESTADO_APROBACION || '').toLowerCase();
+        return estadoAprob.includes('no aprobado');
+      });
+      break;
+  }
+  
+  // Actualizar la variable global solicitudes
+  solicitudes = solicitudesFiltradas;
+  
+  // Reiniciar a la primera página
+  currentPage = 1;
+  
+  // Renderizar tabla
+  if (solicitudesFiltradas.length === 0) {
+    $('#tblSolicitudes').hide();
+    $('#empty-state').show();
+  } else {
+    renderTable(solicitudesFiltradas);
+    setupPagination(solicitudesFiltradas);
+    $('#tblSolicitudes').show();
+    $('#empty-state').hide();
+  }
+}
+
+// ========================================
+// FUNCIÓN PARA ACTUALIZAR CONTADORES
+// ========================================
+function actualizarContadores() {
+  const todas = solicitudesOriginales.length;
+  
+  const pendientes = solicitudesOriginales.filter(sol => {
+    const estado = (sol.ESTADO_SOLICITUD || '').toLowerCase();
+    const estadoAprob = (sol.ESTADO_APROBACION || '').toLowerCase();
+    return estado.includes('pendiente') && 
+           (estadoAprob.includes('por aprobar') || estadoAprob === '');
+  }).length;
+  
+  const aprobadas = solicitudesOriginales.filter(sol => {
+    const estado = (sol.ESTADO_SOLICITUD || '').toLowerCase();
+    const estadoAprob = (sol.ESTADO_APROBACION || '').toLowerCase();
+    return (estado.includes('activa') || estado.includes('pendiente')) && 
+           estadoAprob === 'aprobado';
+  }).length;
+  
+  const proceso = solicitudesOriginales.filter(sol => {
+    const estado = (sol.ESTADO_SOLICITUD || '').toLowerCase();
+    return estado.includes('candidatos en seleccion');
+  }).length;
+  
+  const cubierta = solicitudesOriginales.filter(sol => {
+    const estado = (sol.ESTADO_SOLICITUD || '').toLowerCase();
+    return estado.includes('plaza cubierta');
+  }).length;
+  
+  const rechazadas = solicitudesOriginales.filter(sol => {
+    const estadoAprob = (sol.ESTADO_APROBACION || '').toLowerCase();
+    return estadoAprob.includes('no aprobado');
+  }).length;
+  
+  $('#counter-todas').text(todas);
+  $('#counter-pendientes').text(pendientes);
+  $('#counter-aprobadas').text(aprobadas);
+  $('#counter-proceso').text(proceso);
+  $('#counter-cubierta').text(cubierta);
+  $('#counter-rechazadas').text(rechazadas);
+}
+
+// ========================================
+// EVENT LISTENER PARA LAS PESTAÑAS
+// ========================================
+$(document).on('click', '.tab-item', function() {
+  const filtro = $(this).data('filter');
+  
+  // Actualizar clases activas
+  $('.tab-item').removeClass('active');
+  $(this).addClass('active');
+  
+  // Filtrar solicitudes
+  filtrarSolicitudes(filtro);
+});
+
+
+
+
 // ✅ FUNCIÓN CORREGIDA - MANEJA TANTO ARRAYS COMO OBJETOS
      // FUNCIÓN PARA CARGAR SOLICITUDES
 function cargarSolicitudes() {
@@ -1005,47 +1835,44 @@ function cargarSolicitudes() {
   $('#empty-state').hide();
 
   $.ajax({
-    url: './supervision/crudsolicitudes.php?action=get_solicitudes', // ← CAMBIAR ESTA URL
+    url: './supervision/crudsolicitudes.php?action=get_solicitudes',
     type: 'GET',
     dataType: 'json',
     success: function (data) {
-      console.log("🔍 Respuesta del servidor:", data); // ← AGREGAR DEBUG
+      console.log("🔍 Respuesta del servidor:", data);
       
-      // ← MANEJAR ERRORES
       if (data.success === false) {
         console.error('❌ Error:', data.error);
         Swal.fire('Error', data.error, 'error');
         return;
       }
       
-      // ← MANEJAR DEBUG
       if (data.debug) {
         console.log('🐛 Debug info:', data.debug);
         return;
       }
       
-      // ← VALIDAR QUE SEA ARRAY
       if (!Array.isArray(data)) {
         console.error('❌ Datos no son array:', data);
         Swal.fire('Error', 'Formato de datos incorrecto', 'error');
         return;
       }
       
-      solicitudes = data.success ? data.data : data;
+      // Guardar solicitudes originales
+      solicitudesOriginales = data.success ? data.data : data;
+      solicitudes = solicitudesOriginales;
       
-      if (data.length === 0) {
-        $('#loading-indicator').hide();
-        $('#empty-state').show();
-      } else {
-        renderTable(solicitudes);
-        setupPagination(solicitudes);
-        $('#loading-indicator').hide();
-        $('#tblSolicitudes').show();
-      }
+      // Actualizar contadores
+      actualizarContadores();
+      
+      // Aplicar filtro actual
+      filtrarSolicitudes(filtroActual);
+      
+      $('#loading-indicator').hide();
     },
     error: function (xhr, status, error) {
       console.error('Error cargando solicitudes:', error);
-      console.error('Respuesta del servidor:', xhr.responseText); // ← AGREGAR DEBUG
+      console.error('Respuesta del servidor:', xhr.responseText);
       $('#loading-indicator').hide();
       Swal.fire({
         icon: 'error',
@@ -1078,6 +1905,8 @@ function renderTable(data) {
     if (estado.includes('pendiente')) statusClass = 'estado-pendiente';
     else if (estado.includes('activa')) statusClass = 'estado-activa';
     else if (estado.includes('cvs')) statusClass = 'estado-cvs';
+    else if (estado.includes('candidatos en seleccion')) statusClass = 'estado-candidatos-seleccion';
+    else if (estado.includes('plaza cubierta')) statusClass = 'estado-plaza-cubierta';
     else if (estado.includes('psico')) statusClass = 'estado-psico';
     else if (estado.includes('entrevista rh')) statusClass = 'estado-rh';
     else if (estado.includes('tecnica')) statusClass = 'estado-tecnica';
@@ -1097,7 +1926,7 @@ function renderTable(data) {
     else aprobacionClass = 'estado-pendiente';
 
     const fechaModificacion = item.FECHA_MODIFICACION || '—';
-    const comentario = item.COMENTARIO_NUEVO || '-';
+    const comentario = item.COMENTARIO_SOLICITUD || '-';
     const idHistorico = item.ID_HISTORICO;
     const estadoAprobacionMostrar = item.ESTADO_APROBACION || 'Por Aprobar';
     const noLeidos = parseInt(item.NO_LEIDOS) || 0;
@@ -1200,37 +2029,44 @@ function renderTable(data) {
                     </button>`;
                 }
 
-                // Mostrar solo "Ver resumen" si hay selección
-                if (estado.toLowerCase().includes('cvs')) {
-                if (parseInt(item.TIENE_SELECCION) === 1) {
-                    acciones += `
-                    <button class="btn btn-info btn-sm btnVerCVResumen" data-id="${item.ID_SOLICITUD}">
-                        <i class="fas fa-eye"></i> Ver resumen
-                    </button>`;
-                } else {
-                    acciones += `
-                    <button class="btn btn-primary btn-sm btnVerArchivos" data-id="${item.ID_SOLICITUD}">
-                        <i class="fas fa-folder-open"></i> Archivos
-                    </button>`;
-                }
-                }
-
-                if (estado.includes('psico')) {
+                if ((aprobacion === 'aprobado' || (aprobacion.includes('aprobado') && !aprobacion.includes('no')))) {
                 acciones += `
-                    <button class="btn btn-secondary btn-sm btnVerPruebas"
-                            data-id="${item.ID_SOLICITUD}"
-                            data-tipo="PSICOMETRICA">
-                    <i class="fas fa-brain"></i> Ver Psicométrica
-                    </button>`;
-                } else if (estado.includes('poligrafo')) {
-                acciones += `
-                    <button class="btn btn-dark btn-sm btnVerPruebas"
-                            data-id="${item.ID_SOLICITUD}"
-                            data-tipo="POLIGRAFO">
-                    <i class="fas fa-fingerprint"></i> Ver Polígrafo
+                    <button class="btn btn-success btn-sm btnVerResumenAprobadoGerenncial" 
+                        data-id="${item.ID_SOLICITUD}"
+                        title="Ver resumen de aprobación gerencial">
+                        <i class="fas fa-clipboard-check"></i> Ver Resumen
                     </button>`;
                 }
 
+                // Mostrar botón si está en "Candidatos en Selección" o "Plaza Cubierta"
+                const estadoSolicitud = item.ESTADO_SOLICITUD || '';
+                if (estadoSolicitud === 'Candidatos en Seleccion' || estadoSolicitud === 'Plaza Cubierta') {
+                    const cantidadCandidatos = item.TOTAL_CANDIDATOS || 0;
+                    const esPlazaCubierta = estadoSolicitud === 'Plaza Cubierta';
+                    
+                    acciones += `
+                        <button class="btn btn-sm ${esPlazaCubierta ? 'btn-info' : 'btn-success'} ml-1" 
+                                onclick="mostrarCandidatosEnviados('${item.ID_SOLICITUD}')" 
+                                title="${esPlazaCubierta ? 'Ver candidato contratado' : 'Ver candidatos enviados'}">
+                            <i class="fas ${esPlazaCubierta ? 'fa-user-check' : 'fa-users'}"></i> 
+                            ${esPlazaCubierta ? 'Ver Contratado' : 'Candidatos (' + cantidadCandidatos + ')'}
+                        </button>
+                    `;
+                }
+
+                
+                // Botón Reactivar (solo para Plaza Cubierta)
+                if (estado.includes('plaza cubierta')) {
+                    acciones += `
+                        <button class="btn btn-warning btn-sm btnReactivarSolicitud" 
+                                data-id="${item.ID_SOLICITUD}"
+                                data-tienda="${item.NUM_TIENDA}"
+                                data-puesto="${item.PUESTO_SOLICITADO}"
+                                title="Reactivar solicitud">
+                            <i class="fas fa-redo"></i> Reactivar
+                        </button>
+                    `;
+                }
 
                 // VERIFICAR SI NECESITA BOTÓN DE OBSERVACIONES DEL DÍA DE PRUEBA
                     const esDiaDePrueba = estado.toLowerCase().includes('día de prueba') || estado.toLowerCase().includes('dia de prueba');
@@ -1396,24 +2232,27 @@ function renderTable(data) {
       }
 
       // FILTROS DE BÚSQUEDA
-$('#searchInput, #searchTienda').on('input', function () {
-    const searchValueGeneral = $('#searchInput').val().toLowerCase();
-    const searchValueTienda = $('#searchTienda').val().toLowerCase();
-
-    const filteredData = solicitudes.filter(item => {
-        const matchGeneral = !searchValueGeneral || Object.values(item).some(value =>
-            value && value.toString().toLowerCase().includes(searchValueGeneral)
+    $('#searchInput, #searchTienda').on('keyup', function() {
+    const searchTerm = $('#searchInput').val().toLowerCase();
+    const searchTienda = $('#searchTienda').val().toLowerCase();
+    
+    // Aplicar búsqueda sobre el filtro actual
+    let datosFiltrados = solicitudes.filter(function(item) {
+        const matchSearch = searchTerm === '' || 
+        Object.values(item).some(val => 
+            String(val).toLowerCase().includes(searchTerm)
         );
-
-        const matchTienda = !searchValueTienda || 
-            (item.NUM_TIENDA && item.NUM_TIENDA.toString().toLowerCase().includes(searchValueTienda));
-
-        return matchGeneral && matchTienda;
+        
+        const matchTienda = searchTienda === '' || 
+        String(item.NUM_TIENDA).toLowerCase().includes(searchTienda);
+        
+        return matchSearch && matchTienda;
     });
-
-    renderTable(filteredData);
-    setupPagination(filteredData);
-});
+    
+    currentPage = 1;
+    renderTable(datosFiltrados);
+    setupPagination(datosFiltrados);
+    });
 
 //FUNCION PARA VER LOS ARCHIVOS PSICO Y POLIGRAFO
 $(document).off('click', '.btnVerPruebas').on('click', '.btnVerPruebas', function () {
@@ -1691,7 +2530,7 @@ $(document).off('click', '.btnVerCVResumen').on('click', '.btnVerCVResumen', fun
     }
 });
 
-
+//chat emergente
 //FUNCIÓN PARA MOSTRAR COMENTARIO DE RRHH
     $(document).off('click', '.btnVerComentarioSuper').on('click', '.btnVerComentarioSuper', function (e) {
         e.preventDefault();
@@ -1764,40 +2603,40 @@ $(document).off('click', '.btnVerCVResumen').on('click', '.btnVerCVResumen', fun
                     } else {
                         // Mensaje de RRHH (izquierda, gris)
                         chatHtml += `
-                            <div style="
-                                display: flex;
-                                justify-content: flex-start;
-                                margin-bottom: 15px;
-                            ">
-                                <div style="
-                                    max-width: 70%;
-                                    background: #f1f3f4;
-                                    color: #333;
-                                    padding: 12px 16px;
-                                    border-radius: 18px 18px 18px 4px;
-                                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                                ">
-                                    <div style="
-                                        font-weight: 600;
-                                        font-size: 11px;
-                                        text-transform: uppercase;
-                                        letter-spacing: 0.5px;
-                                        margin-bottom: 4px;
-                                        color: #666;
-                                    ">${remitente}</div>
-                                    <div style="
-                                        font-size: 14px;
-                                        line-height: 1.4;
-                                        margin-bottom: 6px;
-                                    ">${msg.mensaje}</div>
-                                    <div style="
-                                        font-size: 11px;
-                                        color: #888;
-                                        text-align: left;
-                                    ">${msg.fecha}</div>
-                                </div>
-                            </div>
-                        `;
+                                        <div style="
+                                            display: flex;
+                                            justify-content: flex-start;
+                                            margin-bottom: 15px;
+                                        ">
+                                            <div style="
+                                                max-width: 70%;
+                                                background: #d7d7f3ff;
+                                                color: #0e0d0dff;
+                                                padding: 12px 16px;
+                                                border-radius: 18px 18px 18px 4px;
+                                                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                                            ">
+                                                <div style="
+                                                    font-weight: 600;
+                                                    font-size: 11px;
+                                                    text-transform: uppercase;
+                                                    letter-spacing: 0.5px;
+                                                    margin-bottom: 4px;
+                                                    color: #050505ff;
+                                                ">${remitente}</div>
+                                                <div style="
+                                                    font-size: 14px;
+                                                    line-height: 1.4;
+                                                    margin-bottom: 6px;
+                                                ">${msg.mensaje}</div>
+                                                <div style="
+                                                    font-size: 11px;
+                                                    color: #0e0d0dff;
+                                                    text-align: left;
+                                                ">${msg.fecha}</div>
+                                            </div>
+                                        </div>
+                                    `;
                     }
                 });
             } else {
@@ -2037,661 +2876,6 @@ function actualizarBadgesSilenciosamente() {
         }
     });
 }
-
-      // FUNCIÓN PARA REVISAR CVs Y VER ARCHIVOS
-
-let modalCVAbierto = false;
-
-$(document).off('click', '.btnVerArchivos').on('click', '.btnVerArchivos', async function (e) {
-    e.preventDefault();
-    e.stopImmediatePropagation(); // ← CAMBIAR stopPropagation por stopImmediatePropagation
-    
-    // Verificación profesional
-    if (modalCVAbierto) {
-        console.warn("🔁 El modal de selección ya está abierto. Acción cancelada para evitar rebote.");
-        return;
-    }
-
-    if (Swal.isVisible()) {
-        console.warn("⚠️ Otro modal está activo. Cerrando primero para evitar conflicto visual.");
-        Swal.close();
-        await new Promise(resolve => setTimeout(resolve, 300));
-    }
-
-    const idSolicitud = $(this).data('id');
-    if (!idSolicitud) {
-        Swal.fire('Error', 'ID de solicitud no encontrado', 'error');
-        return;
-    }
-
-    solicitudActual = idSolicitud;
-    idSolicitudActual = idSolicitud;
-
-    archivosOriginales = [];
-    archivosSeleccionados.clear();
-
-    // Marcar que el modal está abierto
-    modalCVAbierto = true;
-
-    // Iniciar carga
-    cargarArchivosConSeleccion(idSolicitud);
-});
-
-function cargarArchivosConSeleccion(idSolicitud) {
-    Swal.fire({
-        title: 'Cargando archivos...',
-        text: 'Obteniendo archivos para revisión y selección',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-    });
-    
-    $.ajax({
-        url: './supervision/crudsolicitudes.php?action=get_archivos',
-        type: 'GET',
-        dataType: 'json',
-        data: { id: idSolicitud },
-        success: function(response) {
-            console.log("📄 Archivos recibidos:", response);
-            
-            if (response.success && response.archivos) {
-                archivosOriginales = response.archivos.map(a => ({
-                    ...a,
-                    ID_ARCHIVO: String(a.ID_ARCHIVO)
-                }));
-
-                archivosSeleccionados.clear();
-                console.log("🧹 Variables limpiadas después de cargar archivos");
-
-                mostrarModalSeleccionArchivos(archivosOriginales, idSolicitud);
-            } else {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Sin archivos disponibles',
-                    text: 'No se encontraron archivos para esta solicitud',
-                    confirmButtonText: 'Entendido',
-                    willClose: () => {
-                        modalCVAbierto = false; // ← RESETEAR FLAG
-                    }
-                });
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('❌ Error al cargar archivos:', xhr.responseText);
-            Swal.fire({
-                title: 'Error',
-                text: 'Error al cargar archivos: ' + error,
-                icon: 'error',
-                willClose: () => {
-                    modalCVAbierto = false; // ← RESETEAR FLAG
-                }
-            });
-        }
-    });
-}
-
-function mostrarModalSeleccionArchivos(archivos, idSolicitud) {
-    idSolicitudActual = idSolicitud;
-    Swal.close();
-        let modalHtml = `
-            <div id="archivos-container" style="max-height: 500px; overflow-y: auto;">
-                <!-- Instrucciones -->
-                <div style="margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
-                    <h6 style="margin: 0 0 8px 0; font-weight: 600; display: flex; align-items: center;">
-                        <i class="fas fa-info-circle" style="margin-right: 8px;"></i> 
-                        Instrucciones para Supervisores
-                    </h6>
-                    <p style="margin: 0; font-size: 14px; opacity: 0.9;">
-                        Selecciona los CVs que consideres aptos para avanzar a la siguiente fase del proceso de selección. 
-                        Los archivos seleccionados serán enviados a RRHH para continuar con el proceso.
-                    </p>
-                </div>
-        `;
-        
-        if (archivos.length > 0) {
-            archivos.forEach((archivo, index) => {
-                const esCV = archivo.NOMBRE_SOLO.toLowerCase().includes('cv') || 
-                           archivo.NOMBRE_SOLO.toLowerCase().includes('curriculum') ||
-                           archivo.EXTENSION === 'pdf';
-                
-                modalHtml += `
-                    <div class="archivo-item" data-archivo-id="${archivo.ID_ARCHIVO}" style="
-                        display: flex;
-                        align-items: center;
-                        padding: 15px;
-                        margin-bottom: 12px;
-                        background: white;
-                        border: 2px solid #e9ecef;
-                        border-radius: 12px;
-                        transition: all 0.3s ease;
-                        cursor: pointer;
-                    " onmouseover="this.style.borderColor='#667eea'; this.style.boxShadow='0 4px 12px rgba(102,126,234,0.15)'" 
-                       onmouseout="this.style.borderColor='#e9ecef'; this.style.boxShadow='none'">
-                        
-                        <!-- Checkbox de selección -->
-                        <div style="margin-right: 15px;">
-                            <input type="checkbox" 
-                                   class="cv-checkbox" 
-                                   data-archivo-id="${archivo.ID_ARCHIVO}"
-                                   style="
-                                       width: 20px; 
-                                       height: 20px; 
-                                       cursor: pointer;
-                                       accent-color: #667eea;
-                                   ">
-                        </div>
-                        
-                        <!-- Icono del archivo -->
-                        <div style="margin-right: 15px;">
-                            <i class="fas fa-file-pdf" style="
-                                font-size: 28px; 
-                                color: #dc3545;
-                            "></i>
-                        </div>
-                        
-                        <!-- Información del archivo -->
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="
-                                font-weight: 600; 
-                                color: #333; 
-                                margin-bottom: 6px;
-                                word-break: break-word;
-                            ">${archivo.NOMBRE_SOLO}</div>
-                            <div style="
-                                font-size: 12px; 
-                                color: #666;
-                                display: flex;
-                                gap: 15px;
-                                flex-wrap: wrap;
-                            ">
-                                <span><i class="fas fa-calendar"></i> ${archivo.FECHA_SUBIDA}</span>
-                                <span><i class="fas fa-weight-hanging"></i> ${archivo.TAMAÑO_MB} MB</span>
-                                ${esCV ? '<span style="color: #28a745; font-weight: 600;"><i class="fas fa-user-tie"></i> CV Detectado</span>' : ''}
-                            </div>
-                        </div>
-                        
-                                  <!-- Botones de acción -->
-                                  <div style="display: flex; gap: 8px; margin-left: 15px;">
-                                      <button type="button" 
-                                              class="btn-ver-archivo" 
-                                              data-archivo="${archivo.RUTA_RELATIVA}"
-                                              style="
-                                                  background: #007bff;
-                                                  color: white;
-                                                  border: none;
-                                                  padding: 10px 15px;
-                                                  border-radius: 8px;
-                                                  font-size: 13px;
-                                                  font-weight: 600;
-                                                  cursor: pointer;
-                                                  transition: all 0.2s;
-                                              ">
-                                          <i class="fas fa-eye"></i> Ver
-                                      </button>
-                                      <button type="button" 
-                                              class="btn-descargar-archivo" 
-                                              data-archivo="${archivo.RUTA_RELATIVA}"
-                                              style="
-                                                  background: #28a745;
-                                                  color: white;
-                                                  border: none;
-                                                  padding: 10px 15px;
-                                                  border-radius: 8px;
-                                                  font-size: 13px;
-                                                  font-weight: 600;
-                                                  cursor: pointer;
-                                                  transition: all 0.2s;
-                                              ">
-                                          <i class="fas fa-download"></i> Descargar
-                                      </button>
-                                  </div>
-
-                    </div>
-                `;
-            });
-        } else {
-            modalHtml += `
-                <div style="text-align: center; padding: 40px; color: #666;">
-                    <i class="fas fa-folder-open" style="font-size: 48px; margin-bottom: 16px;"></i>
-                    <p style="font-size: 16px; margin: 0;">No hay archivos disponibles</p>
-                </div>
-            `;
-        }
-        
-        modalHtml += `</div>`;
-        
-        // Controles de selección
-        modalHtml += `
-            <div id="controles-seleccion" style="
-                margin-top: 20px; 
-                padding-top: 20px; 
-                border-top: 2px solid #e9ecef;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 15px;
-            ">
-                <!-- Información y controles básicos -->
-                <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-                    <span id="contador-seleccionados" style="
-                        font-weight: 600; 
-                        color: #667eea;
-                        font-size: 16px;
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                    ">
-                        <i class="fas fa-check-circle"></i>
-                        <span id="numero-seleccionados">0</span> CVs seleccionados
-                    </span>
-                    
-                    <button type="button" 
-                            id="btn-seleccionar-todos" 
-                            style="
-                                background: #6c757d;
-                                color: white;
-                                border: none;
-                                padding: 10px 16px;
-                                border-radius: 8px;
-                                font-size: 13px;
-                                font-weight: 600;
-                                cursor: pointer;
-                                transition: all 0.2s;
-                            "
-                            onmouseover="this.style.background='#5a6268'; this.style.transform='translateY(-1px)'"
-                            onmouseout="this.style.background='#6c757d'; this.style.transform='translateY(0)'">
-                        <i class="fas fa-check-double"></i> Seleccionar Todos
-                    </button>
-                    
-                    <button type="button" 
-                            id="btn-limpiar-seleccion" 
-                            style="
-                                background: #dc3545;
-                                color: white;
-                                border: none;
-                                padding: 10px 16px;
-                                border-radius: 8px;
-                                font-size: 13px;
-                                font-weight: 600;
-                                cursor: pointer;
-                                transition: all 0.2s;
-                            "
-                            onmouseover="this.style.background='#c82333'; this.style.transform='translateY(-1px)'"
-                            onmouseout="this.style.background='#dc3545'; this.style.transform='translateY(0)'">
-                        <i class="fas fa-times"></i> Limpiar
-                    </button>
-                </div>
-                
-                <!-- Botones de acción principal -->
-                <div style="display: flex; gap: 12px;">
-                    <button type="button" 
-                            id="btn-confirmar-seleccion" 
-                            disabled
-                            style="
-                                background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-                                color: white;
-                                border: none;
-                                padding: 12px 24px;
-                                border-radius: 8px;
-                                font-weight: 600;
-                                cursor: pointer;
-                                transition: all 0.2s;
-                                opacity: 0.5;
-                                font-size: 14px;
-                            ">
-                        <i class="fas fa-filter"></i> Confirmar Selección
-                    </button>
-                    
-                    <button type="button" 
-                            id="btn-enviar-rrhh" 
-                            disabled
-                            style="
-                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                                color: white;
-                                border: none;
-                                padding: 12px 24px;
-                                border-radius: 8px;
-                                font-weight: 600;
-                                cursor: pointer;
-                                transition: all 0.2s;
-                                opacity: 0.5;
-                                display: none;
-                                font-size: 14px;
-                            ">
-                        <i class="fas fa-paper-plane"></i> Enviar a RRHH
-                    </button>
-                </div>
-            </div>
-        `;
-        
-            Swal.fire({
-                    title: `<i class="fas fa-folder-open"></i> Selección de CVs - Solicitud #${idSolicitud}`,
-                    html: modalHtml,
-                    width: '1000px',
-                    showConfirmButton: false,
-                    showCancelButton: true,
-                    cancelButtonText: '<i class="fas fa-times"></i> Cerrar',
-                    allowOutsideClick: false,
-                    customClass: {
-                        popup: 'archivos-modal-popup',
-                        cancelButton: 'archivos-cancel-button'
-                    },
-                    didOpen: () => {
-                        configurarEventosSeleccion();
-                        setTimeout(() => actualizarContador(), 100);
-                        
-                        // Agregar estilos CSS
-                        if (!document.getElementById('archivos-styles')) {
-                            const styles = document.createElement('style');
-                            styles.id = 'archivos-styles';
-                            styles.textContent = `
-                                .archivos-modal-popup {
-                                    border-radius: 16px !important;
-                                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
-                                }
-                                .archivos-cancel-button {
-                                    background: #6c757d !important;
-                                    border: none !important;
-                                    border-radius: 8px !important;
-                                    padding: 12px 24px !important;
-                                    font-weight: 600 !important;
-                                    font-size: 14px !important;
-                                }
-                                .archivo-item.seleccionado {
-                                    border-color: #667eea !important;
-                                    background: linear-gradient(135deg, #f8f9ff 0%, #e8ecff 100%) !important;
-                                    box-shadow: 0 4px 12px rgba(102,126,234,0.15) !important;
-                                }
-                                .archivo-item.seleccionado .cv-checkbox {
-                                    accent-color: #667eea !important;
-                                }
-                            `;
-                            document.head.appendChild(styles);
-                        }
-                    },
-                    // ← MOVER willClose AQUÍ, FUERA DEL didOpen
-                    willClose: () => {
-                        modalCVAbierto = false;
-                        console.log("🧯 Modal de selección cerrado, desbloqueado");
-                    }
-                });
-            }
-
-            function configurarEventosSeleccion() {
-                console.log("⚙️ Iniciando configuración de eventos...");
-                
-                // EVENTO PRINCIPAL PARA CHECKBOXES
-                $(document).off('change', '.cv-checkbox').on('change', '.cv-checkbox', function(e) {
-                    e.stopPropagation();
-                    
-                    const archivoId = String($(this).data('archivo-id'));
-                    const isChecked = $(this).is(':checked');
-                    const archivoItem = $(this).closest('.archivo-item');
-
-                    if (isChecked) {
-                        archivosSeleccionados.add(archivoId);
-                        archivoItem.addClass('seleccionado');
-                    } else {
-                        archivosSeleccionados.delete(archivoId);
-                        archivoItem.removeClass('seleccionado');
-                    }
-
-                    actualizarContador();
-                });
-
-                // Resto de eventos con .off() agregado
-                $(document).off('click', '#btn-seleccionar-todos').on('click', '#btn-seleccionar-todos', function(e) {
-                    e.stopPropagation();
-                    console.log('🔄 Seleccionando todos los archivos');
-                    
-                    archivosSeleccionados.clear();
-                    
-                    $('.cv-checkbox').each(function() {
-                        $(this).prop('checked', true);
-                        const archivoId = $(this).data('archivo-id');
-                        archivosSeleccionados.add(String(archivoId));
-                        $(this).closest('.archivo-item').addClass('seleccionado');
-                    });
-                    
-                    actualizarContador();
-                });
-
-                $(document).off('click', '#btn-limpiar-seleccion').on('click', '#btn-limpiar-seleccion', function(e) {
-                    e.stopPropagation();
-                    console.log('🧹 Limpiando selección');
-                    
-                    $('.cv-checkbox').each(function() {
-                        $(this).prop('checked', false);
-                        $(this).closest('.archivo-item').removeClass('seleccionado');
-                    });
-                    
-                    archivosSeleccionados.clear();
-                    actualizarContador();
-                });
-
-                $(document).off('click', '#btn-confirmar-seleccion').on('click', '#btn-confirmar-seleccion', function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    if (archivosSeleccionados.size === 0) {
-                        Swal.fire('Atención', 'Debes seleccionar al menos un CV', 'warning');
-                        return;
-                    }
-
-                    confirmarSeleccion();
-                });
-
-                $(document).off('click', '#btn-enviar-rrhh').on('click', '#btn-enviar-rrhh', function(e) {
-                    e.stopPropagation();
-                    enviarSeleccionARRHH();
-                });
-
-                $(document).off('click', '.btn-ver-archivo').on('click', '.btn-ver-archivo', function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const rutaArchivo = $(this).data('archivo');
-                    if (rutaArchivo) {
-                        window.open(rutaArchivo, '_blank');
-                    }
-                });
-
-                $(document).off('click', '.btn-descargar-archivo').on('click', '.btn-descargar-archivo', function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const rutaArchivo = $(this).data('archivo');
-                    if (rutaArchivo) {
-                        const link = document.createElement('a');
-                        link.href = rutaArchivo;
-                        link.download = rutaArchivo.split('/').pop();
-                        link.click();
-                    }
-                });
-
-                $(document).off('click', '.archivo-item').on('click', '.archivo-item', function(e) {
-                    if (!$(e.target).closest('button').length && !$(e.target).is('input[type="checkbox"]')) {
-                        const checkbox = $(this).find('.cv-checkbox');
-                        checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
-                    }
-                });
-                
-                console.log("✅ Eventos configurados correctamente");
-            }
-
-    // FUNCIÓN CORREGIDA PARA FORZAR ACTUALIZACIÓN VISUAL
-    function actualizarContador() {
-        const contador = archivosSeleccionados.size;
-        console.log(`🔢 Actualizando contador: ${contador} archivos seleccionados`);
-        
-        // MÚLTIPLES MÉTODOS PARA FORZAR ACTUALIZACIÓN VISUAL
-        const numeroElement = $('#numero-seleccionados');
-        const btnConfirmar = $('#btn-confirmar-seleccion');
-        
-        if (numeroElement.length === 0) {
-            console.error("❌ Elemento #numero-seleccionados no encontrado");
-            return;
-        }
-        
-        // MÉTODO 1: Actualización directa
-        numeroElement.text(contador);
-        
-        // MÉTODO 2: Forzar repaint del DOM
-        numeroElement[0].style.display = 'none';
-        numeroElement[0].offsetHeight; // Trigger reflow
-        numeroElement[0].style.display = '';
-        
-        // MÉTODO 3: Actualización con HTML
-        numeroElement.html(contador);
-        
-        // MÉTODO 4: Cambiar color para indicar cambio
-        numeroElement.css('color', contador > 0 ? '#28a745' : '#667eea');
-        numeroElement.css('font-weight', '700');
-        numeroElement.css('font-size', '18px');
-        
-        // MÉTODO 5: Actualizar atributo data
-        numeroElement.attr('data-count', contador);
-        
-        console.log(`✅ Contador actualizado en UI: ${contador}`);
-        
-        // Actualizar botón con el número
-        if (btnConfirmar.length > 0) {
-            if (contador > 0) {
-                btnConfirmar.prop('disabled', false).css('opacity', '1');
-                btnConfirmar.html(`<i class="fas fa-filter"></i> Confirmar Selección (${contador})`);
-                console.log("✅ Botón confirmar habilitado");
-            } else {
-                btnConfirmar.prop('disabled', true).css('opacity', '0.5');
-                btnConfirmar.html('<i class="fas fa-filter"></i> Confirmar Selección');
-                console.log("❌ Botón confirmar deshabilitado");
-            }
-        }
-        
-        // VERIFICACIÓN FINAL
-        setTimeout(() => {
-            const valorActual = numeroElement.text();
-            console.log(`🔍 Verificación: Valor mostrado="${valorActual}", Esperado="${contador}"`);
-            if (valorActual != contador) {
-                console.warn("⚠️ Valor no coincide, forzando actualización...");
-                numeroElement.text(contador).trigger('change');
-            }
-        }, 100);
-    }
-
-
-    // RESTO DE FUNCIONES (confirmarSeleccion, enviarSeleccionARRHH, etc.)
-        function confirmarSeleccion() {
-            const archivosArray = Array.from(archivosSeleccionados);
-            const archivosConfirmados = archivosOriginales.filter(archivo =>
-                archivosArray.includes(String(archivo.ID_ARCHIVO))
-            );
-
-            console.log(`Confirmando ${archivosConfirmados.length} archivos`);
-
-            Swal.fire({
-                title: '¿Confirmar selección de CVs?',
-                html: `
-                    <div style="text-align: left; margin: 20px 0;">
-                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                                    color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                            <h6 style="margin: 0 0 8px 0; font-weight: 600;">
-                                <i class="fas fa-check-circle"></i> Resumen de Selección
-                            </h6>
-                            <p style="margin: 0; opacity: 0.9;">
-                                Has seleccionado <strong>${archivosConfirmados.length} CVs</strong> para avanzar en el proceso
-                            </p>
-                        </div>
-                        <div style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
-                            <ul style="list-style: none; padding: 0; margin: 0;">
-                                ${archivosConfirmados.map(archivo => `
-                                    <li style="padding: 10px 15px; margin: 5px 0; 
-                                              background: #f8f9fa; border-radius: 8px;
-                                              border-left: 4px solid #28a745; display: flex; align-items: center;">
-                                        <i class="fas fa-file-pdf" style="color: #dc3545; margin-right: 10px;"></i>
-                                        <span style="font-weight: 500;">${archivo.NOMBRE_SOLO}</span>
-                                    </li>
-                                `).join('')}
-                            </ul>
-                        </div>
-                        <div style="background: #e3f2fd; border: 1px solid #bbdefb; 
-                                    border-radius: 8px; padding: 12px; margin-top: 15px;">
-                            <p style="margin: 0; color: #1976d2; font-size: 14px;">
-                                <i class="fas fa-info-circle" style="margin-right: 6px;"></i>
-                                Solo se mostrarán estos archivos seleccionados. Los demás quedarán ocultos.
-                            </p>
-                        </div>
-                    </div>
-                `,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: '<i class="fas fa-check"></i> Sí, confirmar selección',
-                cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
-                confirmButtonColor: '#28a745',
-                cancelButtonColor: '#6c757d',
-                width: '600px'
-            }).then((result) => {
-                if (result.isConfirmed) {
-
-                    // GUARDAR EN BASE DE DATOS
-                    $.ajax({
-                        url: './supervision/crudsolicitudes.php?action=guardar_seleccion_cvs',
-                        type: 'POST',
-                        data: {
-                              id_solicitud: idSolicitudActual,
-                              archivos_seleccionados: JSON.stringify(
-                                  archivosConfirmados.map(a => a.NOMBRE_ARCHIVO)
-                              ),
-                              comentario: $('#comentarioSupervisor').val() || '',
-                              total_archivos: archivosConfirmados.length
-                        },
-                          success: function (response) {
-                            console.log("🟡 Archivos guardados correctamente:", response);
-
-                            // OCULTAR ARCHIVOS NO SELECCIONADOS Y APLICAR ESTILO A LOS SELECCIONADOS
-                            $('.archivo-item').each(function () {
-                                const archivoId = $(this).data('archivo-id');
-                                if (!archivosSeleccionados.has(archivoId)) {
-                                    $(this).fadeOut(400);
-                                } else {
-                                    $(this).css({
-                                        'border-color': '#28a745',
-                                        'background': 'linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%)'
-                                    });
-                                }
-                            });
-
-                            // CAMBIAR BOTONES
-                            $('#btn-confirmar-seleccion').fadeOut(300, function () {
-                                $('#btn-enviar-rrhh').fadeIn(300).prop('disabled', false).css('opacity', '1');
-                            });
-
-                            // ACTUALIZAR MENSAJE
-                            $('#contador-seleccionados').html(`
-                                <i class="fas fa-check-circle" style="color: #28a745;"></i>
-                                <span style="color: #28a745; font-weight: 600;">
-                                    ${archivosConfirmados.length} CVs confirmados para envío
-                                </span>
-                            `);
-
-                            // DESHABILITAR CONTROLES
-                            $('#btn-seleccionar-todos, #btn-limpiar-seleccion').prop('disabled', true).css('opacity', '0.5');
-                            $('.cv-checkbox').prop('disabled', true);
-
-                            Swal.fire({
-                                title: '¡Selección confirmada!',
-                                text: 'Ahora puedes enviar la selección a RRHH',
-                                icon: 'success',
-                                timer: 2500,
-                                showConfirmButton: false
-                            });
-                            cargarSolicitudes(); 
-                        },
-                        error: function (xhr, status, error) {
-                            console.error("❌ Error al guardar selección:", error);
-                            Swal.fire('Error', 'Ocurrió un error al guardar la selección en la base de datos.', 'error');
-                        }
-                    });
-                }
-            });
-        }
 
       // FUNCIÓN PARA CREAR SOLICITUD
 // FUNCIÓN PARA CREAR SOLICITUD
@@ -3766,7 +3950,6 @@ $(document).off('click', '.btn-ver-historial-modificaciones').on('click', '.btn-
 
 
 // 🆕 FUNCIÓN PARA VER RESULTADO DE APROBACIÓN (SOLO LECTURA)
-// 🆕 FUNCIÓN PARA VER RESULTADO DE APROBACIÓN (CON PRIORIDAD MÁXIMA)
 $(document).off('click', '.btnVerResultadoAprobacion');
 
 // ✅ USAR CAPTURE PHASE PARA MÁXIMA PRIORIDAD
@@ -3950,6 +4133,200 @@ document.addEventListener('click', function(e) {
     return false;
   }
 }, true); // ← TRUE = CAPTURE PHASE (MÁXIMA PRIORIDAD)
+
+
+// VER RESUMEN APROBACION ACEPTADA
+    $(document).on('click', '.btnVerResumenAprobadoGerenncial', function() {
+    const id = $(this).data('id');
+    const solicitudId = $(this).data('solicitud-id') || id;
+    
+    // 🆕 OBTENER NOMBRE DEL GERENTE DESDE LA INTERFAZ (RRHH)
+    const filaActual = $(this).closest('tr');
+    const nombreGerente = filaActual.find('td:nth-child(5)').text().trim() || 'Gerente'; // Ajustar columna según tu tabla
+    
+    console.log("📋 RRHH cargando resumen de aprobacion para solicitud:", solicitudId);
+    console.log("👤 Nombre del gerente obtenido desde tabla:", nombreGerente);
+    
+    // Mostrar loading
+    Swal.fire({
+        title: '<i class="fas fa-spinner fa-spin"></i> Cargando informacion...',
+        html: 'Obteniendo detalles de la aprobacion...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+    
+    // 🆕 USAR EL MISMO ENDPOINT QUE FUNCIONA PARA GERENTES
+    $.ajax({
+        url: './gestionhumana/crudsolicitudesrh.php?action=obtener_resumen_rrhh',
+        type: 'GET',
+        dataType: 'json',
+        data: { id_solicitud: solicitudId },
+        success: function(response) {
+            console.log("✅ Resumen obtenido:", response);
+            
+            if (response.success) {
+                const solicitud = response.solicitud;
+                const resumen = response.resumen_aprobacion;
+                
+                // 🆕 USAR FECHA YA FORMATEADA DEL SERVIDOR
+                const fechaProceso = resumen.fecha_procesamiento || 'No disponible';
+                
+                // 🆕 USAR NOMBRE DEL GERENTE OBTENIDO DE LA INTERFAZ
+                const nombreGerenteCompleto = nombreGerente !== 'Gerente' ? nombreGerente : (resumen.procesado_por || 'No disponible');
+                
+                Swal.fire({
+                    title: '<i class="fas fa-clipboard-check"></i> Resumen de Aprobacion',
+                    html: `
+                        <div style="text-align: left; max-width: 100%;">
+                            <!-- INFORMACION BASICA DE LA SOLICITUD -->
+                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+                                <h5 style="margin: 0 0 15px 0; font-weight: 700; display: flex; align-items: center;">
+                                    <i class="fas fa-file-alt" style="margin-right: 10px; font-size: 20px;"></i>
+                                    Informacion de la Solicitud
+                                </h5>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                                    <div><strong>ID:</strong> #${solicitud.id}</div>
+                                    <div><strong>Tienda:</strong> ${solicitud.tienda || 'N/A'}</div>
+                                    <div><strong>Puesto:</strong> ${solicitud.puesto_solicitado || 'N/A'}</div>
+                                    <div><strong>Supervisor:</strong> ${solicitud.supervisor || 'N/A'}</div>
+                                    <div style="grid-column: 1 / -1;"><strong>Fecha de Solicitud:</strong> ${solicitud.fecha_solicitud || 'N/A'}</div>
+                                </div>
+                            </div>
+
+                            <!-- RESUMEN DE LA APROBACION -->
+                            <div style="background: #d4edda; border: 2px solid #28a745; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <h6 style="margin: 0 0 15px 0; font-weight: 700; color: #155724; display: flex; align-items: center;">
+                                    <i class="fas fa-check-circle" style="margin-right: 10px; font-size: 18px; color: #28a745;"></i>
+                                    Estado: APROBADA
+                                </h6>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                    <div>
+                                        <strong style="color: #155724;">
+                                            <i class="fas fa-user-check"></i> Procesado por:
+                                        </strong><br>
+                                        <span style="background: #c3e6cb; padding: 4px 8px; border-radius: 6px; font-size: 13px;">
+                                            ${nombreGerenteCompleto}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <strong style="color: #155724;">
+                                            <i class="fas fa-calendar-check"></i> Fecha de Procesamiento:
+                                        </strong><br>
+                                        <span style="background: #c3e6cb; padding: 4px 8px; border-radius: 6px; font-size: 13px;">
+                                            ${fechaProceso}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ASIGNACION A RRHH -->
+                            <div style="background: #cce5ff; border: 2px solid #007bff; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <h6 style="margin: 0 0 15px 0; font-weight: 700; color: #004085; display: flex; align-items: center;">
+                                    <i class="fas fa-user-plus" style="margin-right: 10px; font-size: 18px; color: #007bff;"></i>
+                                    Asignacion de RRHH
+                                </h6>
+                                <div style="text-align: center;">
+                                    <div style="background: #b3d9ff; border-radius: 8px; padding: 15px; display: inline-block;">
+                                        <i class="fas fa-user-tie" style="font-size: 24px; color: #0056b3; margin-bottom: 8px;"></i><br>
+                                        <strong style="font-size: 16px; color: #004085;">
+                                            ${solicitud.dirigido_rh || resumen.asignado_a || 'No asignado'}
+                                        </strong><br>
+                                        <small style="color: #6c757d;">Responsable de RRHH</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- COMENTARIO DE APROBACION -->
+                            <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 12px; padding: 20px;">
+                                <h6 style="margin: 0 0 15px 0; font-weight: 700; color: #856404; display: flex; align-items: center;">
+                                    <i class="fas fa-comment-alt" style="margin-right: 10px; font-size: 18px; color: #ffc107;"></i>
+                                    Comentario de Aprobacion del Gerente
+                                </h6>
+                                <div style="background: white; border-radius: 8px; padding: 15px; border: 1px solid #ffeaa7;">
+                                    <p style="margin: 0; line-height: 1.6; color: #333;">
+                                        ${resumen.comentario_aprobacion || 'Sin comentario adicional'}
+                                    </p>
+                                </div>
+                                <small style="color: #856404; margin-top: 10px; display: block;">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Fecha del comentario: ${fechaProceso}
+                                </small>
+                            </div>
+
+                            <!-- ACCIONES DISPONIBLES -->
+                            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-top: 25px; text-align: center;">
+                                <h6 style="color: #495057; margin-bottom: 15px;">
+                                    <i class="fas fa-tools"></i> La solicitud ya fue aprobada, favor seguir con el proceso de reclutamiento
+                                </h6>
+
+                    `,
+                    width: '800px',
+                    showCancelButton: false,
+                    confirmButtonText: '<i class="fas fa-times"></i> Cerrar',
+                    confirmButtonColor: '#6c757d',
+                    buttonsStyling: false,
+                    customClass: {
+                        popup: 'resumen-aprobacion-modal',
+                        confirmButton: 'btn btn-secondary btn-lg px-4'
+                    },
+                    didOpen: () => {
+                        // Agregar estilos especificos para este modal
+                        if (!document.getElementById('resumen-aprobacion-styles')) {
+                            const styles = document.createElement('style');
+                            styles.id = 'resumen-aprobacion-styles';
+                            styles.textContent = `
+                                .resumen-aprobacion-modal {
+                                    border-radius: 16px !important;
+                                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+                                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+                                }
+                                .resumen-aprobacion-modal .swal2-title {
+                                    font-size: 24px !important;
+                                    font-weight: 700 !important;
+                                    color: #333 !important;
+                                    margin-bottom: 20px !important;
+                                }
+                                .resumen-aprobacion-modal .btn {
+                                    font-weight: 600 !important;
+                                    border-radius: 8px !important;
+                                    transition: all 0.3s ease !important;
+                                }
+                                .resumen-aprobacion-modal .btn:hover {
+                                    transform: translateY(-2px) !important;
+                                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+                                }
+                            `;
+                            document.head.appendChild(styles);
+                        }
+                    }
+                });
+                
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: response.error || 'No se pudo cargar la informacion de la solicitud',
+                    confirmButtonText: 'Entendido'
+                });
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('❌ Error al cargar resumen:', {
+                status: xhr.status,
+                error: error,
+                responseText: xhr.responseText
+            });
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Conexion',
+                text: 'No se pudo cargar la informacion de la solicitud',
+                confirmButtonText: 'Entendido'
+            });
+        }
+    });
+});
 
 
 // 🔄 FUNCIÓN MEJORADA PARA DETECTAR SI SE PUEDE ENVIAR OBSERVACIONES
@@ -4580,11 +4957,2158 @@ $(document).on('click', '.btnVerResultadoAval', function() {
   cargarResultadoAvalSupervisor(idSolicitud, tienda, puesto, supervisor, razon);
 });
 
+//===========================================================================
+// MOSTRAR CANDIDATOS EN LA TABLA DE SOLICITUDES
+//===========================================================================
+// FUNCIÓN PARA MOSTRAR CANDIDATOS ENVIADOS - SOLO LECTURA SUPERVISORES
+window.mostrarCandidatosEnviados = function(idSolicitud) {
+    console.log('📋 Mostrando candidatos para solicitud:', idSolicitud);
+    
+    if (!idSolicitud) {
+        Swal.fire('Error', 'ID de solicitud no proporcionado', 'error');
+        return;
+    }
+    
+    // Mostrar loading mientras carga candidatos
+    Swal.fire({
+        title: 'Cargando candidatos...',
+        html: '<i class="fas fa-spinner fa-spin fa-2x text-primary"></i><br><br>Obteniendo lista de candidatos',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    // ✅ CARGAR CANDIDATOS CON NUEVA LÓGICA
+    $.ajax({
+        url: './supervision/crudsolicitudes.php?action=get_candidatos_por_solicitud_supervisor',
+        type: 'GET',
+        data: { 
+            id_solicitud: idSolicitud,
+            incluir_descartados: true,
+            _timestamp: Date.now() // Prevenir caché
+        },
+        dataType: 'json',
+        success: function(response) {
+            Swal.close();
+            
+            if (response.success) {
+                const solicitud = response.solicitud || {};
+                const esperandoRH = response.esperando_rh || false;
+                
+                console.log('📊 Respuesta del servidor:', response);
+                console.log('⏳ ¿Esperando RH?:', esperandoRH);
+                
+                // ✅ CREAR ÍNDICE GLOBAL DE CANDIDATOS
+                window.CANDIDATOS_INDEX = {};
+                response.candidatos.forEach(candidato => {
+                    candidato.ID_SOLICITUD = idSolicitud;
+                    window.CANDIDATOS_INDEX[candidato.ID_CANDIDATO] = candidato;
+                });
+                
+                // ============================================================================
+                // CASO 1: SOLICITUD REACTIVADA - MOSTRAR MENSAJE DE ESPERA
+                // ============================================================================
+                if (esperandoRH) {
+                    mostrarMensajeEsperaReactivacionSupervisor(idSolicitud, solicitud);
+                } 
+                // ============================================================================
+                // CASO 2: SOLICITUD NORMAL O REACTIVACIÓN YA CONFIRMADA
+                // ============================================================================
+                else {
+                    mostrarModalExpedientes(idSolicitud, response.candidatos);
+                }
+            } else {
+                Swal.fire('Info', 'No se encontraron candidatos para esta solicitud', 'info');
+            }
+        },
+        error: function(xhr, status, error) {
+            Swal.close();
+            console.error('Error cargando candidatos:', error);
+            Swal.fire('Error', 'Error al cargar candidatos: ' + error, 'error');
+        }
+    });
+};
+
+// ================================================================================================
+// NUEVA FUNCIÓN: MOSTRAR MENSAJE DE ESPERA CUANDO LA SOLICITUD ESTÁ EN PROCESO DE REACTIVACIÓN
+// ================================================================================================
+
+function mostrarMensajeEsperaReactivacionSupervisor(idSolicitud, solicitud) {
+    console.log('⏳ Mostrando mensaje de espera - RH aún no ha seleccionado candidatos');
+    
+    const tienda = solicitud.num_tienda || 'No especificada';
+    const puesto = solicitud.puesto_solicitado || 'No especificado';
+    const supervisor = solicitud.supervisor || 'No asignado';
+    const motivoReactivacion = solicitud.motivo_reactivacion || 'Sin motivo especificado';
+    
+    // Crear modal con mensaje de espera
+    const htmlModal = `
+        <div class="modal fade" id="modalReactivacionSupervisor" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content shadow-lg">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title">
+                            <i class="fas fa-hourglass-half mr-3"></i>
+                            Solicitud en Proceso de Reactivación
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        <!-- Información de la solicitud -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h6 class="card-title mb-3">
+                                    <i class="fas fa-info-circle text-info mr-2"></i>
+                                    Información de la Solicitud
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <p><strong>Tienda:</strong><br>${tienda}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>Puesto:</strong><br>${puesto}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>Supervisor:</strong><br>${supervisor}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Alerta principal -->
+                        <div class="alert alert-warning text-center py-4">
+                            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                            <h5 class="mb-3">Esta solicitud fue reactivada recientemente</h5>
+                            <p class="mb-0">
+                                <strong>Los candidatos estarán disponibles una vez que Recursos Humanos confirme su selección.</strong>
+                            </p>
+                        </div>
+                        
+                        <!-- Motivo de reactivación -->
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="fas fa-comment-dots mr-2"></i>
+                                    Motivo de Reactivación
+                                </h6>
+                                <p class="mb-0 text-muted">${motivoReactivacion}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Instrucciones -->
+                        <div class="mt-4 text-center text-muted">
+                            <p class="mb-1">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Por favor, espere a que RH confirme la selección de candidatos.
+                            </p>
+                            <p class="mb-0">
+                                <small>Una vez confirmado, los candidatos aparecerán en esta sección.</small>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            <i class="fas fa-times mr-2"></i>Cerrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remover modal anterior si existe
+    $('#modalReactivacionSupervisor').remove();
+    $('body').append(htmlModal);
+    
+    // Abrir modal
+    $('#modalReactivacionSupervisor').modal('show');
+}
+
+// ================================================================================================
+// AGREGAR AL FINAL DEL ARCHIVO (antes de cargarSolicitudes();)
+// ================================================================================================
+
+console.log('✅ Módulo de reactivación para Supervisores cargado correctamente');
+
+// FUNCIÓN PARA MOSTRAR MODAL DE EXPEDIENTES
+window.mostrarModalExpedientes = function(idSolicitud, candidatos) {
+    // Obtener información de la solicitud desde la tabla
+    const filaSolicitud = $(`tr[data-id="${idSolicitud}"]`);
+    const tiendaInfo = filaSolicitud.length > 0 ? filaSolicitud.find('td:nth-child(2)').text().trim() : 'No disponible';
+    const puestoInfo = filaSolicitud.length > 0 ? filaSolicitud.find('td:nth-child(3)').text().trim() : 'No disponible';
+    const supervisorInfo = filaSolicitud.length > 0 ? filaSolicitud.find('td:nth-child(4)').text().trim() : 'No disponible';
+    
+    // ✅ CORREGIR: CONTAR CANDIDATOS ACTIVOS VS DESCARTADOS CORRECTAMENTE
+    const candidatosActivos = candidatos.filter(c => {
+        // Un candidato está activo si:
+        // 1. No tiene campo ACTIVO o ACTIVO es 'Y'
+        // 2. Y no está marcado como 'Descartado' en ESTADO_CANDIDATO
+        const activo = c.ACTIVO === undefined || c.ACTIVO === 'Y' || c.ACTIVO === null;
+        const noDescartado = c.ESTADO_CANDIDATO !== 'Descartado' && 
+                            c.ESTADO_CANDIDATO !== 'DESCARTADO' &&
+                            !c.ESTADO_CANDIDATO?.toLowerCase().includes('descartado');
+        return activo && noDescartado;
+    });
+    
+    const candidatosDescartados = candidatos.filter(c => {
+        // Un candidato está descartado si:
+        // 1. ACTIVO es 'N' 
+        // 2. O ESTADO_CANDIDATO contiene 'Descartado'
+        // 3. O tiene MOTIVO_DESCARTE
+        const activoDescartado = c.ACTIVO === 'N';
+        const estadoDescartado = c.ESTADO_CANDIDATO === 'Descartado' || 
+                               c.ESTADO_CANDIDATO === 'DESCARTADO' ||
+                               (c.ESTADO_CANDIDATO && c.ESTADO_CANDIDATO.toLowerCase().includes('descartado'));
+        const tieneMotivoDescarte = c.MOTIVO_DESCARTE && c.MOTIVO_DESCARTE.trim() !== '';
+        
+        return activoDescartado || estadoDescartado || tieneMotivoDescarte;
+    });
+
+    const candidatosAvales = candidatos.filter(c => {
+    const estadoActual = (c.ESTADO_CANDIDATO || '').toLowerCase();
+    // Incluye candidatos en proceso de aval (pendientes) o ya procesados (enviado)
+    return estadoActual.includes('aprobacion') && estadoActual.includes('aval');
+    });
+
+    console.log('📊 Conteo de candidatos:', {
+        total: candidatos.length,
+        activos: candidatosActivos.length,
+        descartados: candidatosDescartados.length,
+        activosLista: candidatosActivos.map(c => ({id: c.ID_CANDIDATO, nombre: c.NOMBRE_CANDIDATO})),
+        descartadosLista: candidatosDescartados.map(c => ({id: c.ID_CANDIDATO, nombre: c.NOMBRE_CANDIDATO, motivo: c.MOTIVO_DESCARTE}))
+    });
+
+    const modalHtml = `
+        <div class="modal fade" id="modalExpedientesSupervisor" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-users mr-2"></i>Expedientes - Solicitud ${idSolicitud} 
+                            <span class="badge badge-light ml-2">${candidatos.length} candidatos</span>
+                            <span class="badge badge-success ml-1">${candidatosActivos.length} activos</span>
+                            <span class="badge badge-danger ml-1">${candidatosDescartados.length} descartados</span>
+                            <span class="badge badge-warning ml-2">Solo Lectura</span>
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body p-0">
+                        <div class="row no-gutters" style="height: 80vh;">
+                            <!-- PANEL IZQUIERDO - LISTA DE CANDIDATOS -->
+                            <div class="col-md-4 bg-light border-right">
+                                <div class="p-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0 text-primary">
+                                            <i class="fas fa-users mr-2"></i>Lista de Candidatos
+                                        </h6>
+                                        <div>
+                                            <span class="badge badge-success" id="totalActivos">${candidatosActivos.length}</span>
+                                            <span class="badge badge-danger" id="totalDescartados">${candidatosDescartados.length}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- FILTROS RÁPIDOS -->
+                                    <div class="btn-group btn-group-sm w-100 mb-3">
+                                        <button type="button" class="btn btn-outline-primary active" data-filter="todos">
+                                            Todos (${candidatos.length})
+                                        </button>
+                                        <button type="button" class="btn btn-outline-success" data-filter="activos">
+                                            Activos (${candidatosActivos.length})
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" data-filter="descartados">
+                                            Descartados (${candidatosDescartados.length})
+                                        </button>
+                                        <button type="button" class="btn btn-outline-warning" data-filter="avales">
+                                            Avales (${candidatosAvales.length})
+                                        </button>
+                                    </div>
+                                    
+                                    <div id="listaCandidatosSupervisor" style="max-height: calc(100vh - 300px); overflow-y: auto;">
+                                        ${candidatos.map(c => {
+const nombreCompleto = `${c.NOMBRE_CANDIDATO || ''} ${c.APELLIDOS_CANDIDATO || ''}`.trim();
+const totalArchivos = c.TOTAL_ARCHIVOS || 0;
+
+// ✅ CLASIFICAR CANDIDATOS
+const esDescartado = c.ACTIVO === 'N' || c.ESTADO_CANDIDATO === 'Descartado';
+const estadoActual = (c.ESTADO_CANDIDATO || '').toLowerCase();
+const esAval = estadoActual.includes('aprobacion') && estadoActual.includes('aval');
+
+// ✅ DETERMINAR SI ES APROBADO, RECHAZADO O PENDIENTE
+const esAprobado = c.APROBACION === 'Y';
+const esRechazado = c.APROBACION === 'N';
+const esPendiente = estadoActual === 'aprobacion de aval' && !c.APROBACION;
+const esReactivado = c.REACTIVADO_POST_CONTRATACION === 'Y';
+
+// ✅ DETERMINAR CLASE CSS Y COLOR
+let claseCSS = '';
+let colorBorde = '';
+let colorTexto = '';
+let colorFondo = '';
+
+if (esDescartado) {
+    claseCSS = 'candidato-descartado';
+    colorBorde = '#dc3545';
+    colorTexto = '#721c24';
+    colorFondo = '#f8d7da';
+} else if (esAprobado) {
+    claseCSS = 'candidato-aprobado candidato-aval';
+    colorBorde = '#28a745';
+    colorTexto = '#155724';
+    colorFondo = '#d4edda';
+} else if (esRechazado) {
+    claseCSS = 'candidato-rechazado candidato-aval';
+    colorBorde = '#dc3545';
+    colorTexto = '#721c24';
+    colorFondo = '#f8d7da';
+} else if (esPendiente) {
+    claseCSS = 'candidato-pendiente-aval candidato-aval';
+    colorBorde = '#ffc107';
+    colorTexto = '#856404';
+    colorFondo = '#fff3cd';
+} else if (esAval) {
+    claseCSS = 'candidato-aval';
+    colorBorde = '#17a2b8';
+    colorTexto = '#0c5460';
+    colorFondo = '#d1ecf1';
+} else {
+    claseCSS = 'candidato-activo';
+    colorBorde = '#007bff';
+    colorTexto = '#004085';
+    colorFondo = '#ffffff';
+}
+
+return `
+    <div class="candidate-card mb-2 ${claseCSS}" 
+         data-candidato-id="${c.ID_CANDIDATO}" 
+         data-estado="${esDescartado ? 'descartado' : (esAprobado ? 'aprobado' : (esRechazado ? 'rechazado' : (esPendiente ? 'pendiente' : 'activo')))}">
+        <div class="card" style="border-left: 4px solid ${colorBorde}; background-color: ${colorFondo};">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1 font-weight-bold" style="color: ${colorTexto};">
+                            ${nombreCompleto}
+                            ${esDescartado ? '<span class="badge badge-danger ml-2"><i class="fas fa-times-circle"></i> Descartado</span>' : ''}
+                            ${esAprobado ? '<span class="badge badge-success ml-2"><i class="fas fa-check-circle"></i> Aprobado</span>' : ''}
+                            ${esRechazado ? '<span class="badge badge-danger ml-2"><i class="fas fa-times-circle"></i> Rechazado</span>' : ''}
+                            ${esPendiente ? '<span class="badge badge-warning ml-2"><i class="fas fa-clock"></i> Pendiente Aval</span>' : ''}
+                            ${esReactivado ? '<span class="badge badge-warning ml-2" style="font-size: 0.75rem;"><i class="fas fa-redo mr-1"></i>Reactivado</span>' : ''}
+                        </h6>
+                        <p class="mb-1 text-muted small">
+                            <i class="fas fa-id-card mr-1"></i>${c.DOCUMENTO_CANDIDATO || 'Sin documento'}
+                        </p>
+                        <p class="mb-0 text-muted small">
+                            <i class="fas fa-info-circle mr-1"></i>${c.ESTADO_CANDIDATO}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <span class="badge badge-info">
+                            <i class="fas fa-file mr-1"></i>${totalArchivos} archivos
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+`;
+                                        }).join('')}
+                                        
+                                        ${candidatos.length === 0 ? `
+                                            <div class="text-center py-4">
+                                                <i class="fas fa-users text-muted" style="font-size: 3rem;"></i>
+                                                <p class="text-muted mt-2">No hay candidatos registrados</p>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- PANEL DERECHO - EXPEDIENTE -->
+                            <div class="col-md-8" style="background: #f8f9fa;">
+                                <div class="p-4">
+                                    <div id="expedienteCandidatoSupervisor">
+                                        <div class="text-center py-5" style="margin-top: 100px;">
+                                            <div style="font-size: 4rem; color: #dee2e6; margin-bottom: 20px;">
+                                                <i class="fas fa-user-circle"></i>
+                                            </div>
+                                            <h5 class="text-muted">Selecciona un candidato</h5>
+                                            <p class="text-muted">Haz clic en un candidato de la lista para ver su expediente completo</p>
+                                            ${candidatos.length === 0 ? `
+                                                <div class="alert alert-info mt-3">
+                                                    <i class="fas fa-info-circle"></i> No hay candidatos para mostrar
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+<style>
+    /* Candidatos descartados */
+    .candidato-descartado .card {
+        border-left: 4px solid #dc3545 !important;
+        background: linear-gradient(135deg, #fff5f5, #ffe6e6) !important;
+    }
+    .candidato-descartado .card:hover {
+        background: linear-gradient(135deg, #ffe6e6, #ffd6d6) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(220, 53, 69, 0.2);
+    }
+    
+    /* Candidatos aprobados */
+    .candidato-aprobado .card {
+        border-left: 4px solid #28a745 !important;
+        background: linear-gradient(135deg, #f0fff4, #d4edda) !important;
+    }
+    .candidato-aprobado .card:hover {
+        background: linear-gradient(135deg, #d4edda, #c3e6cb) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+    }
+    
+    /* Candidatos rechazados */
+    .candidato-rechazado .card {
+        border-left: 4px solid #dc3545 !important;
+        background: linear-gradient(135deg, #fff5f5, #f8d7da) !important;
+    }
+    .candidato-rechazado .card:hover {
+        background: linear-gradient(135deg, #f8d7da, #f5c6cb) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    }
+    
+    /* Candidatos pendientes de aval */
+    .candidato-pendiente-aval .card {
+        border-left: 4px solid #ffc107 !important;
+        background: linear-gradient(135deg, #fffbf0, #fff3cd) !important;
+    }
+    .candidato-pendiente-aval .card:hover {
+        background: linear-gradient(135deg, #fff3cd, #ffeaa7) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+    }
+    
+    /* Candidatos aval genérico */
+    .candidato-aval .card {
+        border-left: 4px solid #ffc107 !important;
+        background: linear-gradient(135deg, #fffbf0, #fff3cd) !important;
+    }
+    .candidato-aval .card:hover {
+        background: linear-gradient(135deg, #fff3cd, #ffeaa7) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+    }
+    
+    /* Candidatos activos */
+    .candidato-activo .card:hover {
+        background: linear-gradient(135deg, #f8f9ff, #e8ecff);
+        transform: translateY(-2px);
+    }
+    
+    /* Botones de filtro */
+    .btn-filter-active {
+        background-color: #007bff !important;
+        color: white !important;
+        border-color: #007bff !important;
+    }
+    
+    /* Ocultar candidatos filtrados */
+    .candidato-aprobado.hidden,
+    .candidato-rechazado.hidden,
+    .candidato-pendiente-aval.hidden,
+    .candidato-aval.hidden {
+        display: none !important;
+    }
+</style>
+    `;
+    
+
+    // Limpiar modales anteriores y agregar nuevo
+    $('#modalExpedientesSupervisor').remove();
+    $('body').append(modalHtml);
+    
+    // Mostrar modal manualmente
+    const modalElement = document.getElementById('modalExpedientesSupervisor');
+    modalElement.style.display = 'block';
+    modalElement.classList.add('show');
+    document.body.classList.add('modal-open');
+
+    // Agregar backdrop
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop fade show';
+    backdrop.id = 'modal-backdrop-supervisor';
+    document.body.appendChild(backdrop);
+    
+    // Configurar eventos de filtro
+    $('[data-filter]').on('click', function() {
+        const filter = $(this).data('filter');
+        
+        // Actualizar botones activos
+        $('[data-filter]').removeClass('btn-filter-active').addClass('btn-outline-primary');
+        $(this).removeClass('btn-outline-primary btn-outline-success btn-outline-danger');
+        
+        // Aplicar clases según el filtro seleccionado
+        if (filter === 'activos') {
+            $(this).addClass('btn-outline-success');
+        } else if (filter === 'descartados') {
+            $(this).addClass('btn-outline-danger');
+        } else {
+            $(this).addClass('btn-filter-active');
+        }
+        
+        // Aplicar filtro
+        if (filter === 'todos') {
+            $('.candidate-card').show();
+        } else if (filter === 'activos') {
+            $('.candidate-card').hide();
+            $('.candidato-activo').show();
+        } else if (filter === 'descartados') {
+            $('.candidate-card').hide();
+            $('.candidato-descartado').show();
+        } else if (filter === 'avales') {
+            $('.candidate-card').hide();
+            $('.candidato-aval').show();
+        }
+    });
+    
+    // Configurar evento de clic en candidatos
+    $('.candidate-card').on('click', function(e) {
+        e.preventDefault();
+        const idCandidato = $(this).data('candidato-id');
+        const candidato = window.CANDIDATOS_INDEX[idCandidato];
+        
+        if (!candidato) {
+            console.error('Candidato no encontrado en el índice:', idCandidato);
+            return;
+        }
+        
+        const nombreCompleto = `${candidato.NOMBRE_CANDIDATO || ''} ${candidato.APELLIDOS_CANDIDATO || ''}`.trim();
+        
+        // Marcar como seleccionado
+        $('.candidate-card .card').removeClass('border-primary bg-light border-danger');
+        $(this).find('.card').addClass('bg-light');
+        
+        // Cargar expediente
+        seleccionarCandidatoSupervisor(idCandidato, nombreCompleto);
+    });
+
+    // Manejar cierre manual del modal
+    $('#modalExpedientesSupervisor .close').on('click', function() {
+        document.getElementById('modalExpedientesSupervisor').style.display = 'none';
+        document.getElementById('modalExpedientesSupervisor').classList.remove('show');
+        document.body.classList.remove('modal-open');
+        $('#modal-backdrop-supervisor').remove();
+        $('#modalExpedientesSupervisor').remove();
+    });
+};
+
+// =============================================================================
+// AGREGAR FUNCIÓN DE DEBUG PARA VERIFICAR LOS DATOS
+// =============================================================================
+
+window.debugCandidatos = function() {
+    console.log('=== DEBUG CANDIDATOS ===');
+    console.log('CANDIDATOS_INDEX:', window.CANDIDATOS_INDEX);
+    
+    if (window.CANDIDATOS_INDEX) {
+        const candidatosArray = Object.values(window.CANDIDATOS_INDEX);
+        console.log('Total candidatos en índice:', candidatosArray.length);
+        
+        candidatosArray.forEach((c, index) => {
+            console.log(`Candidato ${index + 1}:`, {
+                id: c.ID_CANDIDATO,
+                nombre: c.NOMBRE_CANDIDATO,
+                activo: c.ACTIVO,
+                estado: c.ESTADO_CANDIDATO,
+                motivo_descarte: c.MOTIVO_DESCARTE,
+                es_activo: c.ACTIVO === 'S' || c.ACTIVO === undefined || c.ACTIVO === null,
+                es_descartado: c.ACTIVO === 'N' || 
+                             c.ESTADO_CANDIDATO === 'Descartado' || 
+                             c.ESTADO_CANDIDATO === 'DESCARTADO' ||
+                             (c.ESTADO_CANDIDATO && c.ESTADO_CANDIDATO.toLowerCase().includes('descartado'))
+            });
+        });
+    }
+};
+
+// FUNCIÓN PARA SELECCIONAR CANDIDATO
+window.seleccionarCandidatoSupervisor = function(idCandidato, nombreCandidato) {
+    console.log('🎯 Candidato seleccionado:', idCandidato, nombreCandidato);
+    
+    // Obtener información del candidato para determinar si está descartado
+    const candidato = window.CANDIDATOS_INDEX[idCandidato];
+    const esDescartado = candidato && (candidato.ACTIVO === 'N' || candidato.ESTADO_CANDIDATO === 'Descartado');
+    
+    // Limpiar selecciones previas
+    $('.candidate-card .card').removeClass('border-primary bg-light border-danger');
+    
+    // Marcar como seleccionado con el color apropiado
+    const cardSeleccionado = $(`.candidate-card[data-candidato-id="${idCandidato}"] .card`);
+    if (esDescartado) {
+        cardSeleccionado.addClass('border-danger bg-light');
+    } else {
+        cardSeleccionado.addClass('border-primary bg-light');
+    }
+    
+    // Cargar expediente
+    verExpedienteCandidato(idCandidato, nombreCandidato);
+};
+
+// FUNCIÓN PARA VER EXPEDIENTE DE CANDIDATO - SOLO LECTURA
+window.verExpedienteCandidato = function(idCandidato, nombreCandidato) {
+    console.log('Viendo expediente de candidato:', idCandidato);
+    
+    // OBTENER INFORMACIÓN COMPLETA DEL CANDIDATO DESDE EL ÍNDICE
+    const candidato = window.CANDIDATOS_INDEX[idCandidato];
+    if (!candidato) {
+        $('#expedienteCandidatoSupervisor').html(`
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i> 
+                Error: No se encontró información del candidato
+            </div>
+        `);
+        return;
+    }
+    
+    const nombreReal = `${candidato.NOMBRE_CANDIDATO || ''} ${candidato.APELLIDOS_CANDIDATO || ''}`.trim();
+    const esDescartado = candidato.ACTIVO === 'N' || candidato.ESTADO_CANDIDATO === 'Descartado';
+    const estadoActual = (candidato.ESTADO_CANDIDATO || '').toLowerCase();
+
+    // SI EL CANDIDATO TIENE AVAL PROCESADO, MOSTRAR RESULTADO
+    if (estadoActual === 'aprobacion de aval enviado') {
+        console.log('🎯 Candidato con aval procesado, mostrando resultado');
+        
+        // Mostrar loading mientras se carga
+        $('#expedienteCandidatoSupervisor').html(`
+            <div class="text-center py-5">
+                <div class="spinner-border text-success" style="width: 3rem; height: 3rem;"></div>
+                <h5 class="mt-3 text-success">Cargando expediente del candidato...</h5>
+                <p class="text-muted">Obteniendo resultado del aval gerencial</p>
+            </div>
+        `);
+        
+        // Mostrar resultado después de 300ms
+        setTimeout(() => {
+            mostrarResultadoAvalProcesadoSupervisor(candidato);
+        }, 300);
+        
+        return;
+    }
+    
+    // Mostrar loading en el panel del expediente
+    $('#expedienteCandidatoSupervisor').html(`
+        <div class="text-center py-5">
+            <div class="spinner-border ${esDescartado ? 'text-danger' : 'text-primary'}" role="status" style="width: 3rem; height: 3rem;">
+                <span class="sr-only">Cargando...</span>
+            </div>
+            <h5 class="text-muted mt-3">Cargando expediente...</h5>
+            <p class="text-muted">Obteniendo información de ${nombreReal}</p>
+            ${esDescartado ? '<p class="text-danger"><i class="fas fa-user-times"></i> Candidato descartado</p>' : ''}
+        </div>
+    `);
+    
+    // Obtener permisos e información detallada
+    $.ajax({
+        url: './supervision/crudsolicitudes.php?action=get_permisos_subida_candidato_supervisor',
+        type: 'GET',
+        data: {
+            id_candidato: idCandidato,
+            rol_usuario: 'SUPERVISOR',
+            incluir_motivo_descarte: true // ✅ NUEVO PARÁMETRO
+        },
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                // Incluir información del candidato en la respuesta
+                response.candidato = candidato;
+                mostrarExpedienteCompletoSupervisor(idCandidato, nombreReal, response);
+            } else {
+                $('#expedienteCandidatoSupervisor').html(`
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        Error: ${response.error}
+                    </div>
+                `);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error obteniendo permisos:', error);
+            $('#expedienteCandidatoSupervisor').html(`
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    Error al cargar expediente
+                </div>
+            `);
+        }
+    });
+};
+
+window.mostrarExpedienteCompletoSupervisor = function(idCandidato, nombreCandidato, datosCompletos) {
+    const carpetas = datosCompletos.carpetas || [];
+    const estadoActual = datosCompletos.estado_candidato || 'No definido';
+    const puestoSolicitado = datosCompletos.puesto_solicitado || 'No definido';
+    const motivoDescarte = datosCompletos.motivo_descarte || datosCompletos.candidato?.MOTIVO_DESCARTE || '';
+    
+    const infoDescarte = datosCompletos.info_descarte || {};
+    const nombreQuienDescarto = infoDescarte.NOMBRE_QUIEN_DESCARTO || 'Usuario no identificado';
+    const tipoUsuarioDescarto = infoDescarte.TIPO_USUARIO_DESCARTO || 'DESCONOCIDO';
+    const fechaDescarte = infoDescarte.FECHA_CAMBIO || '';
+    
+    const esDescartado = estadoActual.toLowerCase() === 'descartado' || 
+                        datosCompletos.candidato?.ACTIVO === 'N' ||
+                        datosCompletos.candidato?.ESTADO_CANDIDATO === 'Descartado';
+    
+    // ✅ NUEVO: DETECTAR SI ESTÁ CONTRATADO
+    const esContratado = estadoActual === 'Contratado';
+    
+    const filaSolicitud = $(`tr[data-id]`).first();
+    const tiendaInfo = filaSolicitud.length > 0 ? filaSolicitud.find('td:nth-child(2)').text().trim() : 'No disponible';
+    const supervisorInfo = filaSolicitud.length > 0 ? filaSolicitud.find('td:nth-child(4)').text().trim() : 'No disponible';
+    const fechaRegistro = filaSolicitud.length > 0 ? filaSolicitud.find('td:nth-child(7)').text().trim() : 'No disponible';
+
+    let iconoPersona, etiquetaPersona, colorPersona;
+
+    if (tipoUsuarioDescarto === 'SUPERVISOR') {
+        iconoPersona = 'fa-user-tie';
+        etiquetaPersona = 'Supervisor';
+        colorPersona = 'info';
+    } else if (tipoUsuarioDescarto === 'GERENTE') {
+        iconoPersona = 'fa-user-cog';
+        etiquetaPersona = 'Gerente';
+        colorPersona = 'warning';
+    } else if (tipoUsuarioDescarto === 'RRHH') {
+        iconoPersona = 'fa-user-friends';
+        etiquetaPersona = 'RRHH';
+        colorPersona = 'success';
+    } else {
+        iconoPersona = 'fa-user-question';
+        etiquetaPersona = 'Usuario';
+        colorPersona = 'secondary';
+    }
+
+    let carpetasHtml = '';
+    const estadosConArchivos = carpetas.filter(c => c.ya_tiene_archivos);
+    
+    if (esDescartado) {
+        if (estadosConArchivos.length > 0) {
+            estadosConArchivos.forEach(carpeta => {
+                carpetasHtml += `
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card border-warning h-100">
+                            <div class="card-body text-center d-flex flex-column">
+                                <i class="fas fa-folder-open fa-2x text-warning mb-2"></i>
+                                <h6 class="card-title">${carpeta.nombre_estado}</h6>
+                                <span class="badge badge-warning">Completado</span>
+                                <div class="mt-auto">
+                                    <button class="btn btn-outline-primary btn-sm" 
+                                            onclick="verArchivosCarpeta('${idCandidato}', '${carpeta.nombre_estado}')">
+                                        <i class="fas fa-eye"></i> Ver Archivos
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        } else {
+            carpetasHtml = `
+                <div class="col-12">
+                    <div class="text-center py-4">
+                        <i class="fas fa-user-times text-danger" style="font-size: 3rem;"></i>
+                        <h6 class="mt-3 text-danger">Candidato descartado antes de completar estados del proceso</h6>
+                        <p class="text-muted">No se registraron archivos en ningún estado del proceso</p>
+                    </div>
+                </div>
+            `;
+        }
+    } else {
+        carpetas.forEach(carpeta => {
+            let colorCard, iconoCarpeta, estadoCarpeta, accionesHtml;
+            
+            if (carpeta.ya_tiene_archivos) {
+                colorCard = 'success';
+                iconoCarpeta = 'fas fa-folder-open';
+                estadoCarpeta = 'Completado';
+                
+                // ✅ SI ESTÁ CONTRATADO, SOLO BOTÓN VER
+                if (esContratado) {
+                    accionesHtml = `
+                        <button class="btn btn-info btn-sm" 
+                                onclick="verArchivosCarpeta('${idCandidato}', '${carpeta.nombre_estado}')">
+                            <i class="fas fa-eye"></i> Ver
+                        </button>
+                    `;
+                } else {
+                    accionesHtml = `
+                        <button class="btn btn-outline-primary btn-sm" 
+                                onclick="verArchivosCarpeta('${idCandidato}', '${carpeta.nombre_estado}')">
+                            <i class="fas fa-eye"></i> Ver Archivos
+                        </button>
+                    `;
+                }
+            } else if (carpeta.puede_subir && !esContratado) {
+                colorCard = 'primary';
+                iconoCarpeta = 'fas fa-folder-plus';
+                estadoCarpeta = 'Disponible';
+                accionesHtml = `
+                    <button class="btn btn-success btn-sm" 
+                            onclick="subirArchivoSupervisor('${idCandidato}', '${carpeta.nombre_estado}')">
+                        <i class="fas fa-upload"></i> Subir archivo
+                    </button>
+                `;
+            } else {
+                colorCard = 'secondary';
+                iconoCarpeta = 'fas fa-folder';
+                estadoCarpeta = esContratado ? 'Solo lectura' : 'Sin archivos';
+                accionesHtml = `
+                    <small class="text-muted">${carpeta.motivo_bloqueo || 'Sin archivos'}</small>
+                `;
+            }
+            
+            carpetasHtml += `
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card border-${colorCard} h-100">
+                        <div class="card-body text-center d-flex flex-column">
+                            <i class="${iconoCarpeta} fa-2x text-${colorCard} mb-2"></i>
+                            <h6 class="card-title">${carpeta.nombre_estado}</h6>
+                            <span class="badge badge-${colorCard}">${estadoCarpeta}</span>
+                            <div class="mt-auto">
+                                ${accionesHtml}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    
+    const expedienteHtml = `
+        <div class="container-fluid">
+            <div class="card ${esDescartado ? 'border-danger' : esContratado ? 'border-success' : ''}">
+                <div class="card-header ${esDescartado ? 'bg-danger text-white' : esContratado ? 'bg-success text-white' : 'bg-info text-white'}">
+                    <h5 class="mb-0">
+                        <i class="fas ${esDescartado ? 'fa-user-times' : esContratado ? 'fa-user-check' : 'fa-user'} mr-2"></i>
+                        ${nombreCandidato}
+                        <span class="badge ${esDescartado ? 'badge-light text-dark' : 'badge-light'} ml-2">${estadoActual}</span>
+                        <span class="badge badge-info ml-2">Supervisión</span>
+                        ${esDescartado ? '<span class="badge badge-light ml-2">DESCARTADO</span>' : ''}
+                        ${esContratado ? '<span class="badge badge-light ml-2">CONTRATADO</span>' : ''}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card ${esDescartado ? 'border-danger' : esContratado ? 'border-success' : 'border-primary'}">
+                                <div class="card-header ${esDescartado ? 'bg-danger text-white' : esContratado ? 'bg-success text-white' : 'bg-primary text-white'} py-2">
+                                    <h6 class="mb-0"><i class="fas fa-user mr-2"></i>Información del Candidato</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Nombre:</strong> ${nombreCandidato}</p>
+                                    <p><strong>Documento:</strong> ${datosCompletos.candidato?.DOCUMENTO_CANDIDATO || 'No registrado'}</p>
+                                    <p><strong>Estado:</strong> 
+                                        <span class="badge badge-${esDescartado ? 'danger' : esContratado ? 'success' : 'primary'}">${estadoActual}</span>
+                                    </p>
+                                    ${esDescartado ? `
+                                        <div class="alert alert-danger mt-3">
+                                            <h6 class="alert-heading">
+                                                <i class="fas fa-exclamation-triangle"></i> Motivo del Descarte
+                                            </h6>
+                                            <hr>
+                                            <p class="mb-0 font-weight-bold">
+                                                ${motivoDescarte ? motivoDescarte : 'No se especificó motivo'}
+                                            </p>
+                                            <div class="mt-3 p-2 bg-light rounded">
+                                                <small class="d-block text-dark">
+                                                    <i class="fas ${iconoPersona} text-${colorPersona}"></i> 
+                                                    <strong>Descartado por ${etiquetaPersona}:</strong> 
+                                                    <span class="text-${colorPersona} font-weight-bold">${nombreQuienDescarto}</span>
+                                                    ${fechaDescarte ? `<br><i class="fas fa-calendar text-muted"></i> <small class="text-muted">Fecha: ${fechaDescarte}</small>` : ''}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white py-2">
+                                    <h6 class="mb-0"><i class="fas fa-building mr-2"></i>Información de la Solicitud</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Tienda:</strong> ${tiendaInfo}</p>
+                                    <p><strong>Puesto:</strong> ${puestoSolicitado}</p>
+                                    <p><strong>Supervisor:</strong> ${supervisorInfo}</p>
+                                    <p><strong>Fecha registro:</strong> ${fechaRegistro}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card ${esDescartado ? 'border-warning' : 'border-secondary'}">
+                        <div class="card-header ${esDescartado ? 'bg-warning text-dark' : 'bg-secondary text-white'}">
+                            <h6 class="mb-0">
+                                <i class="fas fa-clipboard-list mr-2"></i>
+                                ${esDescartado ? 'Estados Completados antes del Descarte' : esContratado ? 'Estados Completados' : 'Estados del Proceso'}
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                ${carpetasHtml}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${esContratado ? `
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="alert alert-success text-center mb-0">
+                                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                <h5 class="mb-0"><strong>CANDIDATO CONTRATADO</strong></h5>
+                                <p class="mb-0 mt-2">La plaza ha sido cubierta exitosamente</p>
+                            </div>
+                        </div>
+                    ` : !esDescartado ? `
+                        <div class="mt-4 pt-3 border-top text-center">
+                            <button class="btn btn-danger btn-lg" onclick="descartarCandidatoSupervisor(${idCandidato}, '${nombreCandidato}')">
+                                <i class="fas fa-user-times mr-2"></i>Descartar Candidato
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    $('#expedienteCandidatoSupervisor').html(expedienteHtml);
+};
+//=============================================================================
+// ARCHIVOS PARA SOLO LECTURA DEL ESTADO DE LOS CANDIDATOS 
+//=============================================================================
+// FUNCIÓN PARA MOSTRAR EXPEDIENTE EN MODO SOLO LECTURA
+window.mostrarExpedienteSoloLectura = function(idCandidato, nombreCandidato, datosPermisos) {
+    const carpetas = datosPermisos.carpetas || [];
+    const estadoActual = datosPermisos.estado_candidato || 'No definido';
+    const puestoSolicitado = datosPermisos.puesto_solicitado || 'No definido';
+    
+    // Obtener información de la solicitud desde la tabla si está disponible
+    const filaSolicitud = $(`tr[data-id]`).first();
+    const tiendaInfo = filaSolicitud.length > 0 ? filaSolicitud.find('td:nth-child(2)').text().trim() : 'No disponible';
+    const supervisorInfo = filaSolicitud.length > 0 ? filaSolicitud.find('td:nth-child(4)').text().trim() : 'No disponible';
+
+    // OBTENER SI EL CANDIDATO ESTA ACTIVO O DESCARTADO
+    const candidatoActivo = estadoActual.toLowerCase() !== 'descartado';
+    
+    let carpetasHtml = '';
+    
+    carpetas.forEach(carpeta => {
+        // 🎨 Determinar el color y estado según los nuevos permisos
+        let colorCard, iconoCarpeta, estadoCarpeta, accionesHtml;
+        
+        if (carpeta.ya_tiene_archivos) {
+            // Ya tiene archivos - verde
+            colorCard = 'success';
+            iconoCarpeta = 'fas fa-folder-open';
+            estadoCarpeta = 'Completado';
+            accionesHtml = `
+                <button class="btn btn-outline-primary btn-sm" 
+                        onclick="verArchivosCarpeta('${idCandidato}', '${carpeta.nombre_estado}')">
+                    <i class="fas fa-eye"></i> Ver Archivos
+                </button>
+            `;
+} else if (carpeta.puede_subir) {
+    // Puede subir archivos - azul/primary
+    colorCard = 'primary';
+    iconoCarpeta = 'fas fa-folder-plus';
+    estadoCarpeta = 'Disponible';
+    accionesHtml = `
+        <div class="mt-2">
+            <button class="btn btn-success btn-sm" 
+                    onclick="subirArchivoGerente('${idCandidato}', '${carpeta.nombre_estado}')">
+                <i class="fas fa-upload"></i> Subir archivo
+            </button>
+        </div>
+    `;
+}else {
+            // No puede subir - gris
+            colorCard = 'secondary';
+            iconoCarpeta = 'fas fa-folder';
+            estadoCarpeta = 'Sin archivos';
+            accionesHtml = `
+                <small class="text-muted">${carpeta.motivo_bloqueo || 'Sin archivos'}</small>
+            `;
+        }
+        
+        // 🎯 DISEÑO UNIFORME - todas las cards iguales
+carpetasHtml += `
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card border-${colorCard} h-100">
+            <div class="card-body text-center d-flex flex-column">
+                <i class="${iconoCarpeta} fa-2x text-${colorCard} mb-2"></i>
+                <h6 class="card-title">${carpeta.nombre_estado}</h6>
+                <span class="badge badge-${colorCard}">${estadoCarpeta}</span>
+                <div class="mt-auto">
+                    ${accionesHtml}
+                </div>
+            </div>
+        </div>
+    </div>
+`;
+    });
+    
+    const expedienteHtml = `
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user mr-2"></i>${nombreCandidato}
+                        <span class="badge badge-light text-dark ml-2">${estadoActual}</span>
+                        <span class="badge badge-warning ml-2">Supervisión</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6>Información Personal</h6>
+                            <p><strong>Nombre:</strong> ${nombreCandidato}</p>
+                            <p><strong>Estado:</strong> <span class="badge badge-primary">${estadoActual}</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Información de la Solicitud</h6>
+                            <p><strong>Tienda:</strong> ${tiendaInfo}</p>
+                            <p><strong>Puesto:</strong> ${puestoSolicitado}</p>
+                            <p><strong>Supervisor:</strong> ${supervisorInfo}</p>
+                        </div>
+                    </div>
+                    
+                    <h6>Documentos por Estado</h6>
+                    <div class="row">
+                        ${carpetasHtml}
+                    </div>
+                    
+                    <!-- BOTÓN DE DESCARTAR -->
+                    ${candidatoActivo ? `
+                        <div class="mt-4 pt-3 border-top text-center">
+                            <button class="btn btn-danger btn-lg" onclick="descartarCandidatoSupervisor(${idCandidato}, '${nombreCandidato}')">
+                                <i class="fas fa-user-times mr-2"></i>Descartar Candidato
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    $('#expedienteCandidatoSupervisor').html(expedienteHtml);
+}
+
+// ================================================================
+// 🆕 FUNCIÓN PARA SUBIR ARCHIVO COMO SUPERVISOR
+// ================================================================
+
+function subirArchivoSupervisor(idCandidato, nombreEstado) {
+    console.log('📤 Subir archivo supervisor:', idCandidato, nombreEstado);
+    
+    // Crear input file
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
+    
+    input.onchange = function(e) {
+        const archivo = e.target.files[0];
+        if (!archivo) return;
+        
+        // Validar tamaño
+        if (archivo.size > 10 * 1024 * 1024) {
+            Swal.fire('Error', 'Archivo muy grande (máx. 10MB)', 'error');
+            return;
+        }
+        
+        // Confirmar subida
+        Swal.fire({
+            title: 'Confirmar subida',
+            html: `
+                <p><strong>Archivo:</strong> ${archivo.name}</p>
+                <p><strong>Estado:</strong> ${nombreEstado}</p>
+                <p><strong>Candidato:</strong> ${idCandidato}</p>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-upload"></i> Subir',
+            cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+            confirmButtonColor: '#28a745'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                procesarSubidaSupervisor(idCandidato, nombreEstado, archivo);
+            }
+        });
+    };
+    
+    input.click();
+}
+
+// ================================================================
+// 🆕 FUNCIÓN PARA PROCESAR LA SUBIDA
+// ================================================================
+
+function procesarSubidaSupervisor(idCandidato, nombreEstado, archivo) {
+    // ✅ PRIMERO: Obtener el ID_SOLICITUD del candidato
+    console.log('🔍 Obteniendo ID_SOLICITUD para candidato:', idCandidato);
+    
+    $.ajax({
+        url: './supervision/crudsolicitudes.php',
+        type: 'GET',
+        data: {
+            action: 'get_solicitud_by_candidato',
+            id_candidato: idCandidato
+        },
+        dataType: 'json',
+        success: function(response) {
+            if (response.success && response.id_solicitud) {
+                // ✅ Ahora que tenemos el ID_SOLICITUD, procedemos con la subida
+                realizarSubidaSupervisor(idCandidato, response.id_solicitud, nombreEstado, archivo);
+            } else {
+                Swal.fire('Error', 'No se pudo obtener información de la solicitud', 'error');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('❌ Error obteniendo ID_SOLICITUD:', error);
+            Swal.fire('Error', 'Error al obtener información de la solicitud', 'error');
+        }
+    });
+}
+
+function realizarSubidaSupervisor(idCandidato, idSolicitud, nombreEstado, archivo) {
+    console.log('📤 Iniciando subida con:', {
+        idCandidato,
+        idSolicitud,
+        nombreEstado,
+        archivo: archivo.name
+    });
+    
+    const formData = new FormData();
+    formData.append('action', 'subir_archivo_candidato_supervisor');
+    formData.append('id_candidato', idCandidato);
+    formData.append('id_solicitud', idSolicitud); // ✅ AHORA SÍ INCLUIMOS EL ID_SOLICITUD
+    formData.append('estado_relacionado', nombreEstado);
+    formData.append('archivo', archivo);
+    
+    // Mostrar loading
+    Swal.fire({
+        title: 'Subiendo archivo...',
+        html: `
+            <div class="text-center">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="sr-only">Subiendo...</span>
+                </div>
+                <p><strong>Archivo:</strong> ${archivo.name}</p>
+                <p><strong>Estado:</strong> ${nombreEstado}</p>
+                <p><strong>Candidato ID:</strong> ${idCandidato}</p>
+                <p><strong>Solicitud ID:</strong> ${idSolicitud}</p>
+            </div>
+        `,
+        allowOutsideClick: false,
+        showConfirmButton: false
+    });
+    
+    // Realizar subida
+    $.ajax({
+        url: './supervision/crudsolicitudes.php',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+        success: function(response) {
+            console.log('✅ Respuesta subida:', response);
+            
+            if (response.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Archivo subido exitosamente!',
+                    text: 'El archivo se guardó correctamente.',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    // Recargar el expediente para mostrar el nuevo archivo
+                    verExpedienteCandidato(idCandidato, 'Candidato');
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al subir archivo',
+                    text: response.error || 'Error desconocido'
+                });
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('❌ Error en subida:', {xhr, status, error});
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'No se pudo subir el archivo. Intente nuevamente.'
+            });
+        }
+    });
+}
+
+// FUNCIÓN PARA VER ARCHIVOS DE UNA CARPETA - SOLO LECTURA
+window.verArchivosCarpeta = function(idCandidato, nombreEstado) {
+    console.log('Viendo archivos de:', nombreEstado, 'para candidato:', idCandidato);
+    
+    $.ajax({
+        url: './supervision/crudsolicitudes.php?action=get_archivos_candidato',
+        type: 'GET',
+        data: {
+            id_candidato: idCandidato,
+            estado_relacionado: nombreEstado
+        },
+        dataType: 'json',
+        success: function(response) {
+            if (response.success && response.archivos && response.archivos.length > 0) {
+                mostrarArchivosModal(response.archivos, nombreEstado);
+            } else {
+                Swal.fire('Info', 'No hay archivos en esta carpeta', 'info');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error cargando archivos:', error);
+            Swal.fire('Error', 'Error al cargar archivos', 'error');
+        }
+    });
+}
+
+// FUNCIÓN PARA MOSTRAR ARCHIVOS EN MODAL
+window.mostrarArchivosModal = function(archivos, nombreEstado) {
+    let archivosHtml = '';
+    
+    archivos.forEach(archivo => {
+        const fechaSubida = new Date(archivo.FECHA_SUBIDA).toLocaleDateString('es-ES');
+        const subidoPor = archivo.SUBIDO_POR_ROL || 'Sistema';
+        archivosHtml += `
+            <div class="card mb-2">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">${archivo.NOMBRE_ARCHIVO}</h6>
+                            <small class="text-muted">Subido: ${fechaSubida} por ${subidoPor}</small>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-info mr-2" 
+                                    onclick="verArchivo('${archivo.ID_ARCHIVO}', '${archivo.NOMBRE_ARCHIVO}')">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                            <button class="btn btn-sm btn-primary" 
+                                    onclick="descargarArchivo('${archivo.ID_ARCHIVO}', '${archivo.NOMBRE_ARCHIVO}')">
+                                <i class="fas fa-download"></i> Descargar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    Swal.fire({
+        title: `Archivos - ${nombreEstado}`,
+        html: `
+            <div style="max-height: 400px; overflow-y: auto;">
+                ${archivosHtml}
+            </div>
+        `,
+        width: '700px',
+        showCloseButton: true,
+        showConfirmButton: false
+    });
+}
+
+//============================================================================
+// DESCARGAR ARCHIVOS DEL CANDIDATO -
+//============================================================================
+// FUNCIÓN PARA DESCARGAR ARCHIVO
+window.descargarArchivo = function(idArchivo, nombreArchivo) {
+    console.log('Descargando archivo:', nombreArchivo);
+    
+    // Crear enlace temporal para descarga usando el nombre del archivo
+    const enlaceDescarga = document.createElement('a');
+    enlaceDescarga.href = `./supervision/crudsolicitudes.php?action=descargar_archivo&archivo=${nombreArchivo}`;
+    enlaceDescarga.download = nombreArchivo;
+    enlaceDescarga.style.display = 'none';
+    
+    document.body.appendChild(enlaceDescarga);
+    enlaceDescarga.click();
+    document.body.removeChild(enlaceDescarga);
+    
+    // Mostrar mensaje de descarga
+    Swal.fire({
+        title: 'Descargando...',
+        text: `Archivo: ${nombreArchivo}`,
+        icon: 'info',
+        timer: 2000,
+        showConfirmButton: false
+    });
+}
+
+// FUNCIÓN PARA VER ARCHIVO EN NUEVA VENTANA
+window.verArchivo = function(idArchivo, nombreArchivo) {
+   // Abrir en nueva pestaña del mismo navegador (no ventana emergente)
+    const url = `./supervision/crudsolicitudes.php?action=ver_archivo&archivo=${nombreArchivo}`;
+    
+    // Usar window.open con parámetros específicos para que se abra en pestaña
+    const nuevaPestana = window.open(url, '_blank');
+    
+    if (!nuevaPestana) {
+        // Si el navegador bloquea popups, mostrar enlace directo
+        Swal.fire({
+            title: 'Ver Archivo',
+            html: `
+                <p>Para ver el archivo, haz clic en el enlace:</p>
+                <a href="${url}" target="_blank" class="btn btn-primary">
+                    <i class="fas fa-external-link-alt"></i> Abrir ${nombreArchivo}
+                </a>
+            `,
+            showCloseButton: true,
+            showConfirmButton: false
+        });
+    }
+}
+
+//==============================================================================
+// FUNCIONES DE DESCARTAR CANDIDATO SUPERVISION 
+//==============================================================================
+
+// FUNCIÓN PARA DESCARTAR CANDIDATO EN SUPERVISIÓN
+window.descartarCandidatoSupervisor = function(idCandidato, nombreCandidato) {
+  console.log('Descartando candidato supervisor:', idCandidato, nombreCandidato);
+  
+  // Mostrar loading mientras carga la información
+  Swal.fire({
+    title: 'Cargando información...',
+    text: 'Obteniendo datos del candidato',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+  
+  // Obtener información completa del candidato
+  $.ajax({
+    url: './supervision/crudsolicitudes.php?action=get_permisos_subida_candidato_supervisor',
+    type: 'GET',
+    data: {
+      id_candidato: idCandidato,
+      rol_usuario: 'SUPERVISOR'
+    },
+    dataType: 'json',
+    success: function(response) {
+      Swal.close();
+      
+      if (response.success) {
+        mostrarModalDescarteCompletoSupervisor(idCandidato, nombreCandidato, response);
+      } else {
+        Swal.fire('Error', 'No se pudo cargar la información del candidato', 'error');
+      }
+    },
+    error: function() {
+      Swal.close();
+      Swal.fire('Error', 'Error de conexión al cargar información', 'error');
+    }
+  });
+}
+
+// Nueva función para mostrar el modal completo
+window.mostrarModalDescarteCompletoSupervisor = function(idCandidato, nombreCandidato, datosCompletos) {
+  const carpetas = datosCompletos.carpetas || [];
+  const estadoActual = datosCompletos.estado_candidato || 'No definido';
+  const puestoSolicitado = datosCompletos.puesto_solicitado || 'No definido';
+  
+  // Obtener información de la solicitud desde la tabla
+  const filaSolicitud = $(`tr[data-id]`).first();
+  const tiendaInfo = filaSolicitud.length > 0 ? filaSolicitud.find('td:nth-child(2)').text().trim() : 'No disponible';
+  const supervisorInfo = filaSolicitud.length > 0 ? filaSolicitud.find('td:nth-child(4)').text().trim() : 'No disponible';
+  
+  // OBTENER EL NOMBRE REAL DEL CANDIDATO DESDE LA LISTA
+  const candidatoCard = $(`.candidate-card[data-candidato-id="${idCandidato}"]`);
+  let nombreReal = nombreCandidato;
+  
+  if (candidatoCard.length > 0) {
+    const nombreEnCard = candidatoCard.find('h6').text().trim();
+    if (nombreEnCard && nombreEnCard !== '') {
+      nombreReal = nombreEnCard;
+    }
+  }
+  
+  // Si aún es undefined, usar un nombre por defecto
+  if (!nombreReal || nombreReal === 'undefined') {
+    nombreReal = 'Candidato ID: ' + idCandidato;
+  }
+  
+  console.log('Nombre real del candidato:', nombreReal);
+  
+  // Estados alcanzados (solo los que tienen archivos o el estado actual)
+  let estadosHtml = '<div class="row">';
+  carpetas.forEach(carpeta => {
+    const iconClass = carpeta.ya_tiene_archivos ? 'fas fa-check-circle text-success' : 'far fa-circle text-muted';
+    const cardClass = carpeta.ya_tiene_archivos ? 'border-success' : 'border-light';
+    
+    estadosHtml += `
+      <div class="col-md-4 mb-3">
+        <div class="card ${cardClass}">
+          <div class="card-body text-center py-3">
+            <i class="${iconClass} fa-2x mb-2"></i>
+            <h6 class="card-title">${carpeta.nombre_estado}</h6>
+            <small class="text-muted">
+              ${carpeta.ya_tiene_archivos ? 'Completado' : 'Pendiente'}
+            </small>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  estadosHtml += '</div>';
+  
+const modalHtml = `
+    <div class="modal fade" id="modalDescartarSupervisor${idCandidato}" tabindex="-1" data-backdrop="static">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title">
+              <i class="fas fa-user-times mr-2"></i>Descartar Candidato - Vista Supervisión
+            </h5>
+            <button type="button" class="close text-white" data-dismiss="modal">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <!-- Información del candidato y solicitud -->
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <div class="card border-primary">
+                  <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">
+                      <i class="fas fa-user mr-2"></i>Información del Candidato
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <p><strong>Nombre:</strong> ${nombreReal}</p>
+                    <p><strong>ID:</strong> ${idCandidato}</p>
+                    <p><strong>Estado actual:</strong> 
+                      <span class="badge badge-primary">${estadoActual}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="card border-info">
+                  <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                      <i class="fas fa-building mr-2"></i>Información de la Solicitud
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <p><strong>Tienda:</strong> ${tiendaInfo}</p>
+                    <p><strong>Puesto:</strong> ${puestoSolicitado}</p>
+                    <p><strong>Supervisor:</strong> ${supervisorInfo}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Estados alcanzados -->
+            <div class="card mb-4">
+              <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">
+                  <i class="fas fa-clipboard-list mr-2"></i>Estados del Candidato
+                </h6>
+              </div>
+              <div class="card-body">
+                ${estadosHtml}
+              </div>
+            </div>
+            
+            <!-- Advertencia -->
+            <div class="alert alert-danger">
+              <i class="fas fa-exclamation-triangle mr-2"></i>
+              <strong>¡ATENCIÓN!</strong> Esta acción descartará definitivamente al candidato. 
+              No podrá ser revertida.
+            </div>
+            
+            <!-- Campo de motivo -->
+            <div class="form-group">
+              <label for="motivoDescarteSupervisor${idCandidato}" class="font-weight-bold text-danger">
+                Motivo del descarte <span class="text-danger">*</span>:
+              </label>
+                <textarea 
+                    id="motivoDescarteSupervisor${idCandidato}" 
+                    class="form-control" 
+                    rows="4" 
+                    placeholder="Ingrese el motivo por el cual está descartando este candidato..."
+                    maxlength="500"
+                    oninput="updateCharCountSupervisor${idCandidato}()"
+                ></textarea>
+                <div class="d-flex justify-content-between">
+                    <small class="form-text text-muted">
+                        Máximo 500 caracteres. Este campo es obligatorio.
+                    </small>
+                    <small class="text-muted">
+                        <span id="charCountSupervisor${idCandidato}">0</span>/500 caracteres
+                    </small>
+                </div>
+            </div>
+          </div>
+          
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+              <i class="fas fa-times mr-2"></i>Cancelar
+            </button>
+            <button type="button" class="btn btn-danger" id="btnConfirmarDescarteSupervisor${idCandidato}">
+              <i class="fas fa-user-times mr-2"></i>Confirmar Descarte
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Agregar modal al DOM
+  $('body').append(modalHtml);
+  
+  // Mostrar modal
+  $(`#modalDescartarSupervisor${idCandidato}`).modal('show');
+
+  // Función para contar caracteres
+    window[`updateCharCountSupervisor${idCandidato}`] = function() {
+        const count = $(`#motivoDescarteSupervisor${idCandidato}`).val().length;
+        $(`#charCountSupervisor${idCandidato}`).text(count);
+        
+        // Cambiar color si se acerca al límite - CORREGIR LA LÓGICA:
+        if (count > 480) {
+            $(`#charCountSupervisor${idCandidato}`).parent().removeClass('text-muted text-warning').addClass('text-danger');
+        } else if (count > 450) {
+            $(`#charCountSupervisor${idCandidato}`).parent().removeClass('text-muted text-danger').addClass('text-warning');
+        } else {
+            $(`#charCountSupervisor${idCandidato}`).parent().removeClass('text-warning text-danger').addClass('text-muted');
+        }
+    };
+    $(`#motivoDescarteSupervisor${idCandidato}`).on('input', window[`updateCharCountSupervisor${idCandidato}`]);
+  
+  // Configurar eventos
+  $(`#btnConfirmarDescarteSupervisor${idCandidato}`).on('click', function() {
+    const motivo = $(`#motivoDescarteSupervisor${idCandidato}`).val().trim();
+    
+    if (motivo.length < 10) {
+      Swal.fire('Error', 'El motivo debe tener al menos 10 caracteres', 'warning');
+      $(`#motivoDescarteSupervisor${idCandidato}`).focus();
+      return;
+    }
+    
+    confirmarDescarteSupervisor(idCandidato, motivo);
+  });
+  
+  // Auto-focus y limpieza
+  $(`#modalDescartarSupervisor${idCandidato}`).on('shown.bs.modal', function() {
+    setTimeout(() => {
+      $(`#motivoDescarteSupervisor${idCandidato}`).focus();
+    }, 300);
+  });
+  
+  $(`#modalDescartarSupervisor${idCandidato}`).on('hidden.bs.modal', function() {
+    $(this).remove();
+  });
+}
+
+// FUNCIÓN PARA CARGAR ESTADOS ALCANZADOS
+window.cargarEstadosAlcanzadosSupervisor = function(idCandidato) {
+  $.ajax({
+    url: './supervision/crudsolicitudes.php?action=get_permisos_subida_candidato_supervisor',
+    type: 'GET',
+    data: {
+      id_candidato: idCandidato,
+      rol_usuario: 'SUPERVISOR'
+    },
+    dataType: 'json',
+    success: function(response) {
+      if (response.success && response.carpetas) {
+        mostrarEstadosAlcanzadosSupervisor(idCandidato, response.carpetas);
+      } else {
+        $(`#estadosAlcanzadosSupervisor${idCandidato}`).html(`
+          <div class="text-muted">No se pudieron cargar los estados</div>
+        `);
+      }
+    },
+    error: function() {
+      $(`#estadosAlcanzadosSupervisor${idCandidato}`).html(`
+        <div class="text-danger">Error cargando estados</div>
+      `);
+    }
+  });
+}
+
+// FUNCIÓN PARA MOSTRAR ESTADOS ALCANZADOS
+window.mostrarEstadosAlcanzadosSupervisor = function (idCandidato, carpetas) {
+  let estadosHtml = '<div class="row">';
+  
+  carpetas.forEach(carpeta => {
+    const iconClass = carpeta.ya_tiene_archivos ? 'fas fa-check-circle text-success' : 'far fa-circle text-muted';
+    const cardClass = carpeta.ya_tiene_archivos ? 'border-success' : 'border-light';
+    
+    estadosHtml += `
+      <div class="col-md-4 mb-3">
+        <div class="card ${cardClass}">
+          <div class="card-body text-center py-3">
+            <i class="${iconClass} fa-2x mb-2"></i>
+            <h6 class="card-title">${carpeta.nombre_estado}</h6>
+            <small class="text-muted">
+              ${carpeta.ya_tiene_archivos ? 'Completado' : 'Pendiente'}
+            </small>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  
+  estadosHtml += '</div>';
+  
+  $(`#estadosAlcanzadosSupervisor${idCandidato}`).html(estadosHtml);
+}
+
+// FUNCIÓN PARA CONFIRMAR DESCARTE
+window.confirmarDescarteSupervisor = function (idCandidato, motivo) {
+  // Cerrar modal
+  $(`#modalDescartarSupervisor${idCandidato}`).modal('hide');
+  
+  // Mostrar loading
+  Swal.fire({
+    title: 'Descartando candidato...',
+    text: 'Procesando solicitud de supervisión...',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+  
+  // Procesar descarte
+  $.ajax({
+    url: './supervision/crudsolicitudes.php?action=descartar_candidato_supervisor',
+    type: 'POST',
+    dataType: 'json',
+    data: {
+      id_candidato: idCandidato,
+      motivo_descarte: motivo
+    },
+    success: function(response) {
+      if (response.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Candidato descartado',
+          text: 'El candidato fue descartado correctamente por supervisión',
+          timer: 3000,
+          showConfirmButton: false
+        }).then(() => {
+          // Recargar la lista de candidatos
+          location.reload();
+        });
+      } else {
+        Swal.fire('Error', response.error || 'Error al descartar candidato', 'error');
+      }
+    },
+    error: function(xhr, status, error) {
+      Swal.fire('Error', 'Error de conexión: ' + error, 'error');
+    }
+  });
+}
+
+//=========================================================================================
+// FUNCION PARA MOSTRAR RESULTADO DE AVAL 
+//=========================================================================================
 
 
+//===================================================================================
+// FUNCIÓN PARA MOSTRAR RESULTADO DE AVAL PROCESADO - SUPERVISIÓN
+//===================================================================================
+function mostrarResultadoAvalProcesadoSupervisor(candidato) {
+    console.log('🎯 SUPERVISIÓN - Mostrando resultado aval procesado:', candidato);
+    
+    function obtenerInformacionAvalCompleta(idCandidato) {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: './supervision/crudsolicitudes.php?action=get_info_aval_completa_supervisor',
+                type: 'GET',
+                data: { id_candidato: idCandidato },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        resolve(response.candidato);
+                    } else {
+                        reject(response.error);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    reject(error);
+                }
+            });
+        });
+    }
+
+    obtenerInformacionAvalCompleta(candidato.ID_CANDIDATO)
+        .then(candidatoCompleto => {
+            const candidatoInfo = { ...candidato, ...candidatoCompleto };
+            
+            const esAprobado = candidatoInfo.APROBACION === 'Y';
+            const decision = esAprobado ? 'APROBADO PARA CONTRATACION' : 'RECHAZADO';
+            const colorFondo = esAprobado ? 'bg-success' : 'bg-danger';
+            const colorBorde = esAprobado ? 'border-success' : 'border-danger';
+            const icono = esAprobado ? 'fa-check-circle' : 'fa-times-circle';
+            const nombreGerente = candidatoInfo.NOMBRE_GERENTE || 'Gerente de Operaciones';
+            
+            const expedienteHtml = `
+                <div class="card border-0 shadow-lg">
+                    <div class="card-header ${colorFondo} text-white">
+                        <h4 class="mb-0">
+                            <i class="fas ${icono} mr-2"></i>${decision}
+                        </h4>
+                        <p class="mb-0 mt-2">
+                            <i class="fas fa-user-tie mr-2"></i>
+                            Procesado por: <strong>${nombreGerente}</strong>
+                        </p>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card ${colorBorde}">
+                                    <div class="card-header ${colorFondo} text-white">
+                                        <h6 class="mb-0"><i class="fas fa-user mr-2"></i>Información del Candidato</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Nombre:</strong> ${candidatoInfo.NOMBRE_CANDIDATO} ${candidatoInfo.APELLIDOS_CANDIDATO}</p>
+                                        <p><strong>Documento:</strong> ${candidatoInfo.DOCUMENTO_CANDIDATO || 'No registrado'}</p>
+                                        <p><strong>Estado:</strong> <span class="badge ${colorFondo}">${candidatoInfo.ESTADO_CANDIDATO}</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white">
+                                        <h6 class="mb-0"><i class="fas fa-building mr-2"></i>Información de la Solicitud</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Tienda:</strong> ${candidatoInfo.NUM_TIENDA}</p>
+                                        <p><strong>Puesto:</strong> ${candidatoInfo.PUESTO_SOLICITADO}</p>
+                                        <p><strong>Supervisor:</strong> ${candidatoInfo.SUPERVISOR}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-${esAprobado ? 'success' : 'warning'} border-${esAprobado ? 'success' : 'warning'}">
+                            <h6 class="font-weight-bold">
+                                <i class="fas fa-comment-dots mr-2"></i>
+                                ${esAprobado ? 'Comentarios de Aprobación' : 'Motivo del Rechazo'}:
+                            </h6>
+                            <p class="mb-2" style="white-space: pre-wrap;">${candidatoInfo.MOTIVO_DECISION || 'Sin comentarios'}</p>
+                            <hr>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar mr-2"></i>
+                                Fecha de decisión: <strong>${candidatoInfo.FECHA_DECISION_FORMATEADA || 'No disponible'}</strong>
+                            </small>
+                        </div>
+                        
+                        <div class="card mb-3">
+                            <div class="card-header bg-secondary text-white">
+                                <h6 class="mb-0"><i class="fas fa-clipboard-list mr-2"></i>Estados Completados antes del Aval</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <!-- CV Enviado -->
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card border-${candidatoInfo.ARCHIVOS_CV > 0 ? 'success' : 'secondary'}">
+                                            <div class="card-body text-center py-3">
+                                                <i class="fas fa-file-alt fa-3x mb-2 ${candidatoInfo.ARCHIVOS_CV > 0 ? 'text-success' : 'text-muted'}"></i>
+                                                <p class="mb-1 font-weight-bold">CV Enviado</p>
+                                                <span class="badge badge-${candidatoInfo.ARCHIVOS_CV > 0 ? 'success' : 'secondary'}">
+                                                    ${candidatoInfo.ARCHIVOS_CV > 0 ? 'Completado' : 'Pendiente'} (${candidatoInfo.ARCHIVOS_CV})
+                                                </span>
+                                                ${candidatoInfo.ARCHIVOS_CV > 0 ? `
+                                                    <button class="btn btn-sm btn-info mt-2 w-100" 
+                                                            onclick="verArchivosCarpeta(${candidatoInfo.ID_CANDIDATO}, 'CV Enviado')">
+                                                        <i class="fas fa-eye mr-1"></i>Ver Archivos
+                                                    </button>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Psicométrica -->
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card border-${candidatoInfo.ARCHIVOS_PSICOMETRICA > 0 ? 'success' : 'secondary'}">
+                                            <div class="card-body text-center py-3">
+                                                <i class="fas fa-brain fa-3x mb-2 ${candidatoInfo.ARCHIVOS_PSICOMETRICA > 0 ? 'text-success' : 'text-muted'}"></i>
+                                                <p class="mb-1 font-weight-bold">Psicométrica</p>
+                                                <span class="badge badge-${candidatoInfo.ARCHIVOS_PSICOMETRICA > 0 ? 'success' : 'secondary'}">
+                                                    ${candidatoInfo.ARCHIVOS_PSICOMETRICA > 0 ? 'Completado' : 'Pendiente'} (${candidatoInfo.ARCHIVOS_PSICOMETRICA})
+                                                </span>
+                                                ${candidatoInfo.ARCHIVOS_PSICOMETRICA > 0 ? `
+                                                    <button class="btn btn-sm btn-info mt-2 w-100" 
+                                                            onclick="verArchivosCarpeta(${candidatoInfo.ID_CANDIDATO}, 'Psicometrica')">
+                                                        <i class="fas fa-eye mr-1"></i>Ver Archivos
+                                                    </button>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Entrevista RH -->
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card border-${candidatoInfo.ARCHIVOS_ENTREVISTA_RH > 0 ? 'success' : 'secondary'}">
+                                            <div class="card-body text-center py-3">
+                                                <i class="fas fa-comments fa-3x mb-2 ${candidatoInfo.ARCHIVOS_ENTREVISTA_RH > 0 ? 'text-success' : 'text-muted'}"></i>
+                                                <p class="mb-1 font-weight-bold">Entrevista RH</p>
+                                                <span class="badge badge-${candidatoInfo.ARCHIVOS_ENTREVISTA_RH > 0 ? 'success' : 'secondary'}">
+                                                    ${candidatoInfo.ARCHIVOS_ENTREVISTA_RH > 0 ? 'Completado' : 'Pendiente'} (${candidatoInfo.ARCHIVOS_ENTREVISTA_RH})
+                                                </span>
+                                                ${candidatoInfo.ARCHIVOS_ENTREVISTA_RH > 0 ? `
+                                                    <button class="btn btn-sm btn-info mt-2 w-100" 
+                                                            onclick="verArchivosCarpeta(${candidatoInfo.ID_CANDIDATO}, 'Entrevista RH')">
+                                                        <i class="fas fa-eye mr-1"></i>Ver Archivos
+                                                    </button>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Entrevista Técnica -->
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card border-${candidatoInfo.ARCHIVOS_ENTREVISTA_TECNICA > 0 ? 'success' : 'secondary'}">
+                                            <div class="card-body text-center py-3">
+                                                <i class="fas fa-laptop-code fa-3x mb-2 ${candidatoInfo.ARCHIVOS_ENTREVISTA_TECNICA > 0 ? 'text-success' : 'text-muted'}"></i>
+                                                <p class="mb-1 font-weight-bold">Entrevista Técnica</p>
+                                                <span class="badge badge-${candidatoInfo.ARCHIVOS_ENTREVISTA_TECNICA > 0 ? 'success' : 'secondary'}">
+                                                    ${candidatoInfo.ARCHIVOS_ENTREVISTA_TECNICA > 0 ? 'Completado' : 'Pendiente'} (${candidatoInfo.ARCHIVOS_ENTREVISTA_TECNICA})
+                                                </span>
+                                                ${candidatoInfo.ARCHIVOS_ENTREVISTA_TECNICA > 0 ? `
+                                                    <button class="btn btn-sm btn-info mt-2 w-100" 
+                                                            onclick="verArchivosCarpeta(${candidatoInfo.ID_CANDIDATO}, 'Entrevista Tecnica')">
+                                                        <i class="fas fa-eye mr-1"></i>Ver Archivos
+                                                    </button>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Día de Prueba -->
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card border-${candidatoInfo.ARCHIVOS_DIA_PRUEBA > 0 ? 'success' : 'secondary'}">
+                                            <div class="card-body text-center py-3">
+                                                <i class="fas fa-clipboard-check fa-3x mb-2 ${candidatoInfo.ARCHIVOS_DIA_PRUEBA > 0 ? 'text-success' : 'text-muted'}"></i>
+                                                <p class="mb-1 font-weight-bold">Día de Prueba</p>
+                                                <span class="badge badge-${candidatoInfo.ARCHIVOS_DIA_PRUEBA > 0 ? 'success' : 'secondary'}">
+                                                    ${candidatoInfo.ARCHIVOS_DIA_PRUEBA > 0 ? 'Completado' : 'Pendiente'} (${candidatoInfo.ARCHIVOS_DIA_PRUEBA})
+                                                </span>
+                                                ${candidatoInfo.ARCHIVOS_DIA_PRUEBA > 0 ? `
+                                                    <button class="btn btn-sm btn-info mt-2 w-100" 
+                                                            onclick="verArchivosCarpeta(${candidatoInfo.ID_CANDIDATO}, 'Dia de Prueba')">
+                                                        <i class="fas fa-eye mr-1"></i>Ver Archivos
+                                                    </button>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Polígrafo -->
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card border-${candidatoInfo.ARCHIVOS_POLIGRAFO > 0 ? 'success' : 'secondary'}">
+                                            <div class="card-body text-center py-3">
+                                                <i class="fas fa-shield-alt fa-3x mb-2 ${candidatoInfo.ARCHIVOS_POLIGRAFO > 0 ? 'text-success' : 'text-muted'}"></i>
+                                                <p class="mb-1 font-weight-bold">Polígrafo</p>
+                                                <span class="badge badge-${candidatoInfo.ARCHIVOS_POLIGRAFO > 0 ? 'success' : 'secondary'}">
+                                                    ${candidatoInfo.ARCHIVOS_POLIGRAFO > 0 ? 'Completado' : 'Pendiente'} (${candidatoInfo.ARCHIVOS_POLIGRAFO})
+                                                </span>
+                                                ${candidatoInfo.ARCHIVOS_POLIGRAFO > 0 ? `
+                                                    <button class="btn btn-sm btn-info mt-2 w-100" 
+                                                            onclick="verArchivosCarpeta(${candidatoInfo.ID_CANDIDATO}, 'Poligrafo')">
+                                                        <i class="fas fa-eye mr-1"></i>Ver Archivos
+                                                    </button>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <strong>Vista de Solo Lectura:</strong> Este candidato ya fue procesado por el gerente. Los supervisores pueden revisar el resultado pero no realizar cambios.
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            $('#expedienteCandidatoSupervisor').html(expedienteHtml);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            $('#expedienteCandidatoSupervisor').html(`
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Error:</strong> ${error}
+                </div>
+            `);
+        });
+}
+
+window.mostrarResultadoAvalProcesadoSupervisor = mostrarResultadoAvalProcesadoSupervisor;
 
 
-      // CARGAR SOLICITUDES AL INICIO
+//========================FIN FUNCION DE RESULTADO DE AVAL=================================
+
+// ================================================================================================
+// NUEVA FUNCIÓN: MOSTRAR MENSAJE DE ESPERA CUANDO LA SOLICITUD ESTÁ EN REACTIVACIÓN
+// ================================================================================================
+
+function mostrarMensajeEsperaReactivacionSupervisor(idSolicitud, solicitud) {
+    console.log('⏳ Mostrando mensaje de espera - RH aún no ha seleccionado candidatos');
+    
+    const tienda = solicitud.num_tienda || 'No especificada';
+    const puesto = solicitud.puesto_solicitado || 'No especificado';
+    const supervisor = solicitud.supervisor || 'No asignado';
+    const motivoReactivacion = solicitud.motivo_reactivacion || 'Sin motivo especificado';
+    
+    const htmlModal = `
+        <div class="modal fade" id="modalReactivacionSupervisor" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content shadow-lg">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title">
+                            <i class="fas fa-hourglass-half mr-3"></i>
+                            Solicitud en Proceso de Reactivación
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        <!-- Información de la solicitud -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h6 class="card-title mb-3">
+                                    <i class="fas fa-info-circle text-info mr-2"></i>
+                                    Información de la Solicitud
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <p><strong>Tienda:</strong><br>${tienda}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>Puesto:</strong><br>${puesto}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>Supervisor:</strong><br>${supervisor}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Alerta principal -->
+                        <div class="alert alert-warning text-center py-4">
+                            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                            <h5 class="mb-3">Esta solicitud fue reactivada recientemente</h5>
+                            <p class="mb-0">
+                                <strong>Los candidatos estarán disponibles una vez que Recursos Humanos confirme su selección.</strong>
+                            </p>
+                        </div>
+                        
+                        <!-- Motivo de reactivación -->
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="fas fa-comment-dots mr-2"></i>
+                                    Motivo de Reactivación
+                                </h6>
+                                <p class="mb-0 text-muted">${motivoReactivacion}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Instrucciones -->
+                        <div class="mt-4 text-center text-muted">
+                            <p class="mb-1">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Por favor, espere a que RH confirme la selección de candidatos.
+                            </p>
+                            <p class="mb-0">
+                                <small>Una vez confirmado, los candidatos aparecerán en esta sección.</small>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            <i class="fas fa-times mr-2"></i>Cerrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remover modal anterior si existe
+    $('#modalReactivacionSupervisor').remove();
+    $('body').append(htmlModal);
+    
+    // Abrir modal
+    $('#modalReactivacionSupervisor').modal('show');
+}
+
+console.log('✅ Módulo de reactivación para Supervisores cargado correctamente');
+
+//===============================================================================================
+// FUNCION DE REACTIVACION DE LA SOLICITUD 
+//===============================================================================================
+
+//=========================================================================================
+// REACTIVAR SOLICITUD - SUPERVISORES
+//=========================================================================================
+
+// Event listener para botón Reactivar
+$(document).on('click', '.btnReactivarSolicitud', function() {
+    const idSolicitud = $(this).data('id');
+    const tienda = $(this).data('tienda');
+    const puesto = $(this).data('puesto');
+    
+    // Llenar datos en el modal
+    $('#reactivarTienda').text(tienda);
+    $('#reactivarPuesto').text(puesto);
+    $('#motivoReactivacion').val('');
+    
+    // Guardar ID en el modal
+    $('#modalReactivarSolicitud').data('id-solicitud', idSolicitud);
+    
+    // Mostrar modal
+    $('#modalReactivarSolicitud').modal('show');
+});
+
+// Confirmar reactivación
+$('#btnConfirmarReactivacion').on('click', function() {
+    const idSolicitud = $('#modalReactivarSolicitud').data('id-solicitud');
+    const motivo = $('#motivoReactivacion').val().trim();
+    
+    // Validar motivo
+    if (!motivo) {
+        Swal.fire('Error', 'Debe ingresar un motivo de reactivación', 'error');
+        return;
+    }
+    
+    if (motivo.length < 10) {
+        Swal.fire('Error', 'El motivo debe tener al menos 10 caracteres', 'error');
+        return;
+    }
+    
+    // Confirmar acción
+    Swal.fire({
+        title: '¿Confirmar reactivación?',
+        html: `
+            <p>Está a punto de reactivar esta solicitud.</p>
+            <p><strong>Esta acción:</strong></p>
+            <ul style="text-align: left;">
+                <li>Cambiará el estado a "Candidatos en Selección"</li>
+                <li>Ocultará al candidato contratado</li>
+                <li>Permitirá a RRHH continuar con el proceso</li>
+            </ul>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ffc107',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, reactivar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Mostrar loading
+            Swal.fire({
+                title: 'Reactivando solicitud...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+            
+            // Llamar al backend
+            $.ajax({
+                url: './supervision/crudsolicitudes.php',
+                type: 'POST',
+                data: {
+                    action: 'reactivar_solicitud_supervisor',
+                    id_solicitud: idSolicitud,
+                    motivo_reactivacion: motivo
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Solicitud reactivada',
+                            text: 'La solicitud ha sido reactivada exitosamente',
+                            confirmButtonText: 'Aceptar'
+                        }).then(() => {
+                            $('#modalReactivarSolicitud').modal('hide');
+                            // Recargar tabla
+                            if (typeof cargarSolicitudes === 'function') {
+                                cargarSolicitudes();
+                            } else {
+                                location.reload();
+                            }
+                        });
+                    } else {
+                        Swal.fire('Error', response.error || 'No se pudo reactivar la solicitud', 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Error', 'Error de conexión con el servidor', 'error');
+                }
+            });
+        }
+    });
+});
+
+//=========================FIN FUNCION DE REACTIVACION DE LA SOLICITUD =============================
+
+
+//========================FIN FUNCIONES DE DESCARTE CANDIDATOS=============================
+   
+// FORZAR FUNCIONES AL CONTEXTO GLOBAL
+setTimeout(function() {
+    if (typeof window.parent !== 'undefined') {
+        window.parent.seleccionarCandidatoSupervisor = window.seleccionarCandidatoSupervisor;
+        window.parent.verExpedienteCandidato = window.verExpedienteCandidato;
+        window.parent.mostrarExpedienteSoloLectura = window.mostrarExpedienteSoloLectura;
+        window.parent.mostrarCandidatosEnviados = window.mostrarCandidatosEnviados;
+        window.subirArchivoSupervisor = subirArchivoSupervisor;
+        window.procesarSubidaSupervisor = procesarSubidaSupervisor;
+        window.descartarCandidatoSupervisor = descartarCandidatoSupervisor;
+        window.cargarEstadosAlcanzadosSupervisor = cargarEstadosAlcanzadosSupervisor;
+        window.mostrarEstadosAlcanzadosSupervisor = mostrarEstadosAlcanzadosSupervisor;
+        window.confirmarDescarteSupervisor = confirmarDescarteSupervisor;
+    }
+    
+    // También en el contexto actual
+    window.seleccionarCandidatoSupervisor = function(idCandidato, nombreCandidato) {
+        $('.candidate-card .card').removeClass('border-primary bg-light').addClass('border-left-primary');
+        $(`.candidate-card[data-candidato-id="${idCandidato}"] .card`).removeClass('border-left-primary').addClass('border-primary bg-light');
+        verExpedienteCandidato(idCandidato, nombreCandidato);
+    };
+}, 100);
+
+// CARGAR SOLICITUDES AL INICIO
       cargarSolicitudes();
     });
   </script>
