@@ -1,6 +1,7 @@
- /* === VARIABLES CSS PROFESIONALES === */
+/* === VARIABLES CSS PROFESIONALES === */
 :root {
-  --sidebar-width: 290px;
+  --sidebar-width: 280px; /* Aumentado de 250px a 280px */
+  --sidebar-collapsed-width: 60px;
   --sidebar-bg: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
   --sidebar-text: #e2e8f0;
   --sidebar-text-hover: #ffffff;
@@ -9,28 +10,112 @@
   --sidebar-border: rgba(71, 85, 105, 0.3);
   --sidebar-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --header-height: 60px;
+}
+
+/* === RESET Y BASE === */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Source Sans Pro', sans-serif;
+  overflow-x: hidden; /* Prevenir scroll horizontal */
+}
+
+/* === WRAPPER PRINCIPAL === */
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* === SIDEBAR PRINCIPAL === */
 .main-sidebar {
+  position: fixed !important;
+  top: 0;
+  left: 0;
   width: var(--sidebar-width) !important;
+  height: 100vh;
   background: var(--sidebar-bg) !important;
   border-right: 1px solid var(--sidebar-border);
   box-shadow: var(--sidebar-shadow);
   z-index: 1000;
+  transition: var(--transition);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-.main-header, .content-wrapper, .main-footer {
+/* === ESTADO COLAPSADO === */
+.sidebar-collapse .main-sidebar {
+  width: var(--sidebar-collapsed-width) !important;
+}
+
+.sidebar-collapse .main-sidebar:hover {
+  width: var(--sidebar-width) !important;
+}
+
+/* === HEADER PRINCIPAL === */
+.main-header {
+  position: fixed !important;
+  top: 0;
+  left: var(--sidebar-width);
+  right: 0;
+  height: var(--header-height);
+  background: #ffffff;
+  border-bottom: 1px solid #dee2e6;
+  z-index: 999;
+  transition: var(--transition);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.sidebar-collapse .main-header {
+  left: var(--sidebar-collapsed-width);
+}
+
+/* === CONTENT WRAPPER === */
+.content-wrapper {
+  margin-left: var(--sidebar-width) !important;
+  margin-top: var(--header-height) !important;
+  padding: 1rem;
+  background: #f8fafc;
+  min-height: calc(100vh - var(--header-height));
+  transition: var(--transition);
+  width: calc(100% - var(--sidebar-width));
+}
+
+.sidebar-collapse .content-wrapper {
+  margin-left: var(--sidebar-collapsed-width) !important;
+  width: calc(100% - var(--sidebar-collapsed-width));
+}
+
+/* === FOOTER === */
+.main-footer {
   margin-left: var(--sidebar-width) !important;
   transition: var(--transition);
+  background: #ffffff;
+  border-top: 1px solid #dee2e6;
+  padding: 1rem;
+}
+
+.sidebar-collapse .main-footer {
+  margin-left: var(--sidebar-collapsed-width) !important;
 }
 
 /* === BRAND LOGO === */
 .brand-link {
   background: rgba(59, 130, 246, 0.1) !important;
   border-bottom: 1px solid var(--sidebar-border);
-  padding: 0.875rem 1rem !important;
+  padding: 1rem !important; /* Aumentado el padding */
   transition: var(--transition);
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  min-height: 70px; /* Altura mínima para el brand */
 }
 
 .brand-link:hover {
@@ -41,33 +126,62 @@
 .brand-text {
   color: var(--sidebar-text) !important;
   font-weight: 600 !important;
-  font-size: 1.1rem;
+  font-size: 1rem; /* Ajustado para mejor legibilidad */
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: var(--transition);
+  margin-left: 0.75rem;
+  line-height: 1.2;
 }
 
 .brand-image {
   filter: brightness(1.2);
+  width: 35px; /* Ligeramente más grande */
+  height: 35px;
+  flex-shrink: 0;
+}
+
+/* === SIDEBAR COLAPSADO - TEXTO OCULTO === */
+.sidebar-collapse .brand-text,
+.sidebar-collapse .nav-link p {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.sidebar-collapse .main-sidebar:hover .brand-text,
+.sidebar-collapse .main-sidebar:hover .nav-link p {
+  opacity: 1;
+  width: auto;
 }
 
 /* === NAVEGACIÓN SIDEBAR === */
 .sidebar {
   background: transparent !important;
-  padding-top: 0.5rem;
+  padding: 0.75rem 0; /* Ajustado el padding */
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .nav-sidebar {
-  padding: 0 0.75rem;
+  padding: 0 1rem; /* Aumentado el padding lateral */
 }
 
 .nav-sidebar .nav-link {
   color: var(--sidebar-text) !important;
   border-radius: 8px !important;
-  margin: 2px 0;
-  padding: 0.75rem 1rem !important;
+  margin: 3px 0; /* Aumentado el margen entre elementos */
+  padding: 0.875rem 1rem !important; /* Aumentado el padding */
   font-weight: 500;
+  font-size: 0.95rem; /* Tamaño de fuente más grande */
   transition: var(--transition);
   position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  min-height: 45px; /* Altura mínima para cada elemento */
 }
 
 .nav-sidebar .nav-link::before {
@@ -95,12 +209,13 @@
 
 /* === ICONOS === */
 .nav-icon {
-  width: 20px;
+  width: 22px; /* Aumentado el ancho */
   text-align: center;
-  margin-right: 0.75rem !important;
-  font-size: 1.1rem;
+  margin-right: 1rem !important; /* Aumentado el margen */
+  font-size: 1.2rem; /* Iconos más grandes */
   color: var(--sidebar-accent);
   transition: var(--transition);
+  flex-shrink: 0;
 }
 
 .nav-link:hover .nav-icon {
@@ -108,45 +223,66 @@
   transform: scale(1.1);
 }
 
+/* === TEXTO DEL NAV === */
+.nav-link p {
+  margin: 0;
+  flex: 1;
+  transition: var(--transition);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
 /* === SUBMENU TREEVIEW === */
 .nav-treeview {
   padding-left: 0 !important;
-  margin-top: 0.25rem;
+  margin: 0.5rem 0; /* Aumentado el margen */
   background: rgba(15, 23, 42, 0.6);
   border-radius: 8px;
   overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: var(--transition);
+}
+
+.nav-item.menu-open .nav-treeview {
+  max-height: 600px; /* Aumentado para acomodar más elementos */
+  opacity: 1;
+  margin-bottom: 0.5rem;
 }
 
 .nav-treeview .nav-link {
   background: transparent !important;
-  color: rgba(226, 232, 240, 0.8) !important;
-  padding: 0.6rem 1rem 0.6rem 2.5rem !important;
+  color: rgba(226, 232, 240, 0.85) !important;
+  padding: 0.75rem 1rem 0.75rem 3rem !important; /* Mejor padding */
   font-size: 0.9rem;
   font-weight: 400;
   border-radius: 6px !important;
-  margin: 1px 0.25rem;
+  margin: 2px 0.5rem;
   position: relative;
+  min-height: 40px; /* Altura mínima para subelementos */
 }
 
 .nav-treeview .nav-link::before {
   content: '';
   position: absolute;
-  left: 1.75rem;
+  left: 2rem;
   top: 50%;
   transform: translateY(-50%);
   width: 6px;
   height: 6px;
   background: var(--sidebar-accent);
   border-radius: 50%;
-  opacity: 0.5;
+  opacity: 0.6;
   transition: var(--transition);
 }
 
 .nav-treeview .nav-link:hover {
-  background: rgba(59, 130, 246, 0.1) !important;
+  background: rgba(59, 130, 246, 0.12) !important;
   color: var(--sidebar-text-hover) !important;
   transform: translateX(5px);
-  padding-left: 2.3rem !important;
+  padding-left: 2.8rem !important;
 }
 
 .nav-treeview .nav-link:hover::before {
@@ -156,14 +292,20 @@
 }
 
 .nav-treeview .nav-icon {
-  font-size: 0.9rem;
-  width: 16px;
-  margin-right: 0.5rem !important;
+  font-size: 1rem;
+  width: 18px;
+  margin-right: 0.75rem !important;
   color: rgba(59, 130, 246, 0.8);
+  flex-shrink: 0;
 }
 
 .nav-treeview .nav-link:hover .nav-icon {
   color: var(--sidebar-accent);
+}
+
+.nav-treeview .nav-link p {
+  font-size: 0.9rem;
+  line-height: 1.3;
 }
 
 /* === ESTADOS ACTIVOS === */
@@ -180,6 +322,8 @@
 .nav-link .right {
   transition: var(--transition);
   color: var(--sidebar-accent);
+  margin-left: auto;
+  font-size: 0.9rem;
 }
 
 .nav-item.menu-open > .nav-link .right {
@@ -224,34 +368,74 @@
   background: var(--sidebar-accent-hover);
 }
 
-/* === RESPONSIVE === */
+/* === RESPONSIVE DESIGN === */
+
+/* Tablets */
 @media (max-width: 991px) {
+  :root {
+    --sidebar-width: 320px; /* Aumentado para tablets */
+  }
+  
   .main-sidebar {
-    margin-left: calc(var(--sidebar-width) * -1);
-    transition: var(--transition);
+    transform: translateX(-100%);
   }
   
   .sidebar-open .main-sidebar {
-    margin-left: 0;
+    transform: translateX(0);
   }
   
-  .main-header, .content-wrapper, .main-footer {
+  .main-header,
+  .content-wrapper,
+  .main-footer {
     margin-left: 0 !important;
+    left: 0 !important;
+  }
+  
+  .main-header {
+    width: 100% !important;
+  }
+  
+  .content-wrapper {
+    width: 100% !important;
   }
 }
 
+/* Móviles */
 @media (max-width: 768px) {
   :root {
-    --sidebar-width: 250px;
+    --sidebar-width: 100%; /* Ancho completo en móviles */
+    --header-height: 55px;
   }
   
   .nav-sidebar .nav-link {
-    padding: 0.6rem 0.75rem !important;
-    font-size: 0.9rem;
+    padding: 0.8rem 1rem !important;
+    font-size: 0.95rem;
+    min-height: 48px; /* Altura táctil adecuada */
+  }
+  
+  .nav-treeview .nav-link {
+    padding: 0.75rem 1rem 0.75rem 3.5rem !important;
+    min-height: 44px;
   }
   
   .brand-text {
-    font-size: 1rem;
+    font-size: 1.1rem;
+  }
+  
+  .content-wrapper {
+    padding: 0.75rem;
+  }
+  
+  /* Overlay para móvil */
+  .sidebar-open::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
   }
 }
 
@@ -260,59 +444,26 @@
   position: relative;
 }
 
-/* Indicador de carga para navegación */
-.nav-link.loading::after {
-  content: '';
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  border: 2px solid transparent;
-  border-top: 2px solid var(--sidebar-accent);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+/* Asegurar que no se corte el texto */
+.nav-link,
+.nav-treeview .nav-link {
+  word-wrap: break-word;
+  hyphens: auto;
 }
 
-@keyframes spin {
-  0% { transform: translateY(-50%) rotate(0deg); }
-  100% { transform: translateY(-50%) rotate(360deg); }
+/* Mejorar la visibilidad de elementos largos */
+.nav-link p,
+.nav-treeview .nav-link p {
+  max-width: 100%;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  word-break: break-word;
 }
 
-/* === MODO COLAPSADO === */
-.sidebar-mini.sidebar-collapse .nav-sidebar .nav-link {
-  width: calc(var(--sidebar-width) - 20px);
-}
-
-.sidebar-mini.sidebar-collapse .nav-sidebar .nav-link p {
-  opacity: 0;
-  transition: var(--transition);
-}
-
-.sidebar-mini.sidebar-collapse:hover .nav-sidebar .nav-link p {
-  opacity: 1;
-}
-
-/* === ESTILOS ADICIONALES PARA FUNCIONALIDAD === */
-.nav-link-hover {
-  background: rgba(59, 130, 246, 0.1) !important;
-  transform: translateX(2px);
-}
-
-.nav-link.active {
-  background: linear-gradient(135deg, var(--sidebar-accent), #1d4ed8) !important;
-  color: white !important;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-.nav-link.active .nav-icon {
-  color: white !important;
-}
-
-/* === MEJORAS PARA EL CHAT === */
+/* === CHAT === */
 .bchatroy {
+  position: fixed;
   bottom: 20px;
   right: 20px;
   z-index: 1000;
@@ -330,6 +481,7 @@
 }
 
 .chatroy {
+  position: fixed;
   bottom: 80px;
   right: 20px;
   z-index: 999;
@@ -338,47 +490,77 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
-/* === ANIMACIONES === */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
+/* === FIXES ESPECÍFICOS PARA ADMINLTE === */
+.main-sidebar.sidebar-dark-primary {
+  background: var(--sidebar-bg) !important;
+  top: 0 !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+}
+
+.main-sidebar .sidebar {
+  padding-top: 0 !important;
+}
+
+.main-sidebar .nav-sidebar {
+  padding-top: 0.75rem;
+}
+
+/* === OVERRIDE PARA CLASES ADMINLTE === */
+.layout-fixed .main-sidebar {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  height: 100vh !important;
+}
+
+.layout-navbar-fixed .main-sidebar {
+  margin-top: 0 !important;
+}
+
+/* === CORRECCIÓN ALTURA COMPLETA === */
+.main-sidebar,
+.main-sidebar .sidebar,
+.main-sidebar .os-host,
+.main-sidebar .os-viewport {
+  height: 100vh !important;
+  min-height: 100vh !important;
+}
+
+/* === NAVEGACIÓN DESPUÉS DEL BRAND === */
+.sidebar .nav-sidebar {
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+  padding-bottom: 1rem;
+}
+
+/* === AUTOAJUSTE DEL SIDEBAR SEGÚN CONTENIDO === */
+@media (min-width: 992px) {
+  .main-sidebar {
+    min-width: 280px;
+    max-width: 350px;
+    width: auto;
   }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+  
+  /* Si hay elementos muy largos, expandir automáticamente */
+  .nav-link p {
+    min-width: 180px; /* Ancho mínimo para el texto */
   }
 }
 
-.nav-item {
-  animation: slideIn 0.3s ease-out;
+/* === MEJORAS PARA TEXTOS LARGOS === */
+.nav-treeview .nav-link p {
+  display: block;
+  line-height: 1.4;
+  max-width: none;
+  white-space: normal;
 }
 
-/* === MEJORAS PARA EL CONTENIDO PRINCIPAL === */
-.content-wrapper {
-  background: #f8fafc;
-  min-height: calc(100vh - 60px);
+/* === ESPACIADO MEJORADO === */
+.nav-item + .nav-item {
+  margin-top: 2px;
 }
 
-.content-header {
-  background: white;
-  border-bottom: 1px solid #e2e8f0;
-  margin-bottom: 1rem;
-}
-
-.card {
-  border: none;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition: var(--transition);
-}
-
-.card:hover {
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-}
-
-.card-header {
-  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-  border-bottom: 1px solid #e2e8f0;
-  font-weight: 600;
+.nav-treeview .nav-item + .nav-item {
+  margin-top: 1px;
 }

@@ -8,9 +8,7 @@
     
     <!-- Subsidiaria -->
     <div class="form-group mx-2">
-      <label for="sbs" class="form-label">
-        <i class="fas fa-building me-1"></i> Subsidiaria
-      </label>
+      
       <div class="input-group">
         <span class="input-group-text">
           <i class="fas fa-building"></i>
@@ -24,9 +22,7 @@
 
     <!-- Tienda -->
     <div class="form-group mx-2">
-      <label for="tienda" class="form-label">
-        <i class="fas fa-store me-1"></i> Tienda
-      </label>
+      
       <div class="input-group">
         <span class="input-group-text">
           <i class="fas fa-store"></i>
@@ -43,25 +39,18 @@
 
     <!-- Fecha -->
     <div class="form-group mx-2">
-      <label for="fecha" class="form-label">
-        <i class="far fa-calendar-alt me-1"></i> Fecha
-      </label>
+      
       <div class="input-group">
         <span class="input-group-text">
           <i class="far fa-calendar-alt"></i>
         </span>
-        <input type="text" 
-               name="fecha" 
-               id="fecha" 
-               class="form-control fecha" 
-               autocomplete="off"
-               placeholder="Seleccionar fechas">
+        <input type="text"  name="fecha"  id="fecha" class="form-control float-right fecha"    autocomplete="off"  placeholder="Seleccionar fechas">
       </div>
     </div>
 
     <!-- Checkboxes -->
     <div class="form-group mx-2">
-      <label class="form-label">Opciones</label>
+     
       
       <div class="form-check">
         <input class="form-check-input" 
@@ -97,8 +86,7 @@
   </form>
 </nav>
 
-<!-- Tabla de resultados -->
-<div class="container-fluid mt-4" id="Tablas"></div>
+
 
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -107,25 +95,52 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 
 <script>
-  $('.fecha').daterangepicker({
-    showDropdowns: true,
-    autoApply: true,
-    locale: {
-      format: 'DD-MM-YYYY',
-      separator: ' a ',
-      weekLabel: 'Sm',
-      daysOfWeek: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'],
-      monthNames: [
-        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-      ],
-      firstDay: 0
+$(document).ready(function() {
+    // Función para inicializar daterangepicker
+    function initDateRangePicker() {
+        if (typeof $ !== 'undefined' && 
+            typeof moment !== 'undefined' && 
+            $.fn.daterangepicker && 
+            $('.fecha').length > 0) {
+            
+            $('.fecha').daterangepicker({
+                showDropdowns: true,
+                autoApply: true,
+                locale: {
+                    format: 'DD-MM-YYYY',
+                    separator: ' a ',
+                    weekLabel: 'Sm',
+                    daysOfWeek: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'],
+                    monthNames: [
+                        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+                    ],
+                    firstDay: 0
+                }
+            });
+            
+            return true;
+        }
+        return false;
     }
-  });
 
-
+    // Intentar inicializar hasta que funcione
+    let attempts = 0;
+    const tryInit = setInterval(function() {
+        attempts++;
+        
+        if (initDateRangePicker()) {
+            clearInterval(tryInit);
+            console.log('DateRangePicker inicializado en intento:', attempts);
+        } else if (attempts >= 20) {
+            clearInterval(tryInit);
+        }
+    }, 200);
+});
 </script>
 
+<!-- Tabla de resultados -->
+<div class="container-fluid mt-4" id="Tablas"></div>
 
 <script>
   var url = "../Js/tienda/filtro.js";
